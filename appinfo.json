@@ -12,6 +12,7 @@
     "sdkVersion": "3",
     "shortName": "Transilien",
     "targetPlatforms": [
+        "aplite",
         "basalt"
     ],
     "uuid": "30663f9d-bae8-4557-b8b9-c890b1094f24",
