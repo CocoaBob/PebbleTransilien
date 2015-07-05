@@ -1,7 +1,7 @@
 {
     "appKeys": {},
     "capabilities": [
-        ""
+        "location"
     ],
     "companyName": "mengke.wang@gmail.com",
     "longName": "Transilien",
@@ -11,6 +11,9 @@
     },
     "sdkVersion": "3",
     "shortName": "Transilien",
+    "targetPlatforms": [
+        "basalt"
+    ],
     "uuid": "30663f9d-bae8-4557-b8b9-c890b1094f24",
     "versionLabel": "1.0",
     "watchapp": {
