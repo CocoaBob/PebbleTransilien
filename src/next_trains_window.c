@@ -2,12 +2,6 @@
 #include "next_trains_window.h"
 #include "utilities.h"
 
-enum {
-  NEXT_TRAINS_SECTION_INVERSE = 0,
-  NEXT_TRAINS_SECTION_LIST,
-  NEXT_TRAINS_SECTION_COUNT
-};
-
 static Window *s_main_window;
 static MenuLayer *s_menu_layer;
 #ifdef PBL_SDK_3
@@ -16,77 +10,66 @@ static Layer *s_battery_layer;
 #endif
 
 // Drawing
+#define NEXT_TRAIN_CELL_ICON_W 27  // CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
+#define NEXT_TRAIN_CELL_ICON_Y 4   // CELL_MARGIN = 4
+#define NEXT_TRAIN_CELL_CODE_X 27  // CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
+#define NEXT_TRAIN_CELL_CODE_W 46
+#define NEXT_TRAIN_CELL_TIME_X 73  // CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W = 4 + 19 + 4 + 48
 
 void draw_next_trains_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color,
-                    const char * str_line, const char * font_key_line,
-                    const char * str_code, const char * font_key_code,
-                    const char * str_time, const char * font_key_time,
-                    const char * str_terminus, const char * font_key_terminus,
-                    const char * str_platform, const char * font_key_platform) {
+                           const char * str_line,
+                           const char * str_code,
+                           const char * str_time,
+                           const char * str_terminus,
+                           const char * str_platform) {
+  graphics_context_set_stroke_color(ctx, stroke_color);
   GRect bounds = layer_get_bounds(cell_layer);
 
   // Line
   GRect frame_line = GRect(CELL_MARGIN,
-                           (CELL_HEIGHT - CELL_ICON_SIZE) / 2,
+                           NEXT_TRAIN_CELL_ICON_Y,
                            CELL_ICON_SIZE,
                            CELL_ICON_SIZE);
-  graphics_context_set_stroke_color(ctx, stroke_color);
   graphics_draw_round_rect(ctx, frame_line, 3);
-  draw_text(ctx, str_line, stroke_color, font_key_line, frame_line, GTextAlignmentCenter);
-
-  int16_t semi_height = bounds.size.h / 2;
-  int16_t semi_content_width = bounds.size.w / 2 - CELL_ICON_SIZE - CELL_MARGIN * 2;
+  draw_text(ctx, str_line, FONT_KEY_GOTHIC_14_BOLD, frame_line, GTextAlignmentCenter);
   
   // Code
-  GRect frame_code = GRect(CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN,
-                           -TEXT_Y_OFFSET,
-                           semi_content_width,
-                           semi_height);
-  draw_text(ctx, str_code, stroke_color, font_key_code, frame_code, GTextAlignmentLeft);
+  GRect frame_code = GRect(NEXT_TRAIN_CELL_CODE_X,
+                           -CELL_TEXT_Y_OFFSET - 2,
+                           NEXT_TRAIN_CELL_CODE_W,
+                           CELL_HEIGHT_2);
+  draw_text(ctx, str_code, FONT_KEY_GOTHIC_24_BOLD, frame_code, GTextAlignmentLeft);
 
   // Time
-  GRect frame_time = GRect(CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN + semi_content_width,
-                           - TEXT_Y_OFFSET,
-                           semi_content_width,
-                           semi_height);
-  draw_text(ctx, str_time, stroke_color, font_key_time, frame_time, GTextAlignmentRight);
+  GRect frame_time = GRect(NEXT_TRAIN_CELL_TIME_X,
+                           - CELL_TEXT_Y_OFFSET - 2,
+                           bounds.size.w - NEXT_TRAIN_CELL_TIME_X - CELL_MARGIN - CELL_ICON_SIZE - 4,
+                           CELL_HEIGHT_2);
+  draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentLeft);
 
   // Terminus
-  GRect frame_terminus = GRect(CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN,
-                               semi_height - TEXT_Y_OFFSET,
-                               bounds.size.w - CELL_ICON_SIZE * 2 - CELL_MARGIN * 4,
-                               semi_height);
-  draw_text(ctx, str_terminus, stroke_color, font_key_terminus, frame_terminus, GTextAlignmentLeft);
+  GRect frame_terminus = GRect(CELL_MARGIN,
+                               CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET + 1,
+                               bounds.size.w - CELL_MARGIN * 2,
+                               CELL_HEIGHT_2);
+  draw_text(ctx, str_terminus, FONT_KEY_GOTHIC_18, frame_terminus, GTextAlignmentLeft);
 
   // Platform
-  GRect frame_icon_2 = GRect(bounds.size.w - CELL_MARGIN - CELL_ICON_SIZE,
-                             (CELL_HEIGHT - CELL_ICON_SIZE) / 2,
-                             CELL_ICON_SIZE,
-                             CELL_ICON_SIZE);
-
-  graphics_context_set_stroke_color(ctx, stroke_color);
-  graphics_draw_round_rect(ctx, frame_icon_2, 3);
-  draw_text(ctx, str_platform, stroke_color, font_key_platform, frame_icon_2, GTextAlignmentCenter);
+  bool has_platform = str_platform != NULL;
+  if (has_platform) {
+    GRect frame_icon_2 = GRect(bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN,
+                               NEXT_TRAIN_CELL_ICON_Y,
+                               CELL_ICON_SIZE,
+                               CELL_ICON_SIZE);
+    graphics_draw_round_rect(ctx, frame_icon_2, 3);
+    draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14, frame_icon_2, GTextAlignmentCenter);
+  }
 }
 
 // Menu layer callbacks
 
-static uint16_t get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
-  return NEXT_TRAINS_SECTION_COUNT;
-}
-
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
-  switch(section_index) {
-    case NEXT_TRAINS_SECTION_INVERSE:
-    return 1;
-    break;
-    case NEXT_TRAINS_SECTION_LIST:
-    return 5;
-    break;
-    default:
-    return 0;
-    break;
-  }
+  return 5;
 }
 
 static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
@@ -105,81 +88,62 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #else
   GColor stroke_color = THEME_FG_COLOR;
 #endif
-  if (cell_index->section == NEXT_TRAINS_SECTION_INVERSE ) {
-
-  }
-  else if (cell_index->section == NEXT_TRAINS_SECTION_LIST ) {
-    switch(cell_index->row) {
-      case 0:
-      draw_next_trains_cell(ctx, cell_layer, stroke_color,
-                            "J", FONT_KEY_GOTHIC_14_BOLD,
-                            "EAPE", FONT_KEY_GOTHIC_14,
-                            "00:01", FONT_KEY_GOTHIC_14,
-                            "Ermont Eaubonne", FONT_KEY_GOTHIC_14,
-                            "9", FONT_KEY_GOTHIC_14_BOLD);
-      break;
-      case 1:
-      draw_next_trains_cell(ctx, cell_layer, stroke_color,
-                            "L", FONT_KEY_GOTHIC_14_BOLD,
-                            "NOPE", FONT_KEY_GOTHIC_14,
-                            "00:04", FONT_KEY_GOTHIC_14,
-                            "Nanterre Université", FONT_KEY_GOTHIC_14,
-                            "?", FONT_KEY_GOTHIC_14_BOLD);
-      break;
-      case 2:
-      draw_next_trains_cell(ctx, cell_layer, stroke_color,
-                            "J", FONT_KEY_GOTHIC_14_BOLD,
-                            "TOCA", FONT_KEY_GOTHIC_14,
-                            "00:10", FONT_KEY_GOTHIC_14,
-                            "Pontoise", FONT_KEY_GOTHIC_14,
-                            "?", FONT_KEY_GOTHIC_14_BOLD);
-      break;
-      case 3:
-      draw_next_trains_cell(ctx, cell_layer, stroke_color,
-                            "L", FONT_KEY_GOTHIC_14_BOLD,
-                            "SEBO", FONT_KEY_GOTHIC_14,
-                            "00:13", FONT_KEY_GOTHIC_14,
-                            "Saint-Nom-la-Bretèche - Forêt de Marly", FONT_KEY_GOTHIC_14,
-                            "?", FONT_KEY_GOTHIC_14_BOLD);
-      break;
-      case 4:
-      draw_next_trains_cell(ctx, cell_layer, stroke_color,
-                            "L", FONT_KEY_GOTHIC_14_BOLD,
-                            "FOPE", FONT_KEY_GOTHIC_14,
-                            "00:19", FONT_KEY_GOTHIC_14,
-                            "Maisons Laffitte", FONT_KEY_GOTHIC_14,
-                            "?", FONT_KEY_GOTHIC_14_BOLD);
-      break;
-      default:
-      break;
-    }
-  }
+  switch(cell_index->row) {
+  case 0:
+  draw_next_trains_cell(ctx, cell_layer, stroke_color,
+                        "J",
+                        "EAPE",
+                        "00:01",
+                        "Ermont Eaubonne",
+                        "9");
+  break;
+  case 1:
+  draw_next_trains_cell(ctx, cell_layer, stroke_color,
+                        "L",
+                        "NOPE",
+                        "00:04",
+                        "Nanterre Université",
+                        "27");
+  break;
+  case 2:
+  draw_next_trains_cell(ctx, cell_layer, stroke_color,
+                        "J",
+                        "TOCA",
+                        "00:10",
+                        "Pontoise",
+                        "C");
+  break;
+  case 3:
+  draw_next_trains_cell(ctx, cell_layer, stroke_color,
+                        "L",
+                        "SEBO",
+                        "00:13",
+                        "Saint-Nom-la-Bretèche - Forêt de Marly",
+                        "A");
+  break;
+  case 4:
+  draw_next_trains_cell(ctx, cell_layer, stroke_color,
+                        "L",
+                        "FOPE",
+                        "00:19",
+                        "Maisons Laffitte",
+                        NULL);
+  break;
+  default:
+  break;
+}
 }
 
 static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, void *context) {
-  switch(section_index) {
-    case NEXT_TRAINS_SECTION_INVERSE:
-    draw_menu_header(ctx, cell_layer, "Inverse directions", THEME_FG_COLOR);
-    break;
-    case NEXT_TRAINS_SECTION_LIST:
-    draw_menu_header(ctx, cell_layer, "Next trains", THEME_FG_COLOR);
-    break;
-    default:
-    break;
-  }
+  draw_menu_header(ctx, cell_layer, "Next trains", THEME_FG_COLOR);
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-  switch(cell_index->section) {
-    case NEXT_TRAINS_SECTION_INVERSE:
+  push_next_trains_window();
+}
 
-    break;
-    case NEXT_TRAINS_SECTION_LIST:
-    push_next_trains_window();
-    break;
-    default:
-    break;
-  }
+static void select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+  push_next_trains_window();
 }
 
 static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
@@ -210,13 +174,13 @@ static void window_load(Window *window) {
   // Setup menu layer
   menu_layer_set_click_config_onto_window(s_menu_layer, window);
   menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
-    .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)get_num_sections_callback,
     .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
     .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
     .get_header_height = (MenuLayerGetHeaderHeightCallback)get_header_height_callback,
     .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
     .draw_header = (MenuLayerDrawHeaderCallback)draw_header_callback,
     .select_click = (MenuLayerSelectCallback)select_callback,
+    .select_long_click = (MenuLayerSelectCallback)select_long_callback,
     .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
     .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback,
   });

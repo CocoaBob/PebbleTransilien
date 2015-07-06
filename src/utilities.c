@@ -1,15 +1,8 @@
 #include <pebble.h>
 #include "utilities.h"
 
-void draw_text(GContext *ctx, const char * text, GColor color, const char * font_key, GRect frame, GTextAlignment alignment) {
-  graphics_context_set_text_color(ctx, color);
-  graphics_draw_text(ctx,
-                     text,
-                     fonts_get_system_font(font_key),
-                     frame,
-                     GTextOverflowModeTrailingEllipsis,
-                     alignment,
-                     NULL);
+void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment) {
+  graphics_draw_text(ctx, text, fonts_get_system_font(font_key), frame, GTextOverflowModeTrailingEllipsis, alignment, NULL);
 }
 
 // Status bar and its battery meter
@@ -46,17 +39,16 @@ void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_laye
 void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color) {
   GRect bounds = layer_get_bounds(cell_layer);
   GRect frame = GRect(2,
-                      -TEXT_Y_OFFSET,
+                      -CELL_TEXT_Y_OFFSET,
                       bounds.size.w - CELL_MARGIN * 2,
                       bounds.size.h);
   
-  draw_text(ctx, title, color, FONT_KEY_GOTHIC_14_BOLD, frame, GTextAlignmentLeft);
+  draw_text(ctx, title, FONT_KEY_GOTHIC_14_BOLD, frame, GTextAlignmentLeft);
 }
 
 void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color) {
-  GRect bounds = layer_get_bounds(cell_layer);
   graphics_context_set_stroke_color(ctx, color);
-  for (int16_t dx = 0; dx < bounds.size.w; dx+=2) {
-    graphics_draw_pixel(ctx, GPoint(bounds.origin.x + dx, bounds.origin.y));
+  for (int16_t dx = 0; dx < layer_get_bounds(cell_layer).size.w; dx+=2) {
+    graphics_draw_pixel(ctx, GPoint(dx, 0));
   }
 }
