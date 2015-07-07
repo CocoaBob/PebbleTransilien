@@ -6,24 +6,29 @@
 	objectVersion = 46;
 	objects = {
 
-/* Begin PBXContainerItemProxy section */
-		4563F1C21B4BE66D004709EA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 454B0ADC1B4BD21F00417493 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 454B0B0B1B4BD37E00417493;
-			remoteInfo = Build;
+/* Begin PBXBuildFile section */
+		45EC75591B4C100000524DDA /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF5C1B4BE0E7007C5729 /* main.c */; };
+		45EC755A1B4C100000524DDA /* main_menu_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF5D1B4BE0E7007C5729 /* main_menu_window.c */; };
+		45EC755B1B4C100000524DDA /* next_trains_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF5F1B4BE0E7007C5729 /* next_trains_window.c */; };
+		45EC755C1B4C100000524DDA /* utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF611B4BE0E7007C5729 /* utilities.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		45EC75501B4C0FFA00524DDA /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
 		};
-		4563F1CA1B4BE6C3004709EA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 454B0ADC1B4BD21F00417493 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 454B0B0B1B4BD37E00417493;
-			remoteInfo = Build;
-		};
-/* End PBXContainerItemProxy section */
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4517F3621B4C09DB0078F1A0 /* Aplite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Aplite; sourceTree = BUILT_PRODUCTS_DIR; };
+		4517F3631B4C09E10078F1A0 /* Device */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Device; sourceTree = BUILT_PRODUCTS_DIR; };
+		4517F3641B4C0A060078F1A0 /* Basalt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Basalt; sourceTree = BUILT_PRODUCTS_DIR; };
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 		4599DF5C1B4BE0E7007C5729 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		4599DF5D1B4BE0E7007C5729 /* main_menu_window.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main_menu_window.c; sourceTree = "<group>"; };
@@ -32,7 +37,18 @@
 		4599DF601B4BE0E7007C5729 /* next_trains_window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = next_trains_window.h; sourceTree = "<group>"; };
 		4599DF611B4BE0E7007C5729 /* utilities.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = utilities.c; sourceTree = "<group>"; };
 		4599DF621B4BE0E7007C5729 /* utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = utilities.h; sourceTree = "<group>"; };
+		45EC75521B4C0FFA00524DDA /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		45EC754F1B4C0FFA00524DDA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		454B0ADB1B4BD21F00417493 = {
@@ -40,6 +56,7 @@
 			children = (
 				4599DF591B4BE0E7007C5729 /* appinfo.json */,
 				4599DF5A1B4BE0E7007C5729 /* src */,
+				45EC755D1B4C10C200524DDA /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -65,68 +82,83 @@
 			path = js;
 			sourceTree = "<group>";
 		};
+		45EC755D1B4C10C200524DDA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4517F3621B4C09DB0078F1A0 /* Aplite */,
+				4517F3631B4C09E10078F1A0 /* Device */,
+				4517F3641B4C0A060078F1A0 /* Basalt */,
+				45EC75521B4C0FFA00524DDA /* HiddenTarget */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
-/* Begin PBXLegacyTarget section */
-		454B0B0B1B4BD37E00417493 /* Build App */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = build;
-			buildConfigurationList = 454B0B0C1B4BD37E00417493 /* Build configuration list for PBXLegacyTarget "Build App" */;
+/* Begin PBXNativeTarget section */
+		4517F3351B4C04DD0078F1A0 /* Aplite */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4517F33C1B4C04DD0078F1A0 /* Build configuration list for PBXNativeTarget "Aplite" */;
 			buildPhases = (
+				4517F3361B4C04DD0078F1A0 /* ShellScript */,
 			);
-			buildToolPath = "$(PEBBLE_SDK_PATH)/bin/pebble";
-			buildWorkingDirectory = "$(SRCROOT)";
+			buildRules = (
+			);
 			dependencies = (
 			);
-			name = "Build App";
-			passBuildSettingsInEnvironment = 1;
-			productName = "Build Basalt";
+			name = Aplite;
+			productName = App;
+			productReference = 4517F3621B4C09DB0078F1A0 /* Aplite */;
+			productType = "com.apple.product-type.tool";
 		};
-		4563F1BE1B4BE660004709EA /* Run Basalt */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "install --emulator basalt";
-			buildConfigurationList = 4563F1BF1B4BE660004709EA /* Build configuration list for PBXLegacyTarget "Run Basalt" */;
+		4517F3401B4C04F90078F1A0 /* Device */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4517F3471B4C04F90078F1A0 /* Build configuration list for PBXNativeTarget "Device" */;
 			buildPhases = (
+				4517F3411B4C04F90078F1A0 /* ShellScript */,
 			);
-			buildToolPath = "$(PEBBLE_SDK_PATH)/bin/pebble";
-			buildWorkingDirectory = "$(SRCROOT)";
-			dependencies = (
-				4563F1C31B4BE66D004709EA /* PBXTargetDependency */,
+			buildRules = (
 			);
-			name = "Run Basalt";
-			passBuildSettingsInEnvironment = 1;
-			productName = "Run Basalt1";
-		};
-		4563F1C41B4BE6A2004709EA /* Run Aplite */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "install --emulator aplite";
-			buildConfigurationList = 4563F1C51B4BE6A2004709EA /* Build configuration list for PBXLegacyTarget "Run Aplite" */;
-			buildPhases = (
-			);
-			buildToolPath = "$(PEBBLE_SDK_PATH)/bin/pebble";
-			buildWorkingDirectory = "$(SRCROOT)";
 			dependencies = (
 			);
-			name = "Run Aplite";
-			passBuildSettingsInEnvironment = 1;
-			productName = "Run Aplite1";
+			name = Device;
+			productName = App;
+			productReference = 4517F3631B4C09E10078F1A0 /* Device */;
+			productType = "com.apple.product-type.tool";
 		};
-		4563F1C81B4BE6C3004709EA /* Run Device */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "install --phone 192.168.2.9";
-			buildConfigurationList = 4563F1CB1B4BE6C3004709EA /* Build configuration list for PBXLegacyTarget "Run Device" */;
+		4563F1D11B4BFC0B004709EA /* Basalt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4563F1D81B4BFC0B004709EA /* Build configuration list for PBXNativeTarget "Basalt" */;
 			buildPhases = (
+				4517F3341B4C02300078F1A0 /* ShellScript */,
 			);
-			buildToolPath = "$(PEBBLE_SDK_PATH)/bin/pebble";
-			buildWorkingDirectory = "$(SRCROOT)";
+			buildRules = (
+			);
 			dependencies = (
-				4563F1C91B4BE6C3004709EA /* PBXTargetDependency */,
 			);
-			name = "Run Device";
-			passBuildSettingsInEnvironment = 1;
-			productName = "Run Basalt1";
+			name = Basalt;
+			productName = App;
+			productReference = 4517F3641B4C0A060078F1A0 /* Basalt */;
+			productType = "com.apple.product-type.tool";
 		};
-/* End PBXLegacyTarget section */
+		45EC75511B4C0FFA00524DDA /* HiddenTarget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 45EC75561B4C0FFA00524DDA /* Build configuration list for PBXNativeTarget "HiddenTarget" */;
+			buildPhases = (
+				45EC754E1B4C0FFA00524DDA /* Sources */,
+				45EC754F1B4C0FFA00524DDA /* Frameworks */,
+				45EC75501B4C0FFA00524DDA /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HiddenTarget;
+			productName = HiddenTarget;
+			productReference = 45EC75521B4C0FFA00524DDA /* HiddenTarget */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		454B0ADC1B4BD21F00417493 /* Project object */ = {
@@ -135,13 +167,10 @@
 				LastUpgradeCheck = 0640;
 				ORGANIZATIONNAME = CocoaBob;
 				TargetAttributes = {
-					454B0B0B1B4BD37E00417493 = {
+					4563F1D11B4BFC0B004709EA = {
 						CreatedOnToolsVersion = 6.4;
 					};
-					4563F1BE1B4BE660004709EA = {
-						CreatedOnToolsVersion = 6.4;
-					};
-					4563F1C41B4BE6A2004709EA = {
+					45EC75511B4C0FFA00524DDA = {
 						CreatedOnToolsVersion = 6.4;
 					};
 				};
@@ -158,29 +187,154 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				454B0B0B1B4BD37E00417493 /* Build App */,
-				4563F1C41B4BE6A2004709EA /* Run Aplite */,
-				4563F1BE1B4BE660004709EA /* Run Basalt */,
-				4563F1C81B4BE6C3004709EA /* Run Device */,
+				4517F3351B4C04DD0078F1A0 /* Aplite */,
+				4563F1D11B4BFC0B004709EA /* Basalt */,
+				4517F3401B4C04F90078F1A0 /* Device */,
+				45EC75511B4C0FFA00524DDA /* HiddenTarget */,
 			);
 		};
 /* End PBXProject section */
 
-/* Begin PBXTargetDependency section */
-		4563F1C31B4BE66D004709EA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 454B0B0B1B4BD37E00417493 /* Build App */;
-			targetProxy = 4563F1C21B4BE66D004709EA /* PBXContainerItemProxy */;
+/* Begin PBXShellScriptBuildPhase section */
+		4517F3341B4C02300078F1A0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --emulator basalt";
 		};
-		4563F1C91B4BE6C3004709EA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 454B0B0B1B4BD37E00417493 /* Build App */;
-			targetProxy = 4563F1CA1B4BE6C3004709EA /* PBXContainerItemProxy */;
+		4517F3361B4C04DD0078F1A0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --emulator aplite";
 		};
-/* End PBXTargetDependency section */
+		4517F3411B4C04F90078F1A0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 192.168.2.9";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		45EC754E1B4C0FFA00524DDA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				45EC75591B4C100000524DDA /* main.c in Sources */,
+				45EC755A1B4C100000524DDA /* main_menu_window.c in Sources */,
+				45EC755C1B4C100000524DDA /* utilities.c in Sources */,
+				45EC755B1B4C100000524DDA /* next_trains_window.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		4517F33D1B4C04DD0078F1A0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = YES;
+			};
+			name = Debug;
+		};
+		4517F33E1B4C04DD0078F1A0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MTL_ENABLE_DEBUG_INFO = NO;
+			};
+			name = Release;
+		};
+		4517F3481B4C04F90078F1A0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = YES;
+			};
+			name = Debug;
+		};
+		4517F3491B4C04F90078F1A0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MTL_ENABLE_DEBUG_INFO = NO;
+			};
+			name = Release;
+		};
 		454B0AE91B4BD21F00417493 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
+					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
+				);
+				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.1";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		454B0AEA1B4BD21F00417493 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
+					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
+				);
+				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.1";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		4563F1D61B4BFC0B004709EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = YES;
+			};
+			name = Debug;
+		};
+		4563F1D71B4BFC0B004709EA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MTL_ENABLE_DEBUG_INFO = NO;
+			};
+			name = Release;
+		};
+		45EC75571B4C0FFA00524DDA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -216,13 +370,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PEBBLE_SDK_PATH = "/Users/CocoaBob/pebble-dev/PebbleSDK-3.1";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
-		454B0AEA1B4BD21F00417493 /* Release */ = {
+		45EC75581B4C0FFA00524DDA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -252,107 +407,33 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				PEBBLE_SDK_PATH = "/Users/CocoaBob/pebble-dev/PebbleSDK-3.1";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-			};
-			name = Release;
-		};
-		454B0B0D1B4BD37E00417493 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = Debug;
-		};
-		454B0B0E1B4BD37E00417493 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = Release;
-		};
-		4563F1C01B4BE660004709EA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEBUGGING_SYMBOLS = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				MTL_ENABLE_DEBUG_INFO = YES;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		4563F1C11B4BE660004709EA /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
-		4563F1C61B4BE6A2004709EA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEBUGGING_SYMBOLS = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				MTL_ENABLE_DEBUG_INFO = YES;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		4563F1C71B4BE6A2004709EA /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
-		4563F1CC1B4BE6C3004709EA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				DEBUGGING_SYMBOLS = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				MTL_ENABLE_DEBUG_INFO = YES;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "Run Basalt1 copy";
-			};
-			name = Debug;
-		};
-		4563F1CD1B4BE6C3004709EA /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "Run Basalt1 copy";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4517F33C1B4C04DD0078F1A0 /* Build configuration list for PBXNativeTarget "Aplite" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4517F33D1B4C04DD0078F1A0 /* Debug */,
+				4517F33E1B4C04DD0078F1A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4517F3471B4C04F90078F1A0 /* Build configuration list for PBXNativeTarget "Device" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4517F3481B4C04F90078F1A0 /* Debug */,
+				4517F3491B4C04F90078F1A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		454B0ADF1B4BD21F00417493 /* Build configuration list for PBXProject "PebbleTransilien" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -362,36 +443,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		454B0B0C1B4BD37E00417493 /* Build configuration list for PBXLegacyTarget "Build App" */ = {
+		4563F1D81B4BFC0B004709EA /* Build configuration list for PBXNativeTarget "Basalt" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				454B0B0D1B4BD37E00417493 /* Debug */,
-				454B0B0E1B4BD37E00417493 /* Release */,
+				4563F1D61B4BFC0B004709EA /* Debug */,
+				4563F1D71B4BFC0B004709EA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4563F1BF1B4BE660004709EA /* Build configuration list for PBXLegacyTarget "Run Basalt" */ = {
+		45EC75561B4C0FFA00524DDA /* Build configuration list for PBXNativeTarget "HiddenTarget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				4563F1C01B4BE660004709EA /* Debug */,
-				4563F1C11B4BE660004709EA /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-		};
-		4563F1C51B4BE6A2004709EA /* Build configuration list for PBXLegacyTarget "Run Aplite" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4563F1C61B4BE6A2004709EA /* Debug */,
-				4563F1C71B4BE6A2004709EA /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-		};
-		4563F1CB1B4BE6C3004709EA /* Build configuration list for PBXLegacyTarget "Run Device" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4563F1CC1B4BE6C3004709EA /* Debug */,
-				4563F1CD1B4BE6C3004709EA /* Release */,
+				45EC75571B4C0FFA00524DDA /* Debug */,
+				45EC75581B4C0FFA00524DDA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
