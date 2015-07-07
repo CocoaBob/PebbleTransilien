@@ -319,10 +319,7 @@
 		4563F1D61B4BFC0B004709EA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = PBL_COLOR;
 				MTL_ENABLE_DEBUG_INFO = YES;
 			};
 			name = Debug;
@@ -330,6 +327,7 @@
 		4563F1D71B4BFC0B004709EA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = PBL_COLOR;
 				MTL_ENABLE_DEBUG_INFO = NO;
 			};
 			name = Release;

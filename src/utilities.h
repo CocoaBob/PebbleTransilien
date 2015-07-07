@@ -7,9 +7,6 @@
 #define SEPARATOR_HEIGHT 1
 #define CELL_TEXT_Y_OFFSET 2
 #define HEADER_HEIGHT 15
-  
-#define THEME_BG_COLOR GColorWhite
-#define THEME_FG_COLOR GColorBlack
 
 // Drawing
 
@@ -21,3 +18,9 @@ void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_laye
 
 void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color);
 void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color);
+
+// Settings
+bool get_setting_theme();
+void set_setting_theme(bool is_dark);
+GColor curr_fg_color();
+GColor curr_bg_color();
