@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		459CC23D1B4DEE54003147D4 /* localization.c in Sources */ = {isa = PBXBuildFile; fileRef = 459CC23B1B4DEE54003147D4 /* localization.c */; };
 		45EC75591B4C100000524DDA /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF5C1B4BE0E7007C5729 /* main.c */; };
 		45EC755A1B4C100000524DDA /* main_menu_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF5D1B4BE0E7007C5729 /* main_menu_window.c */; };
 		45EC755B1B4C100000524DDA /* next_trains_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF5F1B4BE0E7007C5729 /* next_trains_window.c */; };
@@ -37,6 +38,8 @@
 		4599DF601B4BE0E7007C5729 /* next_trains_window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = next_trains_window.h; sourceTree = "<group>"; };
 		4599DF611B4BE0E7007C5729 /* utilities.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = utilities.c; sourceTree = "<group>"; };
 		4599DF621B4BE0E7007C5729 /* utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = utilities.h; sourceTree = "<group>"; };
+		459CC23B1B4DEE54003147D4 /* localization.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
+		459CC23C1B4DEE54003147D4 /* localization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = localization.h; sourceTree = "<group>"; };
 		45EC75521B4C0FFA00524DDA /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -81,6 +84,8 @@
 		459CC2391B4DE91D003147D4 /* utilities */ = {
 			isa = PBXGroup;
 			children = (
+				459CC23B1B4DEE54003147D4 /* localization.c */,
+				459CC23C1B4DEE54003147D4 /* localization.h */,
 				4599DF611B4BE0E7007C5729 /* utilities.c */,
 				4599DF621B4BE0E7007C5729 /* utilities.h */,
 			);
@@ -260,6 +265,7 @@
 			files = (
 				45EC75591B4C100000524DDA /* main.c in Sources */,
 				45EC755A1B4C100000524DDA /* main_menu_window.c in Sources */,
+				459CC23D1B4DEE54003147D4 /* localization.c in Sources */,
 				45EC755C1B4C100000524DDA /* utilities.c in Sources */,
 				45EC755B1B4C100000524DDA /* next_trains_window.c in Sources */,
 			);
