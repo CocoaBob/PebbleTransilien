@@ -1,3 +1,11 @@
+//
+//  utilities.c
+//  PebbleTransilien
+//
+//  Created by CocoaBob on 09/07/15.
+//  Copyright (c) 2015 CocoaBob. All rights reserved.
+//
+
 #include <pebble.h>
 #include "utilities.h"
 

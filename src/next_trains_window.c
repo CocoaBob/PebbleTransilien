@@ -1,3 +1,11 @@
+//
+//  next_trains_window.c
+//  PebbleTransilien
+//
+//  Created by CocoaBob on 09/07/15.
+//  Copyright (c) 2015 CocoaBob. All rights reserved.
+//
+
 #include <pebble.h>
 #include "next_trains_window.h"
 #include "utilities.h"
@@ -11,7 +19,7 @@ static Layer *s_battery_layer;
 
 // Foward declaration
 
-void setup_next_trains_menu_layer();
+void setup_next_trains_menu_layer_theme();
 
 // Drawing
 #define NEXT_TRAIN_CELL_ICON_W 27  // CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
@@ -185,23 +193,6 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     // Setup menu layer
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
-    setup_next_trains_menu_layer();
-    
-    // Finally, add status bar
-#ifdef PBL_SDK_3
-    window_add_status_bar(window_layer, &s_status_bar, &s_battery_layer);
-#endif
-}
-
-static void window_unload(Window *window) {
-    menu_layer_destroy(s_menu_layer);
-    window_destroy(window);
-    s_main_window = NULL;
-}
-
-// Setup UI
-
-void setup_next_trains_menu_layer() {
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
@@ -217,6 +208,23 @@ void setup_next_trains_menu_layer() {
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
+    setup_next_trains_menu_layer_theme();
+    
+    // Finally, add status bar
+#ifdef PBL_SDK_3
+    window_add_status_bar(window_layer, &s_status_bar, &s_battery_layer);
+#endif
+}
+
+static void window_unload(Window *window) {
+    menu_layer_destroy(s_menu_layer);
+    window_destroy(window);
+    s_main_window = NULL;
+}
+
+// Setup UI
+
+void setup_next_trains_menu_layer_theme() {
 #ifdef PBL_COLOR
     menu_layer_set_normal_colors(s_menu_layer, curr_bg_color(), curr_fg_color());
     menu_layer_set_highlight_colors(s_menu_layer, GColorCobaltBlue, GColorWhite);
