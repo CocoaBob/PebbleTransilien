@@ -233,7 +233,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 192.168.2.9";
+			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 192.168.0.15";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -294,8 +294,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
+					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 				);
 				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.1";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -308,8 +308,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
+					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 				);
 				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.1";
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -38,7 +38,7 @@ static Layer *s_battery_layer;
 
 // Foward declaration
 
-void setup_menu_layer();
+void setup_main_menu_layer();
 
 // Drawing
 
@@ -176,7 +176,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             set_setting_theme(!get_setting_theme());
-            setup_menu_layer();
+            setup_main_menu_layer();
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             
         }
@@ -198,24 +198,13 @@ static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, Menu
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
-void setup_menu_layer() {
-    menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
-        .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)get_num_sections_callback,
-        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
-        .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
-        .get_header_height = (MenuLayerGetHeaderHeightCallback)get_header_height_callback,
-        .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
-        .draw_header = (MenuLayerDrawHeaderCallback)draw_header_callback,
-        .select_click = (MenuLayerSelectCallback)select_callback,
-        .select_long_click = (MenuLayerSelectCallback)select_long_callback,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
-    });
-#ifdef PBL_COLOR
-    menu_layer_set_normal_colors(s_menu_layer, curr_bg_color(), curr_fg_color());
-    menu_layer_set_highlight_colors(s_menu_layer, GColorCobaltBlue, GColorWhite);
-#endif
+#ifdef PBL_SDK_3
+static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
+    GRect frame = layer_get_frame(bg_layer);
+    graphics_context_set_fill_color(ctx, curr_bg_color());
+    graphics_fill_rect(ctx, frame, 0, GCornerNone);
 }
+#endif
 
 // Window load/unload
 
@@ -235,7 +224,7 @@ static void window_load(Window *window) {
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
-    setup_menu_layer();
+    setup_main_menu_layer();
     
     // Finally, add status bar
 #ifdef PBL_SDK_3
@@ -251,6 +240,31 @@ static void window_unload(Window *window) {
 #endif
     window_destroy(window);
     s_main_window = NULL;
+}
+
+// Setup UI
+
+void setup_main_menu_layer() {
+    menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
+        .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)get_num_sections_callback,
+        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
+        .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
+        .get_header_height = (MenuLayerGetHeaderHeightCallback)get_header_height_callback,
+        .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
+        .draw_header = (MenuLayerDrawHeaderCallback)draw_header_callback,
+        .select_click = (MenuLayerSelectCallback)select_callback,
+        .select_long_click = (MenuLayerSelectCallback)select_long_callback,
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
+#ifdef PBL_SDK_3
+        ,
+        .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
+#endif
+    });
+#ifdef PBL_COLOR
+    menu_layer_set_normal_colors(s_menu_layer, curr_bg_color(), curr_fg_color());
+    menu_layer_set_highlight_colors(s_menu_layer, GColorCobaltBlue, GColorWhite);
+#endif
 }
 
 // Entry point

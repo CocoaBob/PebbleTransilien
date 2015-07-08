@@ -9,6 +9,10 @@ static StatusBarLayer *s_status_bar;
 static Layer *s_battery_layer;
 #endif
 
+// Foward declaration
+
+void setup_next_trains_menu_layer();
+
 // Drawing
 #define NEXT_TRAIN_CELL_ICON_W 27  // CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
 #define NEXT_TRAIN_CELL_ICON_Y 4   // CELL_MARGIN = 4
@@ -154,6 +158,14 @@ static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, Menu
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
+#ifdef PBL_SDK_3
+static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
+    GRect frame = layer_get_frame(bg_layer);
+    graphics_context_set_fill_color(ctx, curr_bg_color());
+    graphics_fill_rect(ctx, frame, 0, GCornerNone);
+}
+#endif
+
 // Window load/unload
 
 static void window_load(Window *window) {
@@ -173,21 +185,7 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     // Setup menu layer
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
-    menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
-        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
-        .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
-        .get_header_height = (MenuLayerGetHeaderHeightCallback)get_header_height_callback,
-        .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
-        .draw_header = (MenuLayerDrawHeaderCallback)draw_header_callback,
-        .select_click = (MenuLayerSelectCallback)select_callback,
-        .select_long_click = (MenuLayerSelectCallback)select_long_callback,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback,
-    });
-#ifdef PBL_COLOR
-    menu_layer_set_normal_colors(s_menu_layer, curr_bg_color(), curr_fg_color());
-    menu_layer_set_highlight_colors(s_menu_layer, GColorCobaltBlue, GColorWhite);
-#endif
+    setup_next_trains_menu_layer();
     
     // Finally, add status bar
 #ifdef PBL_SDK_3
@@ -199,6 +197,30 @@ static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
     window_destroy(window);
     s_main_window = NULL;
+}
+
+// Setup UI
+
+void setup_next_trains_menu_layer() {
+    menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
+        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
+        .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
+        .get_header_height = (MenuLayerGetHeaderHeightCallback)get_header_height_callback,
+        .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
+        .draw_header = (MenuLayerDrawHeaderCallback)draw_header_callback,
+        .select_click = (MenuLayerSelectCallback)select_callback,
+        .select_long_click = (MenuLayerSelectCallback)select_long_callback,
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
+#ifdef PBL_SDK_3
+        ,
+        .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
+#endif
+    });
+#ifdef PBL_COLOR
+    menu_layer_set_normal_colors(s_menu_layer, curr_bg_color(), curr_fg_color());
+    menu_layer_set_highlight_colors(s_menu_layer, GColorCobaltBlue, GColorWhite);
+#endif
 }
 
 // Entry point
