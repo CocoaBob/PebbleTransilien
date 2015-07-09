@@ -32,3 +32,6 @@ bool get_setting_theme();
 void set_setting_theme(bool is_dark);
 GColor curr_fg_color();
 GColor curr_bg_color();
+
+void restore_setting_language();
+void set_setting_language(const char* lang);

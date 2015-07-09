@@ -64,6 +64,7 @@ void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color) {
 // Settings
 
 #define SETTING_THEME 100
+#define SETTING_LANGUAGE 101
 
 // true is dark theme, false is light theme
 bool get_setting_theme() {
@@ -80,4 +81,16 @@ GColor curr_fg_color() {
 
 GColor curr_bg_color() {
     return get_setting_theme()?GColorBlack:GColorWhite;
+}
+
+void restore_setting_language() {
+    char buffer[] = "XX_XX";
+    int result = persist_read_string(SETTING_LANGUAGE, buffer, sizeof(buffer));
+    if (result != E_DOES_NOT_EXIST && result > 0) {
+        setlocale(LC_ALL, buffer);
+    }
+}
+
+void set_setting_language(const char* lang) {
+    persist_write_string(SETTING_LANGUAGE, lang);
 }

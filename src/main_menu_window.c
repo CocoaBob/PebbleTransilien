@@ -154,7 +154,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         if (row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             menu_cell_basic_draw(ctx, cell_layer, _("Theme"), get_setting_theme()?_("Dark theme"):_("Light theme"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
-            menu_cell_basic_draw(ctx, cell_layer, "Language", _("current_language"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, "Language", _("English"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_ABOUT) {
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
@@ -190,13 +190,15 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             // Change language
             const char* locale_str = setlocale(LC_ALL, NULL);
+            char *result;
             if (strncmp(locale_str, "en", 2) == 0) {
-                setlocale(LC_ALL, "fr_FR");
+                result = setlocale(LC_ALL, "fr_FR");
             } else if (strncmp(locale_str, "fr", 2) == 0) {
-                setlocale(LC_ALL, "zh_CN");
+                result = setlocale(LC_ALL, "zh_CN");
             } else {
-                setlocale(LC_ALL, "en_US");
+                result = setlocale(LC_ALL, "en_US");
             }
+            set_setting_language(result);
             locale_init();
         }
         menu_layer_reload_data(menu_layer);

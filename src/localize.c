@@ -11,8 +11,7 @@ void locale_init(void) {
   const char* locale_str = setlocale(LC_ALL, NULL);
   ResHandle locale_handle = NULL;
   int locale_size = 0;
-    
-  APP_LOG(APP_LOG_LEVEL_INFO, "-=-=-=-=- %s", locale_str);
+
   if (strncmp(locale_str, "fr", 2) == 0) {
     locale_handle = resource_get_handle(RESOURCE_ID_LOCALE_FRENCH);
     locale_size = resource_size(locale_handle);
