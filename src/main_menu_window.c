@@ -184,10 +184,21 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
         push_next_trains_window();
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
+            // Change theme
             set_setting_theme(!get_setting_theme());
             setup_main_menu_layer_theme();
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
-            
+            // Change language
+            const char* locale_str = i18n_get_system_locale();
+            char* result;
+            if (strncmp(locale_str, "en", 2) == 0) {
+                result = setlocale(LC_ALL, "fr_FR");
+            } else if (strncmp(locale_str, "fr", 2) == 0) {
+                result = setlocale(LC_ALL, "zh_CN");
+            } else {
+                result = setlocale(LC_ALL, "en_US");
+            }
+            locale_init();
         }
         menu_layer_reload_data(menu_layer);
     }

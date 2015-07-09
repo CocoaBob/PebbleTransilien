@@ -36,6 +36,9 @@
 		454FA5B51B4EFC6C00473A4B /* locale_chinese.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_chinese.json; sourceTree = "<group>"; };
 		454FA5B71B4EFC6C00473A4B /* locale_english.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_english.json; sourceTree = "<group>"; };
 		454FA5B81B4EFC6C00473A4B /* locale_french.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_french.json; sourceTree = "<group>"; };
+		454FA5BC1B4F220500473A4B /* locale_chinese.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = locale_chinese.bin; sourceTree = "<group>"; };
+		454FA5BD1B4F220500473A4B /* locale_english.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = locale_english.bin; sourceTree = "<group>"; };
+		454FA5BE1B4F220500473A4B /* locale_french.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = locale_french.bin; sourceTree = "<group>"; };
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 		4599DF5C1B4BE0E7007C5729 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		4599DF5D1B4BE0E7007C5729 /* main_menu_window.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main_menu_window.c; sourceTree = "<group>"; };
@@ -72,6 +75,9 @@
 		454FA5A31B4EF0E200473A4B /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				454FA5BC1B4F220500473A4B /* locale_chinese.bin */,
+				454FA5BD1B4F220500473A4B /* locale_english.bin */,
+				454FA5BE1B4F220500473A4B /* locale_french.bin */,
 			);
 			path = resources;
 			sourceTree = "<group>";
