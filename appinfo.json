@@ -1,23 +1,42 @@
 {
-    "appKeys": {},
-    "capabilities": [
-        "location"
-    ],
-    "companyName": "mengke.wang@gmail.com",
-    "longName": "Transilien",
-    "projectType": "native",
-    "resources": {
-        "media": []
-    },
-    "sdkVersion": "3",
-    "shortName": "Transilien",
-    "targetPlatforms": [
-        "aplite",
-        "basalt"
-    ],
-    "uuid": "30663f9d-bae8-4557-b8b9-c890b1094f24",
-    "versionLabel": "1.0",
-    "watchapp": {
-        "watchface": false
-    }
+  "appKeys": {},
+  "capabilities": [
+    "location"
+  ],
+  "companyName": "CocoaBob",
+  "longName": "Transilien",
+  "projectType": "native",
+  "resources": {
+    "media": []
+  },
+  "resources": {
+    "media": [
+      {
+        "type": "raw",
+        "name": "LOCALE_ENGLISH",
+        "file": "locale_english.bin"
+      },
+      {
+        "type": "raw",
+        "name": "LOCALE_FRENCH",
+        "file": "locale_french.bin"
+      },
+      {
+        "type": "raw",
+        "name": "LOCALE_CHINESE",
+        "file": "locale_chinese.bin"
+      }
+    ]
+  },
+  "sdkVersion": "3",
+  "shortName": "Transilien",
+  "targetPlatforms": [
+    "aplite",
+    "basalt"
+  ],
+  "uuid": "30663f9d-bae8-4557-b8b9-c890b1094f24",
+  "versionLabel": "1.0",
+  "watchapp": {
+    "watchface": false
+  }
 }

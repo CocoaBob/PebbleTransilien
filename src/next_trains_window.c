@@ -7,6 +7,7 @@
 //
 
 #include <pebble.h>
+#include <localize.h>
 #include "next_trains_window.h"
 #include "utilities.h"
 
@@ -147,7 +148,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, void *context) {
-    draw_menu_header(ctx, cell_layer, "Next trains", curr_fg_color());
+    draw_menu_header(ctx, cell_layer, _("Next trains"), curr_fg_color());
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {

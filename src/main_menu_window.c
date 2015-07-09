@@ -7,6 +7,7 @@
 //
 
 #include <pebble.h>
+#include <localize.h>
 #include "main_menu_window.h"
 #include "next_trains_window.h"
 #include "utilities.h"
@@ -145,34 +146,34 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         }
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
-            menu_cell_basic_draw(ctx, cell_layer, "Nearby stations", "Based on GPS location", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Nearby stations"), _("Based on GPS location"), NULL);
         } else if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            menu_cell_basic_draw(ctx, cell_layer, "A specific station", "By choosing letters", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("A specific station"), _("By choosing letters"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_SETTING) {
         if (row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
-            menu_cell_basic_draw(ctx, cell_layer, "Theme", get_setting_theme()?"Dark theme":"Light theme", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Theme"), get_setting_theme()?_("Dark theme"):_("Light theme"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
-            menu_cell_basic_draw(ctx, cell_layer, "Language", "English", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Language"), _("English"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_ABOUT) {
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
-            menu_cell_basic_draw(ctx, cell_layer, "Developer", "@CocoaBob", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Developer"), "@CocoaBob", NULL);
         } else if (row == MAIN_MENU_SECTION_ABOUT_ROW_VERSION) {
-            menu_cell_basic_draw(ctx, cell_layer, "Version", "1.0.0", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.0.0", NULL);
         }
     }
 }
 
 static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, void *context) {
     if (section_index == MAIN_MENU_SECTION_FAV) {
-        draw_menu_header(ctx, cell_layer, "Favorites", curr_fg_color());
+        draw_menu_header(ctx, cell_layer, _("Favorites"), curr_fg_color());
     } else if (section_index == MAIN_MENU_SECTION_SEARCH) {
-        draw_menu_header(ctx, cell_layer, "Search", curr_fg_color());
+        draw_menu_header(ctx, cell_layer, _("Search"), curr_fg_color());
     } else if (section_index == MAIN_MENU_SECTION_SETTING) {
-        draw_menu_header(ctx, cell_layer, "Settings", curr_fg_color());
+        draw_menu_header(ctx, cell_layer, _("Settings"), curr_fg_color());
     } else if (section_index == MAIN_MENU_SECTION_ABOUT) {
-        draw_menu_header(ctx, cell_layer, "About", curr_fg_color());
+        draw_menu_header(ctx, cell_layer, _("About"), curr_fg_color());
     }
 }
 

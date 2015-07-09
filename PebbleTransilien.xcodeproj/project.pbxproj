@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		459CC23D1B4DEE54003147D4 /* localization.c in Sources */ = {isa = PBXBuildFile; fileRef = 459CC23B1B4DEE54003147D4 /* localization.c */; };
+		454FA5AB1B4EF0EE00473A4B /* localize.c in Sources */ = {isa = PBXBuildFile; fileRef = 454FA5A91B4EF0EE00473A4B /* localize.c */; };
 		45EC75591B4C100000524DDA /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF5C1B4BE0E7007C5729 /* main.c */; };
 		45EC755A1B4C100000524DDA /* main_menu_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF5D1B4BE0E7007C5729 /* main_menu_window.c */; };
 		45EC755B1B4C100000524DDA /* next_trains_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4599DF5F1B4BE0E7007C5729 /* next_trains_window.c */; };
@@ -30,6 +30,12 @@
 		4517F3621B4C09DB0078F1A0 /* Aplite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Aplite; sourceTree = BUILT_PRODUCTS_DIR; };
 		4517F3631B4C09E10078F1A0 /* Device */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Device; sourceTree = BUILT_PRODUCTS_DIR; };
 		4517F3641B4C0A060078F1A0 /* Basalt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Basalt; sourceTree = BUILT_PRODUCTS_DIR; };
+		454FA5A81B4EF0EE00473A4B /* hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash.h; sourceTree = "<group>"; };
+		454FA5A91B4EF0EE00473A4B /* localize.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = localize.c; sourceTree = "<group>"; };
+		454FA5AA1B4EF0EE00473A4B /* localize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = localize.h; sourceTree = "<group>"; };
+		454FA5B51B4EFC6C00473A4B /* locale_chinese.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_chinese.json; sourceTree = "<group>"; };
+		454FA5B71B4EFC6C00473A4B /* locale_english.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_english.json; sourceTree = "<group>"; };
+		454FA5B81B4EFC6C00473A4B /* locale_french.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_french.json; sourceTree = "<group>"; };
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 		4599DF5C1B4BE0E7007C5729 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		4599DF5D1B4BE0E7007C5729 /* main_menu_window.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main_menu_window.c; sourceTree = "<group>"; };
@@ -38,8 +44,6 @@
 		4599DF601B4BE0E7007C5729 /* next_trains_window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = next_trains_window.h; sourceTree = "<group>"; };
 		4599DF611B4BE0E7007C5729 /* utilities.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = utilities.c; sourceTree = "<group>"; };
 		4599DF621B4BE0E7007C5729 /* utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = utilities.h; sourceTree = "<group>"; };
-		459CC23B1B4DEE54003147D4 /* localization.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
-		459CC23C1B4DEE54003147D4 /* localization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = localization.h; sourceTree = "<group>"; };
 		45EC75521B4C0FFA00524DDA /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -58,9 +62,38 @@
 			isa = PBXGroup;
 			children = (
 				4599DF591B4BE0E7007C5729 /* appinfo.json */,
+				454FA5B41B4EFC6C00473A4B /* locale_framework */,
+				454FA5A31B4EF0E200473A4B /* resources */,
 				4599DF5A1B4BE0E7007C5729 /* src */,
 				45EC755D1B4C10C200524DDA /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		454FA5A31B4EF0E200473A4B /* resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = resources;
+			sourceTree = "<group>";
+		};
+		454FA5AC1B4EF0F600473A4B /* locale_framework */ = {
+			isa = PBXGroup;
+			children = (
+				454FA5A81B4EF0EE00473A4B /* hash.h */,
+				454FA5A91B4EF0EE00473A4B /* localize.c */,
+				454FA5AA1B4EF0EE00473A4B /* localize.h */,
+			);
+			name = locale_framework;
+			sourceTree = "<group>";
+		};
+		454FA5B41B4EFC6C00473A4B /* locale_framework */ = {
+			isa = PBXGroup;
+			children = (
+				454FA5B51B4EFC6C00473A4B /* locale_chinese.json */,
+				454FA5B71B4EFC6C00473A4B /* locale_english.json */,
+				454FA5B81B4EFC6C00473A4B /* locale_french.json */,
+			);
+			path = locale_framework;
 			sourceTree = "<group>";
 		};
 		4599DF5A1B4BE0E7007C5729 /* src */ = {
@@ -68,6 +101,7 @@
 			children = (
 				4599DF5B1B4BE0E7007C5729 /* js */,
 				4599DF5C1B4BE0E7007C5729 /* main.c */,
+				454FA5AC1B4EF0F600473A4B /* locale_framework */,
 				459CC23A1B4DE925003147D4 /* windows */,
 				459CC2391B4DE91D003147D4 /* utilities */,
 			);
@@ -84,8 +118,6 @@
 		459CC2391B4DE91D003147D4 /* utilities */ = {
 			isa = PBXGroup;
 			children = (
-				459CC23B1B4DEE54003147D4 /* localization.c */,
-				459CC23C1B4DEE54003147D4 /* localization.h */,
 				4599DF611B4BE0E7007C5729 /* utilities.c */,
 				4599DF621B4BE0E7007C5729 /* utilities.h */,
 			);
@@ -265,8 +297,8 @@
 			files = (
 				45EC75591B4C100000524DDA /* main.c in Sources */,
 				45EC755A1B4C100000524DDA /* main_menu_window.c in Sources */,
-				459CC23D1B4DEE54003147D4 /* localization.c in Sources */,
 				45EC755C1B4C100000524DDA /* utilities.c in Sources */,
+				454FA5AB1B4EF0EE00473A4B /* localize.c in Sources */,
 				45EC755B1B4C100000524DDA /* next_trains_window.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -7,7 +7,7 @@
 //
 
 #include <pebble.h>
-
+#include <localize.h>
 #include "main_menu_window.h"
 
 void handle_init(void) {
@@ -19,6 +19,7 @@ void handle_deinit(void) {
 }
 
 int main(void) {
+    locale_init();
     handle_init();
     app_event_loop();
     handle_deinit();
