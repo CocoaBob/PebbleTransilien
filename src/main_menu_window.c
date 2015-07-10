@@ -47,43 +47,47 @@ static Layer *s_status_bar_overlay_layer;
 
 void setup_main_menu_layer_theme();
 
+// Constants
+
+#define MAIN_MENU_CELL_ICON_WIDTH 8
+#define MAIN_MENU_CELL_ICON_HEIGHT 26
+
 // Drawing
 
-void draw_main_menu_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color, bool is_dark_theme,
-                         const char * str_icon, const char * icon_font_key,
+void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
+                         GColor stroke_color, bool is_dark_theme, bool is_from_to,
                          const char * str_line_1, const char * str_line_2) {
     graphics_context_set_stroke_color(ctx, stroke_color);
     GRect bounds = layer_get_bounds(cell_layer);
     
     // Draw left icon
     GRect frame_icon = GRect(CELL_MARGIN,
-                             (CELL_HEIGHT - CELL_ICON_SIZE) / 2,
-                             CELL_ICON_SIZE,
-                             CELL_ICON_SIZE);
-    if (str_icon != NULL) {
-        draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_icon);
-        draw_text(ctx, str_icon, icon_font_key, frame_icon, GTextAlignmentCenter);
+                             (CELL_HEIGHT - MAIN_MENU_CELL_ICON_HEIGHT) / 2,
+                             MAIN_MENU_CELL_ICON_WIDTH,
+                             is_from_to?MAIN_MENU_CELL_ICON_HEIGHT:MAIN_MENU_CELL_ICON_WIDTH);
+    if (is_from_to) {
+        draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
     } else {
-        draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_STATION_DARK:RESOURCE_ID_IMG_STATION_LIGHT, frame_icon);
+        draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
     }
     
     // Draw lines
     if (str_line_2 != NULL) {
-        GRect frame_line_1 = GRect(CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN,
+        GRect frame_line_1 = GRect(CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN,
                                    -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
-                                   bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN * 3,
+                                   bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
                                    CELL_HEIGHT_2);
         draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
         
-        GRect frame_line_2 = GRect(CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN,
+        GRect frame_line_2 = GRect(CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN,
                                    CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET - 2, // -2 to get the two lines closer
-                                   bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN * 3,
+                                   bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
                                    CELL_HEIGHT_2);
         draw_text(ctx, str_line_2, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
     } else {
         GRect frame_line_1 = GRect(0,
                                    0,
-                                   bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN * 3,
+                                   bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
                                    CELL_HEIGHT - 4);
         GSize text_size = graphics_text_layout_get_content_size(str_line_1,
                                                                 fonts_get_system_font(FONT_KEY_GOTHIC_18),
@@ -91,7 +95,7 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color, 
                                                                 GTextOverflowModeTrailingEllipsis,
                                                                 GTextAlignmentLeft);
         frame_line_1.origin.y = (frame_line_1.size.h - text_size.h) / 2 - CELL_TEXT_Y_OFFSET;
-        frame_line_1.origin.x = CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN;
+        frame_line_1.origin.x = CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN;
         
         draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
     }
@@ -139,12 +143,12 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     int16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
         if (row == 0) {
-            draw_main_menu_cell(ctx, cell_layer, stroke_color, is_dark_theme,
-                                "L", FONT_KEY_GOTHIC_14_BOLD,
+            draw_main_menu_cell(ctx, cell_layer,
+                                stroke_color, is_dark_theme, true,
                                 "Paris Saint-Lazare", "Bécon les Bruyères");
         } else if (row == 1) {
-            draw_main_menu_cell(ctx, cell_layer, stroke_color, is_dark_theme,
-                                NULL, FONT_KEY_GOTHIC_14,
+            draw_main_menu_cell(ctx, cell_layer,
+                                stroke_color, is_dark_theme, false,
                                 "Bibliothèque François Mitterrand", NULL);
         }
     } else if (section == MAIN_MENU_SECTION_SEARCH) {

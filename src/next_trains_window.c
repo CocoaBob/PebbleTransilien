@@ -21,12 +21,16 @@ static Layer *s_status_bar_overlay_layer;
 
 void setup_next_trains_menu_layer_theme();
 
-// Drawing
-#define NEXT_TRAIN_CELL_ICON_W 27  // CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
+// Constants
+
+#define NEXT_TRAIN_CELL_ICON_SIZE 19
+#define NEXT_TRAIN_CELL_ICON_W 27  // CELL_MARGIN + NEXT_TRAIN_CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
 #define NEXT_TRAIN_CELL_ICON_Y 4   // CELL_MARGIN = 4
-#define NEXT_TRAIN_CELL_CODE_X 27  // CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
+#define NEXT_TRAIN_CELL_CODE_X 27  // CELL_MARGIN + NEXT_TRAIN_CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
 #define NEXT_TRAIN_CELL_CODE_W 46
-#define NEXT_TRAIN_CELL_TIME_X 73  // CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W = 4 + 19 + 4 + 48
+#define NEXT_TRAIN_CELL_TIME_X 73  // CELL_MARGIN + NEXT_TRAIN_CELL_ICON_SIZE + CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W = 4 + 19 + 4 + 48
+
+// Drawing
 
 void draw_next_trains_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color, bool is_dark_theme,
                            const char * str_line,
@@ -40,8 +44,8 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color
     // Line
     GRect frame_line = GRect(CELL_MARGIN,
                              NEXT_TRAIN_CELL_ICON_Y,
-                             CELL_ICON_SIZE,
-                             CELL_ICON_SIZE);
+                             NEXT_TRAIN_CELL_ICON_SIZE,
+                             NEXT_TRAIN_CELL_ICON_SIZE);
     draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_line);
     draw_text(ctx, str_line, FONT_KEY_GOTHIC_14_BOLD, frame_line, GTextAlignmentCenter);
     
@@ -55,7 +59,7 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color
     // Time
     GRect frame_time = GRect(NEXT_TRAIN_CELL_TIME_X,
                              - CELL_TEXT_Y_OFFSET - 2,
-                             bounds.size.w - NEXT_TRAIN_CELL_TIME_X - CELL_MARGIN - CELL_ICON_SIZE - 4,
+                             bounds.size.w - NEXT_TRAIN_CELL_TIME_X - CELL_MARGIN - NEXT_TRAIN_CELL_ICON_SIZE - 4,
                              CELL_HEIGHT_2);
     draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentLeft);
     
@@ -67,10 +71,10 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color
     draw_text(ctx, str_terminus, FONT_KEY_GOTHIC_18, frame_terminus, GTextAlignmentLeft);
     
     // Platform
-    GRect frame_platform = GRect(bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN,
+    GRect frame_platform = GRect(bounds.size.w - NEXT_TRAIN_CELL_ICON_SIZE - CELL_MARGIN,
                                NEXT_TRAIN_CELL_ICON_Y,
-                               CELL_ICON_SIZE,
-                               CELL_ICON_SIZE);
+                               NEXT_TRAIN_CELL_ICON_SIZE,
+                               NEXT_TRAIN_CELL_ICON_SIZE);
     if (str_platform != NULL) {
         draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
         draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14_BOLD, frame_platform, GTextAlignmentCenter);

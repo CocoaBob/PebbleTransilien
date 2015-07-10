@@ -13,18 +13,38 @@
     "media": [
       {
         "type": "png",
+        "name": "IMG_FROM_TO_DARK",
+        "file": "images/img_from_to_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_FROM_TO_LIGHT",
+        "file": "images/img_from_to_light.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_FROM_DARK",
+        "file": "images/img_from_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_FROM_LIGHT",
+        "file": "images/img_from_light.png"
+      },
+      {
+        "type": "png",
         "name": "IMG_LOGO_SNCF_DARK",
         "file": "images/img_logo_sncf_dark.png"
       },
       {
         "type": "png",
-        "name": "IMG_LOGO_TRANSILIEN_DARK",
-        "file": "images/img_logo_transilien_dark.png"
+        "name": "IMG_LOGO_SNCF_LIGHT",
+        "file": "images/img_logo_sncf_light.png"
       },
       {
         "type": "png",
-        "name": "IMG_LOGO_SNCF_LIGHT",
-        "file": "images/img_logo_sncf_light.png"
+        "name": "IMG_LOGO_TRANSILIEN_DARK",
+        "file": "images/img_logo_transilien_dark.png"
       },
       {
         "type": "png",
