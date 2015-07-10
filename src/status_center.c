@@ -16,11 +16,11 @@ void load_status() {
     unload_status();
     
     // Get current theme
-    s_is_dark_theme = get_theme_setting();
+    s_is_dark_theme = storage_get_theme();
     
     // Get current locale
     s_curr_locale = malloc(sizeof(char) * 5);
-    if (!get_locale_setting(s_curr_locale)) {
+    if (!storage_get_locale(s_curr_locale)) {
         s_curr_locale = NULL;
     }
     setlocale(LC_ALL, s_curr_locale);

@@ -11,6 +11,7 @@
 #include "constants.h"
 
 #include "drawing.h"
+#include "fav_manager.h"
 #include "status_center.h"
 #include "storage.h"
 #include "ui.h"

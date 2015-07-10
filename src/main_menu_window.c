@@ -192,7 +192,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             // Change theme
-            set_theme_setting(!status_is_dark_theme());
+            storage_set_theme(!status_is_dark_theme());
             setup_main_menu_layer_theme();
 #ifdef PBL_SDK_3
             status_bar_set_colors(s_status_bar);
@@ -206,7 +206,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
             } else {
                 result = setlocale(LC_ALL, "en_US");
             }
-            set_locale_setting(result);
+            storage_set_locale(result);
             locale_init();
         }
         menu_layer_reload_data(menu_layer);
@@ -240,6 +240,9 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 static void window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
+    
+    // Load favorites
+    load_favorites();
     
     // Add menu layer
     int16_t status_bar_height = 0;
@@ -279,6 +282,7 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
+    unload_favorites();
 #ifdef PBL_SDK_3
     layer_destroy(s_status_bar_overlay_layer);
     status_bar_layer_destroy(s_status_bar);

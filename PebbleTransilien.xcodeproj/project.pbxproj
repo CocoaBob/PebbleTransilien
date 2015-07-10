@@ -15,6 +15,7 @@
 		4508521B1B4FFE99008098D5 /* status_center.c in Sources */ = {isa = PBXBuildFile; fileRef = 450852191B4FFE99008098D5 /* status_center.c */; };
 		4508521E1B4FFEB0008098D5 /* storage.c in Sources */ = {isa = PBXBuildFile; fileRef = 4508521C1B4FFEB0008098D5 /* storage.c */; };
 		450852221B501040008098D5 /* ui.c in Sources */ = {isa = PBXBuildFile; fileRef = 450852201B501040008098D5 /* ui.c */; };
+		450852251B501F0D008098D5 /* fav_manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 450852231B501F0D008098D5 /* fav_manager.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -49,6 +50,8 @@
 		4508521F1B4FFF55008098D5 /* headers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = headers.h; sourceTree = "<group>"; };
 		450852201B501040008098D5 /* ui.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ui.c; sourceTree = "<group>"; };
 		450852211B501040008098D5 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui.h; sourceTree = "<group>"; };
+		450852231B501F0D008098D5 /* fav_manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = fav_manager.c; sourceTree = "<group>"; };
+		450852241B501F0D008098D5 /* fav_manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fav_manager.h; sourceTree = "<group>"; };
 		4517F3621B4C09DB0078F1A0 /* Aplite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Aplite; sourceTree = BUILT_PRODUCTS_DIR; };
 		4517F3631B4C09E10078F1A0 /* Device */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Device; sourceTree = BUILT_PRODUCTS_DIR; };
 		4517F3641B4C0A060078F1A0 /* Basalt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Basalt; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,6 +119,8 @@
 				4508520D1B4FCF92008098D5 /* constants.h */,
 				450852161B4FFE34008098D5 /* drawing.c */,
 				450852171B4FFE34008098D5 /* drawing.h */,
+				450852231B501F0D008098D5 /* fav_manager.c */,
+				450852241B501F0D008098D5 /* fav_manager.h */,
 				450852191B4FFE99008098D5 /* status_center.c */,
 				4508521A1B4FFE99008098D5 /* status_center.h */,
 				4508521C1B4FFEB0008098D5 /* storage.c */,
@@ -306,6 +311,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				450852251B501F0D008098D5 /* fav_manager.c in Sources */,
 				4508520F1B4FCF92008098D5 /* main.c in Sources */,
 				450852101B4FCF92008098D5 /* main_menu_window.c in Sources */,
 				4508520E1B4FCF92008098D5 /* localize.c in Sources */,

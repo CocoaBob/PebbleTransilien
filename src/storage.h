@@ -8,8 +8,11 @@
 
 #pragma once
 
-bool get_theme_setting();
-void set_theme_setting(bool is_dark);
+bool storage_get_theme();
+void storage_set_theme(bool is_dark);
 
-bool get_locale_setting(char *locale);
-void set_locale_setting(const char* lang);
+bool storage_get_locale(char *locale);
+void storage_set_locale(const char* lang);
+
+bool storage_get_favorites(void *favorites);
+void storage_set_favorites(const void *favorites);
