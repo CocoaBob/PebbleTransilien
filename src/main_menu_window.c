@@ -8,9 +8,7 @@
 
 #include <pebble.h>
 #include <localize.h>
-#include "main_menu_window.h"
-#include "next_trains_window.h"
-#include "utilities.h"
+#include "headers.h"
 
 enum {
     MAIN_MENU_SECTION_FAV = 0,
@@ -42,7 +40,7 @@ Window *s_main_window;
 static MenuLayer *s_menu_layer;
 #ifdef PBL_SDK_3
 static StatusBarLayer *s_status_bar;
-static Layer *s_battery_layer;
+static Layer *s_status_bar_overlay_layer;
 #endif
 
 // Foward declaration
@@ -51,7 +49,7 @@ void setup_main_menu_layer_theme();
 
 // Drawing
 
-void draw_main_menu_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color,
+void draw_main_menu_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color, bool is_dark_theme,
                          const char * str_icon, const char * icon_font_key,
                          const char * str_line_1, const char * str_line_2) {
     graphics_context_set_stroke_color(ctx, stroke_color);
@@ -62,8 +60,12 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color,
                              (CELL_HEIGHT - CELL_ICON_SIZE) / 2,
                              CELL_ICON_SIZE,
                              CELL_ICON_SIZE);
-    graphics_draw_round_rect(ctx, frame_icon, 3);
-    draw_text(ctx, str_icon, icon_font_key, frame_icon, GTextAlignmentCenter);
+    if (str_icon != NULL) {
+        draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_icon);
+        draw_text(ctx, str_icon, icon_font_key, frame_icon, GTextAlignmentCenter);
+    } else {
+        draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_STATION_DARK:RESOURCE_ID_IMG_STATION_LIGHT, frame_icon);
+    }
     
     // Draw lines
     if (str_line_2 != NULL) {
@@ -71,13 +73,13 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color,
                                    -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
                                    bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN * 3,
                                    CELL_HEIGHT_2);
-        draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18, frame_line_1, GTextAlignmentLeft);
+        draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
         
         GRect frame_line_2 = GRect(CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN,
                                    CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET - 2, // -2 to get the two lines closer
                                    bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN * 3,
                                    CELL_HEIGHT_2);
-        draw_text(ctx, str_line_2, FONT_KEY_GOTHIC_18, frame_line_2, GTextAlignmentLeft);
+        draw_text(ctx, str_line_2, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
     } else {
         GRect frame_line_1 = GRect(0,
                                    0,
@@ -91,7 +93,7 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color,
         frame_line_1.origin.y = (frame_line_1.size.h - text_size.h) / 2 - CELL_TEXT_Y_OFFSET;
         frame_line_1.origin.x = CELL_MARGIN + CELL_ICON_SIZE + CELL_MARGIN;
         
-        draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18, frame_line_1, GTextAlignmentLeft);
+        draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
     }
 }
 
@@ -125,9 +127,10 @@ static int16_t get_header_height_callback(struct MenuLayer *menu_layer, uint16_t
 }
 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
-#ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_highlighted = (menu_index_compare(&selected_index, cell_index) == 0);
+    bool is_dark_theme = status_is_dark_theme() || is_highlighted;
+#ifdef PBL_COLOR
     GColor stroke_color = is_highlighted?GColorWhite:curr_fg_color();
 #else
     GColor stroke_color = curr_fg_color();
@@ -136,23 +139,23 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     int16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
         if (row == 0) {
-            draw_main_menu_cell(ctx, cell_layer, stroke_color,
+            draw_main_menu_cell(ctx, cell_layer, stroke_color, is_dark_theme,
                                 "L", FONT_KEY_GOTHIC_14_BOLD,
                                 "Paris Saint-Lazare", "Bécon les Bruyères");
         } else if (row == 1) {
-            draw_main_menu_cell(ctx, cell_layer, stroke_color,
-                                "All", FONT_KEY_GOTHIC_14,
+            draw_main_menu_cell(ctx, cell_layer, stroke_color, is_dark_theme,
+                                NULL, FONT_KEY_GOTHIC_14,
                                 "Bibliothèque François Mitterrand", NULL);
         }
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Nearby stations"), _("Based on GPS location"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Nearby stations"), _("Based on location"), NULL);
         } else if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            menu_cell_basic_draw(ctx, cell_layer, _("A specific station"), _("By choosing letters"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("A station name"), _("By choosing letters"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_SETTING) {
         if (row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Theme"), get_setting_theme()?_("Dark theme"):_("Light theme"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Theme"), status_is_dark_theme()?_("Dark theme"):_("Light theme"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             menu_cell_basic_draw(ctx, cell_layer, "Language", _("English"), NULL);
         }
@@ -185,8 +188,11 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             // Change theme
-            set_setting_theme(!get_setting_theme());
+            set_theme_setting(!status_is_dark_theme());
             setup_main_menu_layer_theme();
+#ifdef PBL_SDK_3
+            status_bar_set_colors(s_status_bar);
+#endif
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             // Change language
             const char* locale_str = setlocale(LC_ALL, NULL);
@@ -196,7 +202,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
             } else {
                 result = setlocale(LC_ALL, "en_US");
             }
-            set_setting_language(result);
+            set_locale_setting(result);
             locale_init();
         }
         menu_layer_reload_data(menu_layer);
@@ -263,14 +269,14 @@ static void window_load(Window *window) {
     
     // Finally, add status bar
 #ifdef PBL_SDK_3
-    window_add_status_bar(window_layer, &s_status_bar, &s_battery_layer);
+    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_overlay_layer);
 #endif
 }
 
 static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
 #ifdef PBL_SDK_3
-    layer_destroy(s_battery_layer);
+    layer_destroy(s_status_bar_overlay_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif
     window_destroy(window);

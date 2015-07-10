@@ -12,14 +12,74 @@
   "resources": {
     "media": [
       {
+        "type": "png",
+        "name": "IMG_LOGO_SNCF_DARK",
+        "file": "images/img_logo_sncf_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_LOGO_TRANSILIEN_DARK",
+        "file": "images/img_logo_transilien_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_LOGO_SNCF_LIGHT",
+        "file": "images/img_logo_sncf_light.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_LOGO_TRANSILIEN_LIGHT",
+        "file": "images/img_logo_transilien_light.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_FRAME_DARK",
+        "file": "images/img_frame_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_FRAME_LIGHT",
+        "file": "images/img_frame_light.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_DOTTED_FRAME_DARK",
+        "file": "images/img_dotted_frame_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_DOTTED_FRAME_LIGHT",
+        "file": "images/img_dotted_frame_light.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_STATION_DARK",
+        "file": "images/img_station_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_STATION_LIGHT",
+        "file": "images/img_station_light.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_TRAIN_DARK",
+        "file": "images/img_train_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_TRAIN_LIGHT",
+        "file": "images/img_train_light.png"
+      },
+      {
         "type": "raw",
         "name": "LOCALE_ENGLISH",
-        "file": "locale_english.bin"
+        "file": "localizations/locale_english.bin"
       },
       {
         "type": "raw",
         "name": "LOCALE_FRENCH",
-        "file": "locale_french.bin"
+        "file": "localizations/locale_french.bin"
       }
     ]
   },
