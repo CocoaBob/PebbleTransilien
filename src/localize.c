@@ -15,9 +15,6 @@ void locale_init(void) {
   if (strncmp(locale_str, "fr", 2) == 0) {
     locale_handle = resource_get_handle(RESOURCE_ID_LOCALE_FRENCH);
     locale_size = resource_size(locale_handle);
-  } else if (strncmp(locale_str, "zh", 2) == 0) {
-    locale_handle = resource_get_handle(RESOURCE_ID_LOCALE_CHINESE);
-    locale_size = resource_size(locale_handle);
   }
 
   // Fallback to English for unlocalized languages (0 byte files)

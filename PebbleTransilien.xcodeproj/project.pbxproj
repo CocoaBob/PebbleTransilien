@@ -292,7 +292,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 192.168.0.15";
+			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 192.168.2.9";
 		};
 /* End PBXShellScriptBuildPhase section */
 

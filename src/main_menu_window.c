@@ -193,8 +193,6 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
             char *result;
             if (strncmp(locale_str, "en", 2) == 0) {
                 result = setlocale(LC_ALL, "fr_FR");
-            } else if (strncmp(locale_str, "fr", 2) == 0) {
-                result = setlocale(LC_ALL, "zh_CN");
             } else {
                 result = setlocale(LC_ALL, "en_US");
             }
