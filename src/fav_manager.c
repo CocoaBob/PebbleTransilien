@@ -11,6 +11,11 @@
 
 static Favorite *s_favorites;
 
+void copy_favorite(Favorite *dest, Favorite *src) {
+    strncpy(dest->from, src->from, FAV_COMPONENT_LENGTH);
+    strncpy(dest->to, src->to, FAV_COMPONENT_LENGTH);
+}
+
 void load_favorites() {
     if (s_favorites != NULL) {
         return;
@@ -68,8 +73,8 @@ bool fav_add(char *from, char *to) {
     
     // Copy values
     Favorite *new_fav = &s_favorites[fav_count - 1];
-    strncpy(new_fav->from, from, 3);
-    strncpy(new_fav->to, to, 3);
+    strncpy(new_fav->from, from, FAV_COMPONENT_LENGTH);
+    strncpy(new_fav->to, to, FAV_COMPONENT_LENGTH);
     
     // Save data
     storage_set_favorites_count(fav_count);
@@ -79,5 +84,20 @@ bool fav_add(char *from, char *to) {
 }
 
 bool fav_delete_at_index(int16_t index) {
+    int16_t new_fav_count = fav_get_count() - 1;
+    if (index != new_fav_count) {
+        for (int16_t i = index; i < new_fav_count; ++i) {
+            copy_favorite(&s_favorites[i], &s_favorites[i+1]);
+        }
+    }
+    Favorite* reduced_favorites = realloc(s_favorites, sizeof(Favorite) * new_fav_count);
+    if (reduced_favorites != NULL) {
+        s_favorites = reduced_favorites;
+        
+        // Save data
+        storage_set_favorites_count(new_fav_count);
+        storage_set_favorites(s_favorites, new_fav_count);
+        return true;
+    }
     return false;
 }

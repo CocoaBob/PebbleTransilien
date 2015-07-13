@@ -9,10 +9,11 @@
 #pragma once
 
 #define FAV_MAX_COUNT 32// 8*32=256, 256 is persist data max lenght
+#define FAV_COMPONENT_LENGTH 4
 
 typedef struct Favorite {
-    char from[4];
-    char to[4];
+    char from[FAV_COMPONENT_LENGTH];
+    char to[FAV_COMPONENT_LENGTH];
 } Favorite;
 
 void load_favorites();

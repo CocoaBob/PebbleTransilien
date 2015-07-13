@@ -237,7 +237,7 @@ static void window_load(Window *window) {
     fav_add("PSL", "BEC");
     fav_add("BFM", "XXX");
     fav_add("PSL", "BEC");
-    fav_delete_at_index(2);
+    fav_delete_at_index(0);
     
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
