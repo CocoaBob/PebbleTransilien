@@ -20,8 +20,9 @@ void load_favorites() {
     if (s_favorites != NULL) {
         return;
     }
-    s_favorites = malloc(PERSIST_DATA_MAX_LENGTH);
-    if (!storage_get_favorites(s_favorites)) {
+    size_t buffer_size = sizeof(Favorite) * fav_get_count();
+    s_favorites = malloc(buffer_size);
+    if (!storage_get_favorites(s_favorites,buffer_size)) {
         unload_favorites();
     }
 }

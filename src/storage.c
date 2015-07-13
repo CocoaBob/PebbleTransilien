@@ -41,18 +41,10 @@ void storage_set_locale(const char* locale) {
     load_status();
 }
 
-bool storage_get_favorites(void *favorites) {
-    if (persist_exists(SETTING_FAVORITES)) {
-        int result = persist_read_data(SETTING_FAVORITES, favorites, PERSIST_DATA_MAX_LENGTH);
-        if (result != E_DOES_NOT_EXIST) {
-            if (result > 0) {
-                void *new_favorites = realloc(favorites, result);
-                if (new_favorites != NULL) {
-                    favorites = new_favorites;
-                }
-                return true;
-            }
-        }
+bool storage_get_favorites(void *favorites, const size_t buffer_size) {
+    if (persist_exists(SETTING_FAVORITES) &&
+        persist_read_data(SETTING_FAVORITES, favorites, buffer_size) != E_DOES_NOT_EXIST) {
+        return true;
     }
     return false;
 }
