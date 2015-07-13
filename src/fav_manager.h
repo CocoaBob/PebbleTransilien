@@ -16,6 +16,7 @@ typedef struct Favorite {
     char to[FAV_COMPONENT_LENGTH];
 } Favorite;
 
+size_t size_of_Favorite();
 void load_favorites();
 void unload_favorites();
 int16_t fav_get_count();

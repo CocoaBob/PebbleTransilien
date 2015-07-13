@@ -50,8 +50,8 @@ bool storage_get_favorites(void *favorites, const size_t buffer_size) {
 }
 
 bool storage_set_favorites(const Favorite *favorites, int16_t fav_count) {
-    int result = persist_write_data(SETTING_FAVORITES, favorites, sizeof(Favorite) * fav_count);
-    return (result == (int)(sizeof(Favorite) * fav_count));
+    int result = persist_write_data(SETTING_FAVORITES, favorites, size_of_Favorite() * fav_count);
+    return (result == (int)(size_of_Favorite() * fav_count));
 }
 
 int16_t storage_get_favorites_count() {
