@@ -11,7 +11,8 @@
 
 #define SETTING_THEME 100
 #define SETTING_LOCALE 101
-#define SETTING_FAVORITES 101
+#define SETTING_FAVORITES 102
+#define SETTING_FAVORITES_COUNT 103
 
 // true is dark theme, false is light theme
 bool storage_get_theme() {
@@ -43,13 +44,29 @@ void storage_set_locale(const char* locale) {
 bool storage_get_favorites(void *favorites) {
     if (persist_exists(SETTING_FAVORITES)) {
         int result = persist_read_data(SETTING_FAVORITES, favorites, PERSIST_DATA_MAX_LENGTH);
-        if (result != E_DOES_NOT_EXIST && result > 0) {
-            return true;
+        if (result != E_DOES_NOT_EXIST) {
+            if (result > 0) {
+                void *new_favorites = realloc(favorites, result);
+                if (new_favorites != NULL) {
+                    favorites = new_favorites;
+                }
+                return true;
+            }
         }
     }
     return false;
 }
 
-void storage_set_favorites(const void *favorites) {
-    persist_write_data(SETTING_FAVORITES, favorites, sizeof(favorites));
+bool storage_set_favorites(const Favorite *favorites, int16_t fav_count) {
+    int result = persist_write_data(SETTING_FAVORITES, favorites, sizeof(Favorite) * fav_count);
+    return (result == (int)(sizeof(Favorite) * fav_count));
+}
+
+int16_t storage_get_favorites_count() {
+    return persist_read_int(SETTING_FAVORITES_COUNT);
+}
+
+bool storage_set_favorites_count(int16_t fav_count) {
+    status_t result = persist_write_int(SETTING_FAVORITES_COUNT, fav_count);
+    return result == S_SUCCESS;
 }

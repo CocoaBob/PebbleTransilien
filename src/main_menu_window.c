@@ -36,7 +36,7 @@ enum {
     MAIN_MENU_SECTION_ABOUT_ROW_COUNT
 };
 
-Window *s_main_window;
+static Window *s_main_window;
 static MenuLayer *s_menu_layer;
 #ifdef PBL_SDK_3
 static StatusBarLayer *s_status_bar;
@@ -72,30 +72,24 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
     }
     
     // Draw lines
+    GRect frame_line_1 = GRect(CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN,
+                               -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
+                               bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
+                               CELL_HEIGHT_2);
     if (str_line_2 != NULL) {
-        GRect frame_line_1 = GRect(CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN,
-                                   -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
-                                   bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
-                                   CELL_HEIGHT_2);
         draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
         
-        GRect frame_line_2 = GRect(CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN,
-                                   CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET - 2, // -2 to get the two lines closer
-                                   bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
-                                   CELL_HEIGHT_2);
+        GRect frame_line_2 = frame_line_1;
+        frame_line_2.origin.y = CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
+
         draw_text(ctx, str_line_2, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
     } else {
-        GRect frame_line_1 = GRect(0,
-                                   0,
-                                   bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
-                                   CELL_HEIGHT - 4);
         GSize text_size = graphics_text_layout_get_content_size(str_line_1,
                                                                 fonts_get_system_font(FONT_KEY_GOTHIC_18),
                                                                 frame_line_1,
                                                                 GTextOverflowModeTrailingEllipsis,
                                                                 GTextAlignmentLeft);
-        frame_line_1.origin.y = (frame_line_1.size.h - text_size.h) / 2 - CELL_TEXT_Y_OFFSET;
-        frame_line_1.origin.x = CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN;
+        frame_line_1.size.h = text_size.h;
         
         draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
     }
@@ -110,7 +104,7 @@ static uint16_t get_num_sections_callback(struct MenuLayer *menu_layer, void *co
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
     switch(section_index) {
         case MAIN_MENU_SECTION_FAV:
-            return 2;
+            return fav_get_count();
         case MAIN_MENU_SECTION_SEARCH:
             return MAIN_MENU_SECTION_SEARCH_ROW_COUNT;
         case MAIN_MENU_SECTION_SETTING:
@@ -127,6 +121,9 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 }
 
 static int16_t get_header_height_callback(struct MenuLayer *menu_layer, uint16_t section_index, void *context) {
+    if (section_index == MAIN_MENU_SECTION_FAV) {
+        return fav_get_count()?HEADER_HEIGHT:0;
+    }
     return HEADER_HEIGHT;
 }
 
@@ -142,15 +139,11 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     int16_t section = cell_index->section;
     int16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
-        if (row == 0) {
-            draw_main_menu_cell(ctx, cell_layer,
-                                stroke_color, is_dark_theme, true,
-                                "Paris Saint-Lazare", "Bécon les Bruyères");
-        } else if (row == 1) {
-            draw_main_menu_cell(ctx, cell_layer,
-                                stroke_color, is_dark_theme, false,
-                                "Bibliothèque François Mitterrand", NULL);
-        }
+        Favorite favorite = fav_at_index(row);
+        bool is_from_to = (strncmp(favorite.to, "XXX", 3) != 0);
+        draw_main_menu_cell(ctx, cell_layer,
+                            stroke_color, is_dark_theme, is_from_to,
+                            favorite.from, is_from_to?favorite.to:NULL);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
             menu_cell_basic_draw(ctx, cell_layer, _("Nearby stations"), _("Based on location"), NULL);
@@ -238,6 +231,14 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 // Window load/unload
 
 static void window_load(Window *window) {
+    persist_delete(102);
+    persist_delete(103);
+    
+    fav_add("PSL", "BEC");
+    fav_add("BFM", "XXX");
+    fav_add("PSL", "BEC");
+    fav_delete_at_index(2);
+    
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
     
