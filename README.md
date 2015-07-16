@@ -5,8 +5,18 @@ An unofficial Pebble Time app of SNCF Transilien
 ## Where is it from?
 Train station codes and coordinates are extracted from the official app's database. If it's the iOS version, the database is located in `/Documents/Transilien.sqlite`.
 
+It's a SQLite database, we can simply query what we want, for example, I need stations' codes, names, coordinates (average value if duplicated), so my query is like the following one:
+
+```
+SELECT ZGARE.ZCODETR3A AS CODE, ZGARE.ZNAME AS NAME,AVG(ZPOSITION.ZLATITUDE) AS LAT,AVG(ZPOSITION.ZLONGITUDE) AS LONG
+FROM ZGARE, ZPOSITION
+WHERE ZGARE.Z_PK = ZPOSITION.ZGARE
+GROUP BY CODE
+ORDER BY CODE
+```
+
 ## How is it organized?
-To facilitate the queries, data is organized into several binaries. They are:
+To facilitate the usages, data is organized into several binaries. They are:
 
 * station\_code.bin (ordered station codes)
 * station\_name.bin (ordered station names)
@@ -40,7 +50,7 @@ To facilitate the queries, data is organized into several binaries. They are:
 ```
 ## Usage
 ### Get a station's code
-First you know the station's index, then read 3 bytes at the position `3*index` in `station_code.bin`.
+First you have to know the station's index, then read 3 bytes at the position `3*index` in `station_code.bin`.
 
 ### Get or Search a station's name
 1. Create a char** array based on the data of `station_name.bin`
@@ -61,7 +71,7 @@ for (int offset_lat = -1; offset_lat <= 1; ++ offset_lat) {
 	for (int offset_lng = -1; offset_lng <= 1; ++ offset_lng) {
 		int32_t key = (index_lat + offset_lat)* 100 + (index_lng + offset_lng);
 		// Check if the key exists
-		// If exists, get station indexes
+		// If true, get stations' indexes
 	}
 }
 ```
