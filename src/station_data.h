@@ -9,6 +9,7 @@
 #pragma once
 
 #define STATION_CODE_LENGTH 3
+#define STATION_NON 999
 
 void station_data_init();
 void station_data_deinit();

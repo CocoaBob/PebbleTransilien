@@ -54,10 +54,11 @@ void setup_main_menu_layer_theme();
 // Drawing
 
 void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
-                         GColor stroke_color, bool is_dark_theme, bool is_from_to,
-                         const char * str_line_1, const char * str_line_2) {
+                         GColor stroke_color, bool is_dark_theme,
+                         size_t idx_from, size_t idx_to) {
     graphics_context_set_stroke_color(ctx, stroke_color);
     GRect bounds = layer_get_bounds(cell_layer);
+    bool is_from_to = (idx_to != STATION_NON);
     
     // Draw left icon
     GRect frame_icon = GRect(CELL_MARGIN,
@@ -71,26 +72,28 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
     }
     
     // Draw lines
+    const char *str_from = station_name_at_index(idx_from);
     GRect frame_line_1 = GRect(CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN,
                                -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
                                bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
                                CELL_HEIGHT_2);
-    if (str_line_2 != NULL) {
-        draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
+    if (is_from_to) {
+        draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
         
         GRect frame_line_2 = frame_line_1;
         frame_line_2.origin.y = CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
-
-        draw_text(ctx, str_line_2, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
+        
+        draw_text(ctx, station_name_at_index(idx_to), FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
     } else {
-        GSize text_size = graphics_text_layout_get_content_size(str_line_1,
-                                                                fonts_get_system_font(FONT_KEY_GOTHIC_18),
+        frame_line_1.size.h = bounds.size.h;
+        GSize text_size = graphics_text_layout_get_content_size(str_from,
+                                                                fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
                                                                 frame_line_1,
                                                                 GTextOverflowModeTrailingEllipsis,
                                                                 GTextAlignmentLeft);
         frame_line_1.size.h = text_size.h;
         
-        draw_text(ctx, str_line_1, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
+        draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
     }
 }
 
@@ -139,10 +142,9 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     uint16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
-        bool is_from_to = (strncmp(favorite.to, "XXX", 3) != 0);
         draw_main_menu_cell(ctx, cell_layer,
-                            stroke_color, is_dark_theme, is_from_to,
-                            favorite.from, is_from_to?favorite.to:NULL);
+                            stroke_color, is_dark_theme,
+                            favorite.from, favorite.to);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
             menu_cell_basic_draw(ctx, cell_layer, _("Nearby stations"), _("Based on location"), NULL);
@@ -233,9 +235,10 @@ static void window_load(Window *window) {
     persist_delete(102);
     persist_delete(103);
     
-    fav_add("PSL", "BEC");
-    fav_add("BFM", "XXX");
-    fav_add("PSL", "BEC");
+    // TODO: Remove in the future
+    fav_add(354, 23);
+    fav_add(25, STATION_NON);
+    fav_add(354, 23);
     fav_delete_at_index(0);
     
     Layer *window_layer = window_get_root_layer(window);

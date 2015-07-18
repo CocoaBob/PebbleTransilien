@@ -17,8 +17,8 @@ size_t size_of_Favorite() {
 }
 
 void copy_favorite(Favorite *dest, Favorite *src) {
-    strncpy(dest->from, src->from, FAV_COMPONENT_LENGTH);
-    strncpy(dest->to, src->to, FAV_COMPONENT_LENGTH);
+    dest->from = src->from;
+    dest->to = src->to;
 }
 
 void load_favorites() {
@@ -47,7 +47,7 @@ Favorite fav_at_index(size_t index) {
     return s_favorites[index];
 }
 
-bool fav_add(char *from, char *to) {
+bool fav_add(size_t from, size_t to) {
     // If s_favorites hasn't been loaded
     if (s_favorites == NULL) {
         load_favorites();
@@ -63,7 +63,7 @@ bool fav_add(char *from, char *to) {
     
     if (s_favorites == NULL) {
         // The 1st time
-        s_favorites = malloc(size_of_Favorite() * 1);
+        s_favorites = malloc(size_of_Favorite());
     } else {
         // Resize the existing array
         Favorite* new_favorites = realloc(s_favorites, size_of_Favorite() * fav_count);
@@ -79,8 +79,8 @@ bool fav_add(char *from, char *to) {
     
     // Copy values
     Favorite *new_fav = &s_favorites[fav_count - 1];
-    strncpy(new_fav->from, from, FAV_COMPONENT_LENGTH);
-    strncpy(new_fav->to, to, FAV_COMPONENT_LENGTH);
+    new_fav->from = from;
+    new_fav->to = to;
     
     // Save data
     storage_set_favorites_count(fav_count);
@@ -99,9 +99,9 @@ bool fav_delete_at_index(size_t index) {
             copy_favorite(&s_favorites[i], &s_favorites[i+1]);
         }
     }
-    Favorite* reduced_favorites = realloc(s_favorites, size_of_Favorite() * new_fav_count);
-    if (reduced_favorites != NULL) {
-        s_favorites = reduced_favorites;
+    Favorite* new_favorites = realloc(s_favorites, size_of_Favorite() * new_fav_count);
+    if (new_favorites != NULL) {
+        s_favorites = new_favorites;
         
         // Save data
         storage_set_favorites_count(new_fav_count);
