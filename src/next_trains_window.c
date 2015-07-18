@@ -9,11 +9,15 @@
 #include <pebble.h>
 #include "headers.h"
 
-static Window *s_main_window;
+static Window *s_window;
 static MenuLayer *s_menu_layer;
 #ifdef PBL_SDK_3
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_overlay_layer;
+#endif
+
+#ifndef PBL_COLOR
+static InverterLayer *s_inverter_layer;
 #endif
 
 // Foward declaration
@@ -37,6 +41,7 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color
                            const char * str_time,
                            const char * str_terminus,
                            const char * str_platform) {
+    graphics_context_set_text_color(ctx, stroke_color);
     graphics_context_set_stroke_color(ctx, stroke_color);
     GRect bounds = layer_get_bounds(cell_layer);
     
@@ -45,7 +50,11 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color
                              NEXT_TRAIN_CELL_ICON_Y,
                              NEXT_TRAIN_CELL_ICON_SIZE,
                              NEXT_TRAIN_CELL_ICON_SIZE);
+#ifdef PBL_COLOR
     draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_line);
+#else
+    draw_image_in_rect(ctx, RESOURCE_ID_IMG_FRAME_LIGHT, frame_line);
+#endif
     draw_text(ctx, str_line, FONT_KEY_GOTHIC_14_BOLD, frame_line, GTextAlignmentCenter);
     
     // Code
@@ -75,10 +84,18 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer, GColor stroke_color
                                NEXT_TRAIN_CELL_ICON_SIZE,
                                NEXT_TRAIN_CELL_ICON_SIZE);
     if (str_platform != NULL) {
+#ifdef PBL_COLOR
         draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
+#else
+        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
+#endif
         draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14_BOLD, frame_platform, GTextAlignmentCenter);
     } else {
+#ifdef PBL_COLOR
         draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_DOTTED_FRAME_DARK:RESOURCE_ID_IMG_DOTTED_FRAME_LIGHT, frame_platform);
+#else
+        draw_image_in_rect(ctx, RESOURCE_ID_IMG_DOTTED_FRAME_LIGHT, frame_platform);
+#endif
     }
 }
 
@@ -101,7 +118,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     bool is_highlighted = (menu_index_compare(&selected_index, cell_index) == 0);
     bool is_dark_theme = status_is_dark_theme() || is_highlighted;
 #ifdef PBL_COLOR
-    GColor stroke_color = is_highlighted?GColorWhite:curr_fg_color();
+    GColor stroke_color = is_highlighted?curr_bg_color():curr_fg_color();
 #else
     GColor stroke_color = curr_fg_color();
 #endif
@@ -213,18 +230,32 @@ static void window_load(Window *window) {
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
-    setup_next_trains_menu_layer_theme();
     
     // Finally, add status bar
 #ifdef PBL_SDK_3
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_overlay_layer);
 #endif
+    
+#ifndef PBL_COLOR
+    s_inverter_layer = inverter_layer_create(menu_layer_frame);
+#endif
+    
+    setup_next_trains_menu_layer_theme();
 }
 
 static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
     window_destroy(window);
-    s_main_window = NULL;
+    s_window = NULL;
+    
+#ifdef PBL_SDK_3
+    layer_destroy(s_status_bar_overlay_layer);
+    status_bar_layer_destroy(s_status_bar);
+#endif
+    
+#ifndef PBL_COLOR
+    inverter_layer_destroy(s_inverter_layer);
+#endif
 }
 
 // Setup UI
@@ -233,18 +264,25 @@ void setup_next_trains_menu_layer_theme() {
 #ifdef PBL_COLOR
     menu_layer_set_normal_colors(s_menu_layer, curr_bg_color(), curr_fg_color());
     menu_layer_set_highlight_colors(s_menu_layer, GColorCobaltBlue, GColorWhite);
+#else
+    if (status_is_dark_theme()) {
+        Layer *window_layer = window_get_root_layer(s_window);
+        layer_add_child(window_layer, inverter_layer_get_layer(s_inverter_layer));
+    } else {
+        layer_remove_from_parent(inverter_layer_get_layer(s_inverter_layer));
+    }
 #endif
 }
 
 // Entry point
 
 void push_next_trains_window() {
-    if(!s_main_window) {
-        s_main_window = window_create();
-        window_set_window_handlers(s_main_window, (WindowHandlers) {
+    if(!s_window) {
+        s_window = window_create();
+        window_set_window_handlers(s_window, (WindowHandlers) {
             .load = window_load,
             .unload = window_unload,
         });
     }
-    window_stack_push(s_main_window, true);
+    window_stack_push(s_window, true);
 }

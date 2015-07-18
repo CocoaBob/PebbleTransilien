@@ -35,11 +35,15 @@ enum {
     MAIN_MENU_SECTION_ABOUT_ROW_COUNT
 };
 
-static Window *s_main_window;
+static Window *s_window;
 static MenuLayer *s_menu_layer;
 #ifdef PBL_SDK_3
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_overlay_layer;
+#endif
+
+#ifndef PBL_COLOR
+static InverterLayer *s_inverter_layer;
 #endif
 
 // Foward declaration
@@ -54,8 +58,12 @@ void setup_main_menu_layer_theme();
 // Drawing
 
 void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
-                         GColor stroke_color, bool is_dark_theme,
+                         GColor stroke_color,
+#ifdef PBL_COLOR
+                         bool is_dark_theme,
+#endif
                          size_t idx_from, size_t idx_to) {
+    graphics_context_set_text_color(ctx, stroke_color);
     graphics_context_set_stroke_color(ctx, stroke_color);
     GRect bounds = layer_get_bounds(cell_layer);
     bool is_from_to = (idx_to != STATION_NON);
@@ -65,11 +73,19 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
                              (CELL_HEIGHT - MAIN_MENU_CELL_ICON_HEIGHT) / 2,
                              MAIN_MENU_CELL_ICON_WIDTH,
                              is_from_to?MAIN_MENU_CELL_ICON_HEIGHT:MAIN_MENU_CELL_ICON_WIDTH);
+#ifdef PBL_COLOR
     if (is_from_to) {
         draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
     } else {
         draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
     }
+#else
+    if (is_from_to) {
+        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
+    } else {
+        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+    }
+#endif
     
     // Draw lines
     const char *str_from = station_name_at_index(idx_from);
@@ -130,11 +146,11 @@ static int16_t get_header_height_callback(struct MenuLayer *menu_layer, uint16_t
 }
 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
+#ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_highlighted = (menu_index_compare(&selected_index, cell_index) == 0);
     bool is_dark_theme = status_is_dark_theme() || is_highlighted;
-#ifdef PBL_COLOR
-    GColor stroke_color = is_highlighted?GColorWhite:curr_fg_color();
+    GColor stroke_color = is_highlighted?curr_bg_color():curr_fg_color();
 #else
     GColor stroke_color = curr_fg_color();
 #endif
@@ -143,7 +159,10 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
         draw_main_menu_cell(ctx, cell_layer,
-                            stroke_color, is_dark_theme,
+                            stroke_color,
+#ifdef PBL_COLOR
+                            is_dark_theme,
+#endif
                             favorite.from, favorite.to);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
@@ -275,12 +294,17 @@ static void window_load(Window *window) {
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
-    setup_main_menu_layer_theme();
     
     // Finally, add status bar
 #ifdef PBL_SDK_3
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_overlay_layer);
 #endif
+    
+#ifndef PBL_COLOR
+    s_inverter_layer = inverter_layer_create(menu_layer_frame);
+#endif
+    
+    setup_main_menu_layer_theme();
 }
 
 static void window_unload(Window *window) {
@@ -290,8 +314,12 @@ static void window_unload(Window *window) {
     layer_destroy(s_status_bar_overlay_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif
+    
+#ifndef PBL_COLOR
+    inverter_layer_destroy(s_inverter_layer);
+#endif
     window_destroy(window);
-    s_main_window = NULL;
+    s_window = NULL;
 }
 
 // Setup UI
@@ -300,18 +328,25 @@ void setup_main_menu_layer_theme() {
 #ifdef PBL_COLOR
     menu_layer_set_normal_colors(s_menu_layer, curr_bg_color(), curr_fg_color());
     menu_layer_set_highlight_colors(s_menu_layer, GColorCobaltBlue, GColorWhite);
+#else
+    if (status_is_dark_theme()) {
+        Layer *window_layer = window_get_root_layer(s_window);
+        layer_add_child(window_layer, inverter_layer_get_layer(s_inverter_layer));
+    } else {
+        layer_remove_from_parent(inverter_layer_get_layer(s_inverter_layer));
+    }
 #endif
 }
 
 // Entry point
 
 void push_main_menu_window() {
-    if(!s_main_window) {
-        s_main_window = window_create();
-        window_set_window_handlers(s_main_window, (WindowHandlers) {
+    if(!s_window) {
+        s_window = window_create();
+        window_set_window_handlers(s_window, (WindowHandlers) {
             .load = window_load,
             .unload = window_unload,
         });
     }
-    window_stack_push(s_main_window, true);
+    window_stack_push(s_window, true);
 }

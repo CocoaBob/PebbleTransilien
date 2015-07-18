@@ -22,6 +22,7 @@ void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title
                         bounds.size.w - CELL_MARGIN * 2,
                         bounds.size.h);
     
+    graphics_context_set_text_color(ctx, color);
     draw_text(ctx, title, FONT_KEY_GOTHIC_14_BOLD, frame, GTextAlignmentLeft);
 }
 
@@ -36,7 +37,11 @@ void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color) {
 
 void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect) {
     GBitmap *bitmap = gbitmap_create_with_resource(resource_id);
+#ifdef PBL_COLOR
     graphics_context_set_compositing_mode(ctx, GCompOpSet);
+#else
+    graphics_context_set_compositing_mode(ctx, GCompOpAssign);
+#endif
     graphics_draw_bitmap_in_rect(ctx, bitmap, rect);
     gbitmap_destroy(bitmap);
 }

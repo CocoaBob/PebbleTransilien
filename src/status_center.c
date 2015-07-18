@@ -43,9 +43,17 @@ char *status_curr_locale() {
 }
 
 GColor curr_fg_color() {
+#ifdef PBL_COLOR
     return s_is_dark_theme?GColorWhite:GColorBlack;
+#else
+    return GColorBlack;
+#endif
 }
 
 GColor curr_bg_color() {
+#ifdef PBL_COLOR
     return s_is_dark_theme?GColorBlack:GColorWhite;
+#else
+    return GColorWhite;
+#endif
 }
