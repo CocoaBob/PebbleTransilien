@@ -88,7 +88,12 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
 #endif
     
     // Draw lines
-    const char *str_from = station_name_at_index(idx_from);
+#ifdef LOW_MEMORY_MODE
+    char *str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+    station_data_get_name(idx_from, str_from, STATION_NAME_MAX_LENGTH);
+#else
+    const char *str_from = station_data_get_name(idx_from);
+#endif
     GRect frame_line_1 = GRect(CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN,
                                -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
                                bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
@@ -99,7 +104,17 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
         GRect frame_line_2 = frame_line_1;
         frame_line_2.origin.y = CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
         
-        draw_text(ctx, station_name_at_index(idx_to), FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
+#ifdef LOW_MEMORY_MODE
+        char *str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+        station_data_get_name(idx_to, str_to, STATION_NAME_MAX_LENGTH);
+#else
+        const char *str_to = station_data_get_name(idx_to);
+#endif
+        draw_text(ctx, str_to, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
+        
+#ifdef LOW_MEMORY_MODE
+        free(str_to);
+#endif
     } else {
         frame_line_1.size.h = bounds.size.h;
         GSize text_size = graphics_text_layout_get_content_size(str_from,
@@ -111,6 +126,10 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
         
         draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
     }
+    
+#ifdef LOW_MEMORY_MODE
+    free(str_from);
+#endif
 }
 
 // Menu layer callbacks
