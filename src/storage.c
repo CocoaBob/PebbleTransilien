@@ -22,7 +22,7 @@ bool storage_get_theme() {
 void storage_set_theme(bool is_dark) {
     persist_write_bool(SETTING_THEME, is_dark);
 
-    load_status();
+    status_init();
 }
 
 bool storage_get_locale(char *locale) {
@@ -38,7 +38,7 @@ bool storage_get_locale(char *locale) {
 void storage_set_locale(const char* locale) {
     persist_write_string(SETTING_LOCALE, locale);
     
-    load_status();
+    status_init();
 }
 
 bool storage_get_favorites(void *favorites, const size_t buffer_size) {
@@ -49,16 +49,16 @@ bool storage_get_favorites(void *favorites, const size_t buffer_size) {
     return false;
 }
 
-bool storage_set_favorites(const Favorite *favorites, int16_t fav_count) {
+bool storage_set_favorites(const Favorite *favorites, size_t fav_count) {
     int result = persist_write_data(SETTING_FAVORITES, favorites, size_of_Favorite() * fav_count);
     return (result == (int)(size_of_Favorite() * fav_count));
 }
 
-int16_t storage_get_favorites_count() {
+size_t storage_get_favorites_count() {
     return persist_read_int(SETTING_FAVORITES_COUNT);
 }
 
-bool storage_set_favorites_count(int16_t fav_count) {
+bool storage_set_favorites_count(size_t fav_count) {
     status_t result = persist_write_int(SETTING_FAVORITES_COUNT, fav_count);
     return result == S_SUCCESS;
 }

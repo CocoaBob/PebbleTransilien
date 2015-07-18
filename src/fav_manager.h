@@ -19,7 +19,7 @@ typedef struct Favorite {
 size_t size_of_Favorite();
 void load_favorites();
 void unload_favorites();
-int16_t fav_get_count();
-Favorite fav_at_index(int16_t index);
+size_t fav_get_count();
+Favorite fav_at_index(size_t index);
 bool fav_add(char *from, char *to);
-bool fav_delete_at_index(int16_t index);
+bool fav_delete_at_index(size_t index);

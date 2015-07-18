@@ -93,6 +93,16 @@
       },
       {
         "type": "raw",
+        "name": "STATION_CODE",
+        "file": "data/station_code.bin"
+      },
+      {
+        "type": "raw",
+        "name": "STATION_NAME",
+        "file": "data/station_name.bin"
+      },
+      {
+        "type": "raw",
         "name": "LOCALE_ENGLISH",
         "file": "localizations/locale_english.bin"
       },

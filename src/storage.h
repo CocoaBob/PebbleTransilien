@@ -15,6 +15,6 @@ bool storage_get_locale(char *locale);
 void storage_set_locale(const char* lang);
 
 bool storage_get_favorites(void *favorites, const size_t buffer_size);
-bool storage_set_favorites(const Favorite *favorites, int16_t fav_count);
-int16_t storage_get_favorites_count();
-bool storage_set_favorites_count(int16_t fav_count);
+bool storage_set_favorites(const Favorite *favorites, size_t fav_count);
+size_t storage_get_favorites_count();
+bool storage_set_favorites_count(size_t fav_count);

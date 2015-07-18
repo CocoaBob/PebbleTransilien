@@ -39,11 +39,11 @@ void unload_favorites() {
     }
 }
 
-int16_t fav_get_count() {
+size_t fav_get_count() {
     return storage_get_favorites_count();
 }
 
-Favorite fav_at_index(int16_t index) {
+Favorite fav_at_index(size_t index) {
     return s_favorites[index];
 }
 
@@ -53,7 +53,7 @@ bool fav_add(char *from, char *to) {
         load_favorites();
     }
     
-    int16_t fav_count = fav_get_count();
+    size_t fav_count = fav_get_count();
     // If we already have max count of favorites
     if (fav_count >= FAV_MAX_COUNT) {
         return false;
@@ -89,10 +89,13 @@ bool fav_add(char *from, char *to) {
     return true;
 }
 
-bool fav_delete_at_index(int16_t index) {
-    int16_t new_fav_count = fav_get_count() - 1;
+bool fav_delete_at_index(size_t index) {
+    if (index >= fav_get_count()) {
+        return false;
+    }
+    size_t new_fav_count = fav_get_count() - 1;
     if (index != new_fav_count) {
-        for (int16_t i = index; i < new_fav_count; ++i) {
+        for (size_t i = index; i < new_fav_count; ++i) {
             copy_favorite(&s_favorites[i], &s_favorites[i+1]);
         }
     }

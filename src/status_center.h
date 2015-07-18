@@ -8,8 +8,8 @@
 
 #pragma once
 
-void load_status();
-void unload_status();
+void status_init();
+void status_deinit();
 
 bool status_is_dark_theme();
 char *status_curr_locale();

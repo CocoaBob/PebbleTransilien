@@ -7,7 +7,6 @@
 //
 
 #include <pebble.h>
-#include <localize.h>
 #include "headers.h"
 
 enum {
@@ -136,8 +135,8 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #else
     GColor stroke_color = curr_fg_color();
 #endif
-    int16_t section = cell_index->section;
-    int16_t row = cell_index->row;
+    uint16_t section = cell_index->section;
+    uint16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
         bool is_from_to = (strncmp(favorite.to, "XXX", 3) != 0);

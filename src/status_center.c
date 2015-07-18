@@ -12,8 +12,8 @@
 static bool s_is_dark_theme;
 static char* s_curr_locale;
 
-void load_status() {
-    unload_status();
+void status_init() {
+    status_deinit();
     
     // Get current theme
     s_is_dark_theme = storage_get_theme();
@@ -26,7 +26,7 @@ void load_status() {
     setlocale(LC_ALL, s_curr_locale);
 }
 
-void unload_status() {
+void status_deinit() {
     if (s_curr_locale != NULL) {
         free(s_curr_locale);
         s_curr_locale = NULL;

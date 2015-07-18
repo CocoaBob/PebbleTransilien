@@ -8,10 +8,13 @@
 
 #pragma once
 
+#include <localize.h>
+
 #include "constants.h"
 
 #include "drawing.h"
 #include "fav_manager.h"
+#include "station_data.h"
 #include "status_center.h"
 #include "storage.h"
 #include "ui.h"

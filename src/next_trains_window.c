@@ -7,7 +7,6 @@
 //
 
 #include <pebble.h>
-#include <localize.h>
 #include "headers.h"
 
 static Window *s_main_window;

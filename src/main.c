@@ -7,25 +7,22 @@
 //
 
 #include <pebble.h>
-#include <localize.h>
 #include "headers.h"
 
 void handle_init(void) {
+    locale_init();
+    status_init();
+    station_data_init();
     push_main_menu_window();
 }
 
 void handle_deinit(void) {
-    
+    status_deinit();
+    station_data_deinit();
 }
 
 int main(void) {
-    load_status();
-    
-        locale_init();
-        
-        handle_init();
-            app_event_loop();
-        handle_deinit();
- 
-    unload_status();
+    handle_init();
+    app_event_loop();
+    handle_deinit();
 }
