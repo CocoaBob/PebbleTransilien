@@ -17,6 +17,7 @@
 		4592A2801B5BB4DD0070351C /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2731B5BB4DD0070351C /* main.c */; };
 		4592A2811B5BB4DD0070351C /* main_menu_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2751B5BB4DD0070351C /* main_menu_window.c */; };
 		4592A2821B5BB4DD0070351C /* next_trains_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2771B5BB4DD0070351C /* next_trains_window.c */; };
+		4592A28B1B5BBAD30070351C /* app_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2891B5BBAD30070351C /* app_message.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -60,6 +61,9 @@
 		4592A2761B5BB4DD0070351C /* main_menu_window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_menu_window.h; sourceTree = "<group>"; };
 		4592A2771B5BB4DD0070351C /* next_trains_window.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = next_trains_window.c; sourceTree = "<group>"; };
 		4592A2781B5BB4DD0070351C /* next_trains_window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = next_trains_window.h; sourceTree = "<group>"; };
+		4592A2861B5BB9CF0070351C /* pebble-js-app.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "pebble-js-app.js"; sourceTree = "<group>"; };
+		4592A2891B5BBAD30070351C /* app_message.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = app_message.c; sourceTree = "<group>"; };
+		4592A28A1B5BBAD30070351C /* app_message.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = app_message.h; sourceTree = "<group>"; };
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 		45EC75521B4C0FFA00524DDA /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -83,6 +87,7 @@
 				4592A2731B5BB4DD0070351C /* main.c */,
 				4592A25F1B5BB4DD0070351C /* data */,
 				4592A2691B5BB4DD0070351C /* interface */,
+				4592A2881B5BBAD30070351C /* message */,
 				4592A26E1B5BB4DD0070351C /* js */,
 				4592A26F1B5BB4DD0070351C /* locale_framework */,
 				4592A2741B5BB4DD0070351C /* windows */,
@@ -139,6 +144,7 @@
 		4592A26E1B5BB4DD0070351C /* js */ = {
 			isa = PBXGroup;
 			children = (
+				4592A2861B5BB9CF0070351C /* pebble-js-app.js */,
 			);
 			path = js;
 			sourceTree = "<group>";
@@ -162,6 +168,15 @@
 				4592A2781B5BB4DD0070351C /* next_trains_window.h */,
 			);
 			path = windows;
+			sourceTree = "<group>";
+		};
+		4592A2881B5BBAD30070351C /* message */ = {
+			isa = PBXGroup;
+			children = (
+				4592A2891B5BBAD30070351C /* app_message.c */,
+				4592A28A1B5BBAD30070351C /* app_message.h */,
+			);
+			path = message;
 			sourceTree = "<group>";
 		};
 		45EC755D1B4C10C200524DDA /* Products */ = {
@@ -332,6 +347,7 @@
 				4592A2811B5BB4DD0070351C /* main_menu_window.c in Sources */,
 				4592A2801B5BB4DD0070351C /* main.c in Sources */,
 				4592A2791B5BB4DD0070351C /* favorites.c in Sources */,
+				4592A28B1B5BBAD30070351C /* app_message.c in Sources */,
 				4592A27C1B5BB4DD0070351C /* storage.c in Sources */,
 				4592A27D1B5BB4DD0070351C /* drawing.c in Sources */,
 			);

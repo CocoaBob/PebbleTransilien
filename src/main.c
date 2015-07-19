@@ -13,12 +13,14 @@ void handle_init(void) {
     locale_init();
     status_init();
     stations_init();
+    message_init();
     push_main_menu_window();
 }
 
 void handle_deinit(void) {
     status_deinit();
     stations_deinit();
+    message_deinit();
 }
 
 int main(void) {
