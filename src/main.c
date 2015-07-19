@@ -12,13 +12,13 @@
 void handle_init(void) {
     locale_init();
     status_init();
-    station_data_init();
+    stations_init();
     push_main_menu_window();
 }
 
 void handle_deinit(void) {
     status_deinit();
-    station_data_deinit();
+    stations_deinit();
 }
 
 int main(void) {

@@ -8,16 +8,17 @@
 
 #pragma once
 
-#include <localize.h>
+#include "locale_framework/localize.h"
 
 #include "constants.h"
 
-#include "drawing.h"
-#include "fav_manager.h"
-#include "station_data.h"
-#include "status_center.h"
-#include "storage.h"
-#include "ui.h"
+#include "data/favorites.h"
+#include "data/stations.h"
+#include "data/status.h"
+#include "data/storage.h"
 
-#include "main_menu_window.h"
-#include "next_trains_window.h"
+#include "interface/drawing.h"
+#include "interface/status_bar.h"
+
+#include "windows/main_menu_window.h"
+#include "windows/next_trains_window.h"

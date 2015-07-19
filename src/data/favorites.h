@@ -1,5 +1,5 @@
 //
-//  data_manager.h
+//  favorites.h
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 10/07/15.

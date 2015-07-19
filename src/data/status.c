@@ -1,5 +1,5 @@
 //
-//  status_center.c
+//  status.c
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 10/07/15.

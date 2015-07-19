@@ -1,5 +1,5 @@
 //
-//  station_data.h
+//  stations.h
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 18/07/15.
@@ -17,13 +17,13 @@
 #define STATION_CODE_LENGTH 3
 #define STATION_NON 999
 
-void station_data_init();
-void station_data_deinit();
+void stations_init();
+void stations_deinit();
 
 #ifdef LOW_MEMORY_MODE
-size_t station_data_get_name(size_t index, char *buffer, const size_t buffer_size);
-size_t station_data_get_code(size_t index, char *buffer, const size_t buffer_size);
+size_t stations_get_name(size_t index, char *buffer, const size_t buffer_size);
+size_t stations_get_code(size_t index, char *buffer, const size_t buffer_size);
 #else
-const char* station_data_get_name(size_t index);
-const char* station_data_get_code(size_t index);
+const char* stations_get_name(size_t index);
+const char* stations_get_code(size_t index);
 #endif

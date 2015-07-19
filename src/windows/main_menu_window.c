@@ -90,9 +90,9 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
     // Draw lines
 #ifdef LOW_MEMORY_MODE
     char *str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-    station_data_get_name(idx_from, str_from, STATION_NAME_MAX_LENGTH);
+    stations_get_name(idx_from, str_from, STATION_NAME_MAX_LENGTH);
 #else
-    const char *str_from = station_data_get_name(idx_from);
+    const char *str_from = stations_get_name(idx_from);
 #endif
     GRect frame_line_1 = GRect(CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN,
                                -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
@@ -106,9 +106,9 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
         
 #ifdef LOW_MEMORY_MODE
         char *str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-        station_data_get_name(idx_to, str_to, STATION_NAME_MAX_LENGTH);
+        stations_get_name(idx_to, str_to, STATION_NAME_MAX_LENGTH);
 #else
-        const char *str_to = station_data_get_name(idx_to);
+        const char *str_to = stations_get_name(idx_to);
 #endif
         draw_text(ctx, str_to, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
         

@@ -1,5 +1,5 @@
 //
-//  station_data.c
+//  stations.c
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 18/07/15.
@@ -15,7 +15,7 @@ ResHandle s_code_handle;
 ResHandle s_name_handle;
 static size_t* s_name_positions;
 
-void station_data_init() {
+void stations_init() {
     // Get station codes
     s_code_handle = resource_get_handle(RESOURCE_ID_STATION_CODE);
     size_t code_size = resource_size(s_code_handle);
@@ -39,16 +39,16 @@ void station_data_init() {
     free(buffer);
 }
 
-void station_data_deinit() {
+void stations_deinit() {
     free(s_name_positions);
 }
 
-size_t station_data_get_name(size_t index, char *buffer, const size_t buffer_size) {
+size_t stations_get_name(size_t index, char *buffer, const size_t buffer_size) {
     size_t position = s_name_positions[index];
     return resource_load_byte_range(s_name_handle, position, (uint8_t *)buffer, buffer_size);
 }
 
-size_t station_data_get_code(size_t index, char *buffer, const size_t buffer_size) {
+size_t stations_get_code(size_t index, char *buffer, const size_t buffer_size) {
     return resource_load_byte_range(s_code_handle, STATION_CODE_LENGTH * index, (uint8_t *)buffer, buffer_size);
 }
 
@@ -58,7 +58,7 @@ static char* s_codes;
 static char* s_names;
 static char** s_name_pointers;
 
-void station_data_init() {
+void stations_init() {
     // Load station codes
     ResHandle code_handle = resource_get_handle(RESOURCE_ID_STATION_CODE);
     size_t code_size = resource_size(code_handle);
@@ -81,17 +81,17 @@ void station_data_init() {
     }
 }
 
-void station_data_deinit() {
+void stations_deinit() {
     free(s_codes);
     free(s_names);
     free(s_name_pointers);
 }
 
-const char* station_data_get_name(size_t index) {
+const char* stations_get_name(size_t index) {
     return s_name_pointers[index];
 }
 
-const char* station_data_get_code(size_t index) {
+const char* stations_get_code(size_t index) {
     return s_codes + STATION_CODE_LENGTH * index;
 }
 

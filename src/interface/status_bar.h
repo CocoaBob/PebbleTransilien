@@ -1,5 +1,5 @@
 //
-//  ui.h
+//  status_bar.h
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 10/07/15.
