@@ -30,6 +30,9 @@ static DataModelFromTo *s_from_to;
 static char *s_str_from;
 static char *s_str_to;
 
+static size_t s_next_trains_count;
+static DataModelNextTrain *s_next_trains;
+
 // MARK: Foward declaration
 
 void setup_next_trains_menu_layer_theme();
