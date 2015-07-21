@@ -20,10 +20,14 @@ typedef enum {
 typedef void (*MessageSucceededCallback)(DictionaryIterator *received);
 typedef void (*MessageFailedCallback)(void);
 
+typedef struct MessageCallbacks {
+    MessageSucceededCallback message_succeeded_callback;
+    MessageFailedCallback message_failed_callback;
+} MessageCallbacks;
+
 void message_init();
 void message_deinit();
 
-void send_message(MESSAGE_TYPE type,
+void message_send(MESSAGE_TYPE type,
                   DictionaryIterator *parameters,
-                  MessageSucceededCallback succeeded_callback,
-                  MessageFailedCallback failed_callback);
+                  MessageCallbacks callbacks);
