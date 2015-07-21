@@ -8,7 +8,7 @@
 
 #pragma once
 
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
 void status_bar_set_colors(StatusBarLayer *status_bar_layer);
 void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_layer, Layer **status_bar_overlay_layer);
 #endif

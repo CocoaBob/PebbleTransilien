@@ -11,7 +11,7 @@
 
 // Status bar and its overlay
 
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
 static void status_bar_overlay_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     GColor color = status_is_dark_theme()?GColorWhite:GColorBlack;

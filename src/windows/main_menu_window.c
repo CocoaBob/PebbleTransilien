@@ -37,30 +37,27 @@ enum {
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_overlay_layer;
 #endif
 
-#ifndef PBL_COLOR
+#ifdef PBL_BW
 static InverterLayer *s_inverter_layer;
 #endif
 
-// Foward declaration
+// MARK: Foward declaration
 
 void setup_main_menu_layer_theme();
 
-// Constants
-
-#define MAIN_MENU_CELL_ICON_WIDTH 8
-#define MAIN_MENU_CELL_ICON_HEIGHT 26
+// MARK: Constants
 
 // MARK: Drawing
 
 void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
                          GColor stroke_color,
 #ifdef PBL_COLOR
-                         bool is_dark_theme,
+                         bool is_highlighed,
 #endif
                          size_t idx_from, size_t idx_to) {
     graphics_context_set_text_color(ctx, stroke_color);
@@ -70,14 +67,14 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
     
     // Draw left icon
     GRect frame_icon = GRect(CELL_MARGIN,
-                             (CELL_HEIGHT - MAIN_MENU_CELL_ICON_HEIGHT) / 2,
-                             MAIN_MENU_CELL_ICON_WIDTH,
-                             is_from_to?MAIN_MENU_CELL_ICON_HEIGHT:MAIN_MENU_CELL_ICON_WIDTH);
+                             (CELL_HEIGHT - FROM_TO_ICON_HEIGHT) / 2,
+                             FROM_TO_ICON_WIDTH,
+                             is_from_to?FROM_TO_ICON_HEIGHT:FROM_TO_ICON_WIDTH);
 #ifdef PBL_COLOR
     if (is_from_to) {
-        draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
+        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
     } else {
-        draw_image_in_rect(ctx, is_dark_theme?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
     }
 #else
     if (is_from_to) {
@@ -88,15 +85,12 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
 #endif
     
     // Draw lines
-#ifdef LOW_MEMORY_MODE
     char *str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
     stations_get_name(idx_from, str_from, STATION_NAME_MAX_LENGTH);
-#else
-    const char *str_from = stations_get_name(idx_from);
-#endif
-    GRect frame_line_1 = GRect(CELL_MARGIN + MAIN_MENU_CELL_ICON_WIDTH + CELL_MARGIN,
+
+    GRect frame_line_1 = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
                                -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
-                               bounds.size.w - MAIN_MENU_CELL_ICON_WIDTH - CELL_MARGIN * 3,
+                               bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN * 3,
                                CELL_HEIGHT_2);
     if (is_from_to) {
         draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
@@ -104,17 +98,12 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
         GRect frame_line_2 = frame_line_1;
         frame_line_2.origin.y = CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
         
-#ifdef LOW_MEMORY_MODE
         char *str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
         stations_get_name(idx_to, str_to, STATION_NAME_MAX_LENGTH);
-#else
-        const char *str_to = stations_get_name(idx_to);
-#endif
+
         draw_text(ctx, str_to, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
         
-#ifdef LOW_MEMORY_MODE
         free(str_to);
-#endif
     } else {
         frame_line_1.size.h = bounds.size.h;
         GSize text_size = graphics_text_layout_get_content_size(str_from,
@@ -127,9 +116,7 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
         draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
     }
     
-#ifdef LOW_MEMORY_MODE
     free(str_from);
-#endif
 }
 
 // MARK: Message Request callbacks
@@ -178,9 +165,9 @@ static int16_t get_header_height_callback(struct MenuLayer *menu_layer, uint16_t
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    bool is_highlighted = (menu_index_compare(&selected_index, cell_index) == 0);
-    bool is_dark_theme = status_is_dark_theme() || is_highlighted;
-    GColor stroke_color = is_highlighted?curr_bg_color():curr_fg_color();
+    bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+    bool is_highlighed = status_is_dark_theme() || is_selected;
+    GColor stroke_color = is_selected?curr_bg_color():curr_fg_color();
 #else
     GColor stroke_color = curr_fg_color();
 #endif
@@ -191,7 +178,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         draw_main_menu_cell(ctx, cell_layer,
                             stroke_color,
 #ifdef PBL_COLOR
-                            is_dark_theme,
+                            is_highlighed,
 #endif
                             favorite.from, favorite.to);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
@@ -235,15 +222,16 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
 //                         .message_succeeded_callback = message_succeeded_callback,
 //                         .message_failed_callback = message_failed_callback
 //                     });
-        push_next_trains_window();
+        Favorite favorite = fav_at_index(cell_index->row);
+        push_next_trains_window(favorite);
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
-        push_next_trains_window();
+        // TODO: Search
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             // Change theme
             storage_set_theme(!status_is_dark_theme());
             setup_main_menu_layer_theme();
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
             status_bar_set_colors(s_status_bar);
 #endif
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
@@ -276,7 +264,7 @@ static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, Menu
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
 static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
     GRect frame = layer_get_frame(bg_layer);
     graphics_context_set_fill_color(ctx, curr_bg_color());
@@ -284,7 +272,7 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 }
 #endif
 
-// Window load/unload
+// MARK: Window load/unload
 
 static void window_load(Window *window) {
     persist_delete(102);
@@ -304,7 +292,7 @@ static void window_load(Window *window) {
     
     // Add menu layer
     int16_t status_bar_height = 0;
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
 #endif
     GRect menu_layer_frame = GRect(bounds.origin.x,
@@ -325,18 +313,18 @@ static void window_load(Window *window) {
         .select_long_click = (MenuLayerSelectCallback)select_long_callback,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
         ,
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
     
     // Finally, add status bar
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_overlay_layer);
 #endif
     
-#ifndef PBL_COLOR
+#ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(menu_layer_frame);
 #endif
     
@@ -346,19 +334,19 @@ static void window_load(Window *window) {
 static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
     unload_favorites();
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
     layer_destroy(s_status_bar_overlay_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif
     
-#ifndef PBL_COLOR
+#ifdef PBL_BW
     inverter_layer_destroy(s_inverter_layer);
 #endif
     window_destroy(window);
     s_window = NULL;
 }
 
-// Setup UI
+// MARK: Setup UI
 
 void setup_main_menu_layer_theme() {
 #ifdef PBL_COLOR
@@ -374,7 +362,7 @@ void setup_main_menu_layer_theme() {
 #endif
 }
 
-// Entry point
+// MARK: Entry point
 
 void push_main_menu_window() {
     if(!s_window) {

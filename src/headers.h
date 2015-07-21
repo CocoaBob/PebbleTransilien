@@ -13,6 +13,7 @@
 #include "constants.h"
 
 #include "data/favorites.h"
+#include "data/data_model.h"
 #include "data/stations.h"
 #include "data/status.h"
 #include "data/storage.h"

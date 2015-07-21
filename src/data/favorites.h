@@ -8,12 +8,9 @@
 
 #pragma once
 
-#define FAV_MAX_COUNT 64// 4*64=256, 256 is persist data max lenght
+#include "data/data_model.h"
 
-typedef struct Favorite {
-    size_t from;
-    size_t to;
-} Favorite;
+#define FAV_MAX_COUNT 64// 4*64=256, 256 is persist data max lenght
 
 size_t size_of_Favorite();
 void load_favorites();

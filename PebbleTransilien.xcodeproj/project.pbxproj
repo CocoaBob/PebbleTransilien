@@ -18,6 +18,7 @@
 		4592A2811B5BB4DD0070351C /* main_menu_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2751B5BB4DD0070351C /* main_menu_window.c */; };
 		4592A2821B5BB4DD0070351C /* next_trains_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2771B5BB4DD0070351C /* next_trains_window.c */; };
 		4592A28B1B5BBAD30070351C /* app_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2891B5BBAD30070351C /* app_message.c */; };
+		45B2B6891B5EE93F0065786D /* data_model.c in Sources */ = {isa = PBXBuildFile; fileRef = 45B2B6871B5EE93F0065786D /* data_model.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -65,6 +66,8 @@
 		4592A2891B5BBAD30070351C /* app_message.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = app_message.c; sourceTree = "<group>"; };
 		4592A28A1B5BBAD30070351C /* app_message.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = app_message.h; sourceTree = "<group>"; };
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
+		45B2B6871B5EE93F0065786D /* data_model.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = data_model.c; sourceTree = "<group>"; };
+		45B2B6881B5EE93F0065786D /* data_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = data_model.h; sourceTree = "<group>"; };
 		45EC75521B4C0FFA00524DDA /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -118,6 +121,8 @@
 		4592A25F1B5BB4DD0070351C /* data */ = {
 			isa = PBXGroup;
 			children = (
+				45B2B6871B5EE93F0065786D /* data_model.c */,
+				45B2B6881B5EE93F0065786D /* data_model.h */,
 				4592A2601B5BB4DD0070351C /* favorites.c */,
 				4592A2611B5BB4DD0070351C /* favorites.h */,
 				4592A2621B5BB4DD0070351C /* stations.c */,
@@ -348,6 +353,7 @@
 				4592A2801B5BB4DD0070351C /* main.c in Sources */,
 				4592A2791B5BB4DD0070351C /* favorites.c in Sources */,
 				4592A28B1B5BBAD30070351C /* app_message.c in Sources */,
+				45B2B6891B5EE93F0065786D /* data_model.c in Sources */,
 				4592A27C1B5BB4DD0070351C /* storage.c in Sources */,
 				4592A27D1B5BB4DD0070351C /* drawing.c in Sources */,
 			);

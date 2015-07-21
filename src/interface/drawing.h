@@ -10,7 +10,7 @@
 
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment);
 
-#ifdef PBL_SDK_3
+#ifdef PBL_PLATFORM_BASALT
 void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_layer, Layer **battery_layer);
 #endif
 

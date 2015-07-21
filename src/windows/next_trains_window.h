@@ -8,4 +8,6 @@
 
 #pragma once
 
-void push_next_trains_window();
+#include "data/data_model.h"
+
+void push_next_trains_window(DataModelFromTo from_to);
