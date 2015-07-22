@@ -19,7 +19,7 @@
 #include "data/storage.h"
 
 #include "interface/drawing.h"
-#include "interface/status_bar.h"
+#include "interface/setup_ui.h"
 
 #include "message/app_message.h"
 

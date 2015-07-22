@@ -1,5 +1,5 @@
 //
-//  status_bar.c
+//  setup_ui.c
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 10/07/15.
@@ -9,7 +9,7 @@
 #include <pebble.h>
 #include "headers.h"
 
-// Status bar and its overlay
+// MARK: Status bar and its overlay
 
 #ifdef PBL_PLATFORM_BASALT
 static void status_bar_overlay_layer_proc(Layer *layer, GContext *ctx) {
@@ -52,3 +52,24 @@ void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_laye
     layer_add_child(window_layer, *status_bar_overlay_layer);
 }
 #endif
+
+// MARK: Theme
+
+#ifdef PBL_COLOR
+void setup_ui_theme(MenuLayer *menu_layer)
+#else
+void setup_ui_theme(Window *window, InverterLayer *inverter_layer)
+#endif
+{
+#ifdef PBL_COLOR
+    menu_layer_set_normal_colors(menu_layer, curr_bg_color(), curr_fg_color());
+    menu_layer_set_highlight_colors(menu_layer, GColorCobaltBlue, GColorWhite);
+#else
+    if (status_is_dark_theme()) {
+        Layer *window_layer = window_get_root_layer(window);
+        layer_add_child(window_layer, inverter_layer_get_layer(inverter_layer));
+    } else {
+        layer_remove_from_parent(inverter_layer_get_layer(inverter_layer));
+    }
+#endif
+}

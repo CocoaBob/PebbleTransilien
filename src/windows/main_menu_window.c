@@ -46,10 +46,6 @@ static Layer *s_status_bar_overlay_layer;
 static InverterLayer *s_inverter_layer;
 #endif
 
-// MARK: Foward declaration
-
-void setup_main_menu_layer_theme();
-
 // MARK: Constants
 
 // MARK: Drawing
@@ -230,7 +226,12 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             // Change theme
             storage_set_theme(!status_is_dark_theme());
-            setup_main_menu_layer_theme();
+#ifdef PBL_COLOR
+            setup_ui_theme(s_menu_layer);
+#else
+            setup_ui_theme(s_window, s_inverter_layer);
+#endif
+            
 #ifdef PBL_PLATFORM_BASALT
             status_bar_set_colors(s_status_bar);
 #endif
@@ -272,7 +273,7 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 }
 #endif
 
-// MARK: Window load/unload
+// MARK: Window callbacks
 
 static void window_load(Window *window) {
     persist_delete(102);
@@ -328,7 +329,11 @@ static void window_load(Window *window) {
     s_inverter_layer = inverter_layer_create(menu_layer_frame);
 #endif
     
-    setup_main_menu_layer_theme();
+#ifdef PBL_COLOR
+    setup_ui_theme(s_menu_layer);
+#else
+    setup_ui_theme(s_window, s_inverter_layer);
+#endif
 }
 
 static void window_unload(Window *window) {
@@ -344,22 +349,6 @@ static void window_unload(Window *window) {
 #endif
     window_destroy(window);
     s_window = NULL;
-}
-
-// MARK: Setup UI
-
-void setup_main_menu_layer_theme() {
-#ifdef PBL_COLOR
-    menu_layer_set_normal_colors(s_menu_layer, curr_bg_color(), curr_fg_color());
-    menu_layer_set_highlight_colors(s_menu_layer, GColorCobaltBlue, GColorWhite);
-#else
-    if (status_is_dark_theme()) {
-        Layer *window_layer = window_get_root_layer(s_window);
-        layer_add_child(window_layer, inverter_layer_get_layer(s_inverter_layer));
-    } else {
-        layer_remove_from_parent(inverter_layer_get_layer(s_inverter_layer));
-    }
-#endif
 }
 
 // MARK: Entry point

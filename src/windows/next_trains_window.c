@@ -33,10 +33,6 @@ static char *s_str_to;
 static size_t s_next_trains_count;
 static DataModelNextTrain *s_next_trains;
 
-// MARK: Foward declaration
-
-void setup_next_trains_menu_layer_theme();
-
 // MARK: Constants
 
 #define NEXT_TRAIN_CELL_ICON_SIZE 19
@@ -321,7 +317,7 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 }
 #endif
 
-// MARK: Window load/unload
+// MARK: Window callbacks
 
 static void window_load(Window *window) {
     // Data
@@ -373,7 +369,11 @@ static void window_load(Window *window) {
     s_inverter_layer = inverter_layer_create(menu_layer_frame);
 #endif
     
-    setup_next_trains_menu_layer_theme();
+#ifdef PBL_COLOR
+    setup_ui_theme(s_menu_layer);
+#else
+    setup_ui_theme(s_window, s_inverter_layer);
+#endif
 }
 
 static void window_unload(Window *window) {
@@ -398,20 +398,12 @@ static void window_unload(Window *window) {
 #endif
 }
 
-// MARK: Setup UI
+static void window_appear(Window *window) {
+    
+}
 
-void setup_next_trains_menu_layer_theme() {
-#ifdef PBL_COLOR
-    menu_layer_set_normal_colors(s_menu_layer, curr_bg_color(), curr_fg_color());
-    menu_layer_set_highlight_colors(s_menu_layer, GColorCobaltBlue, GColorWhite);
-#else
-    if (status_is_dark_theme()) {
-        Layer *window_layer = window_get_root_layer(s_window);
-        layer_add_child(window_layer, inverter_layer_get_layer(s_inverter_layer));
-    } else {
-        layer_remove_from_parent(inverter_layer_get_layer(s_inverter_layer));
-    }
-#endif
+static void window_disappear(Window *window) {
+    
 }
 
 // MARK: Entry point
@@ -421,6 +413,8 @@ void push_next_trains_window(DataModelFromTo from_to) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
             .load = window_load,
+            .appear = window_appear,
+            .disappear = window_disappear,
             .unload = window_unload,
         });
     }
