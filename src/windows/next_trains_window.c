@@ -32,28 +32,28 @@ static char *s_str_to;
 
 static size_t s_next_trains_count;
 static DataModelNextTrain *s_next_trains;
+static bool s_is_updating;
 
 // MARK: Constants
 
 #define NEXT_TRAIN_CELL_ICON_SIZE 19
-#define NEXT_TRAIN_CELL_ICON_W 27  // CELL_MARGIN + NEXT_TRAIN_CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
-#define NEXT_TRAIN_CELL_ICON_Y 4   // CELL_MARGIN = 4
-#define NEXT_TRAIN_CELL_CODE_X 27  // CELL_MARGIN + NEXT_TRAIN_CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
-#define NEXT_TRAIN_CELL_CODE_W 46
-#define NEXT_TRAIN_CELL_TIME_X 73  // CELL_MARGIN + NEXT_TRAIN_CELL_ICON_SIZE + CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W = 4 + 19 + 4 + 48
+#define NEXT_TRAIN_CELL_ICON_W 27   // CELL_MARGIN + NEXT_TRAIN_CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
+#define NEXT_TRAIN_CELL_ICON_Y 4    // CELL_MARGIN = 4
+#define NEXT_TRAIN_CELL_CODE_X 4    // CELL_MARGIN = 4
+#define NEXT_TRAIN_CELL_CODE_W 56
+#define NEXT_TRAIN_CELL_TIME_X 64   // CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W + CELL_MARGIN = 4 + 56
 
 // MARK: Drawing
 
 void draw_next_trains_info(GContext *ctx,
                            Layer *cell_layer,
-                           GColor stroke_color
+                           GColor text_color
 #ifdef PBL_COLOR
                            ,bool is_highlighed
 #endif
                            )
 {
-    graphics_context_set_text_color(ctx, stroke_color);
-    graphics_context_set_stroke_color(ctx, stroke_color);
+    graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
     bool is_from_to = (s_from_to->to != STATION_NON);
     
@@ -102,30 +102,16 @@ void draw_next_trains_info(GContext *ctx,
 }
 
 void draw_next_trains_cell(GContext *ctx, Layer *cell_layer,
-                           GColor stroke_color,
+                           GColor text_color,
 #ifdef PBL_COLOR
                            bool is_highlighed,
 #endif
-                           const char * str_line,
                            const char * str_code,
                            const char * str_time,
                            const char * str_terminus,
                            const char * str_platform) {
-    graphics_context_set_text_color(ctx, stroke_color);
-    graphics_context_set_stroke_color(ctx, stroke_color);
+    graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
-    
-    // Line
-    GRect frame_line = GRect(CELL_MARGIN,
-                             NEXT_TRAIN_CELL_ICON_Y,
-                             NEXT_TRAIN_CELL_ICON_SIZE,
-                             NEXT_TRAIN_CELL_ICON_SIZE);
-#ifdef PBL_COLOR
-    draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_line);
-#else
-    draw_image_in_rect(ctx, RESOURCE_ID_IMG_FRAME_LIGHT, frame_line);
-#endif
-    draw_text(ctx, str_line, FONT_KEY_GOTHIC_14_BOLD, frame_line, GTextAlignmentCenter);
     
     // Code
     GRect frame_code = GRect(NEXT_TRAIN_CELL_CODE_X,
@@ -137,9 +123,9 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer,
     // Time
     GRect frame_time = GRect(NEXT_TRAIN_CELL_TIME_X,
                              - CELL_TEXT_Y_OFFSET - 2,
-                             bounds.size.w - NEXT_TRAIN_CELL_TIME_X - CELL_MARGIN - NEXT_TRAIN_CELL_ICON_SIZE - 4,
+                             bounds.size.w - NEXT_TRAIN_CELL_TIME_X - CELL_MARGIN - NEXT_TRAIN_CELL_ICON_SIZE - CELL_MARGIN,
                              CELL_HEIGHT_2);
-    draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentLeft);
+    draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentRight);
     
     // Terminus
     GRect frame_terminus = GRect(CELL_MARGIN,
@@ -179,7 +165,7 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
     if (section_index == NEXT_TRAINS_SECTION_INFO) {
         return 1;
     } else if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
-        return 5;
+        return (s_next_trains_count > 0)?s_next_trains_count:1;
     }
     return 0;
 }
@@ -201,83 +187,42 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
     bool is_dark_theme = status_is_dark_theme();
     bool is_highlighed = is_dark_theme || is_selected;
-    GColor stroke_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
+    GColor text_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
 #else
-    GColor stroke_color = curr_fg_color();
+    GColor text_color = curr_fg_color();
 #endif
     
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
         draw_next_trains_info(ctx,
                               cell_layer,
-                              stroke_color
+                              text_color
 #ifdef PBL_COLOR
                               ,is_highlighed
 #endif
                               );
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
-        switch(cell_index->row) {
-            case 0:
-                draw_next_trains_cell(ctx, cell_layer,
-                                      stroke_color,
+        if (s_next_trains_count > 0) {
+            DataModelNextTrain next_train = s_next_trains[cell_index->row];
+            
+            char *str_terminus = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+            stations_get_name(next_train.terminus, str_terminus, STATION_NAME_MAX_LENGTH);
+            
+            draw_next_trains_cell(ctx, cell_layer,
+                                  text_color,
 #ifdef PBL_COLOR
-                                      is_highlighed,
+                                  is_highlighed,
 #endif
-                                      "J",
-                                      "EAPE",
-                                      "00:01",
-                                      "Ermont Eaubonne",
-                                      "9");
-                break;
-            case 1:
-                draw_next_trains_cell(ctx, cell_layer,
-                                      stroke_color,
-#ifdef PBL_COLOR
-                                      is_highlighed,
-#endif
-                                      "L",
-                                      "NOPE",
-                                      "00:04",
-                                      "Nanterre Université",
-                                      "27");
-                break;
-            case 2:
-                draw_next_trains_cell(ctx, cell_layer,
-                                      stroke_color,
-#ifdef PBL_COLOR
-                                      is_highlighed,
-#endif
-                                      "J",
-                                      "TOCA",
-                                      "00:10",
-                                      "Pontoise",
-                                      "C");
-                break;
-            case 3:
-                draw_next_trains_cell(ctx, cell_layer,
-                                      stroke_color,
-#ifdef PBL_COLOR
-                                      is_highlighed,
-#endif
-                                      "L",
-                                      "SEBO",
-                                      "00:13",
-                                      "Saint-Nom-la-Bretèche - Forêt de Marly",
-                                      "A");
-                break;
-            case 4:
-                draw_next_trains_cell(ctx, cell_layer,
-                                      stroke_color,
-#ifdef PBL_COLOR
-                                      is_highlighed,
-#endif
-                                      "L",
-                                      "FOPE",
-                                      "00:19",
-                                      "Maisons Laffitte",
-                                      NULL);
-                break;
-            default:
-                break;
+                                  next_train.mission_code,
+                                  next_train.hour,
+                                  str_terminus,
+                                  next_train.platform);
+            free(str_terminus);
+        } else if (s_is_updating) {
+            graphics_context_set_text_color(ctx, text_color);
+            draw_cell_title(ctx, cell_layer, "Loading...");
+        } else {
+            graphics_context_set_text_color(ctx, text_color);
+            draw_cell_title(ctx, cell_layer, "No train.");
         }
     }
 }
@@ -310,6 +255,12 @@ static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, Menu
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
+static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
+    if (s_next_trains_count == 0 && new_index->section == NEXT_TRAINS_SECTION_TRAINS) {
+        *new_index = old_index;
+    }
+}
+
 #ifdef PBL_PLATFORM_BASALT
 static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
     GRect frame = layer_get_frame(bg_layer);
@@ -326,6 +277,41 @@ static void window_load(Window *window) {
     stations_get_name(s_from_to->from, s_str_from, STATION_NAME_MAX_LENGTH);
     s_str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
     stations_get_name(s_from_to->to, s_str_to, STATION_NAME_MAX_LENGTH);
+    
+    // Demo data
+    s_is_updating = true;
+    s_next_trains_count = 5;
+    s_next_trains = malloc(sizeof(DataModelNextTrain) * s_next_trains_count);
+    
+    strcpy(s_next_trains[0].number, "123456");
+    strcpy(s_next_trains[0].mission_code, "EAPE");
+    strcpy(s_next_trains[0].hour, "00:01");
+    strcpy(s_next_trains[0].platform, "9");
+    s_next_trains[0].terminus = 133;
+    
+    strcpy(s_next_trains[1].number, "123456");
+    strcpy(s_next_trains[1].mission_code, "NOPE");
+    strcpy(s_next_trains[1].hour, "00:04");
+    strcpy(s_next_trains[1].platform, "27");
+    s_next_trains[1].terminus = 310;
+    
+    strcpy(s_next_trains[2].number, "123456");
+    strcpy(s_next_trains[2].mission_code, "TOCA");
+    strcpy(s_next_trains[2].hour, "00:10");
+    strcpy(s_next_trains[2].platform, "C");
+    s_next_trains[2].terminus = 353;
+    
+    strcpy(s_next_trains[3].number, "123456");
+    strcpy(s_next_trains[3].mission_code, "SEBO");
+    strcpy(s_next_trains[3].hour, "00:13");
+    strcpy(s_next_trains[3].platform, "A");
+    s_next_trains[3].terminus = 393;
+    
+    strcpy(s_next_trains[4].number, "123456");
+    strcpy(s_next_trains[4].mission_code, "FOPE");
+    strcpy(s_next_trains[4].hour, "00:19");
+    strcpy(s_next_trains[4].platform, "BL");
+    s_next_trains[4].terminus = 259;
     
     // Window
     Layer *window_layer = window_get_root_layer(window);
@@ -357,6 +343,7 @@ static void window_load(Window *window) {
         .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
+        .selection_will_change = (MenuLayerSelectionWillChangeCallback)selection_will_change_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
@@ -383,6 +370,10 @@ static void window_unload(Window *window) {
     free(s_str_to);
     free(s_from_to);
     s_from_to = NULL;
+    
+    if (s_next_trains != NULL) {
+        free(s_next_trains);
+    }
     
     // Window
     menu_layer_destroy(s_menu_layer);

@@ -9,11 +9,13 @@
 #include <pebble.h>
 #include "headers.h"
 
+// MARK: Basics
+
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment) {
     graphics_draw_text(ctx, text, fonts_get_system_font(font_key), frame, GTextOverflowModeTrailingEllipsis, alignment, NULL);
 }
 
-// Draw header and separators
+// MARK: Draw header and separators
 
 void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color) {
     GRect bounds = layer_get_bounds(cell_layer);
@@ -33,7 +35,7 @@ void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color) {
     }
 }
 
-// Draw images
+// MARK: Draw images
 
 void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect) {
     GBitmap *bitmap = gbitmap_create_with_resource(resource_id);
@@ -44,4 +46,15 @@ void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect) {
 #endif
     graphics_draw_bitmap_in_rect(ctx, bitmap, rect);
     gbitmap_destroy(bitmap);
+}
+
+// MARK: Draw cells
+
+void draw_cell_title(GContext* ctx, const Layer *cell_layer, const char *title) {
+    GRect bounds = layer_get_bounds(cell_layer);
+    GRect frame = GRect(CELL_MARGIN,
+                        12-CELL_TEXT_Y_OFFSET,
+                        bounds.size.w - CELL_MARGIN * 2,
+                        18);
+    draw_text(ctx, title, FONT_KEY_GOTHIC_18_BOLD, frame, GTextAlignmentCenter);
 }

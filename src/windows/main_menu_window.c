@@ -51,13 +51,12 @@ static InverterLayer *s_inverter_layer;
 // MARK: Drawing
 
 void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
-                         GColor stroke_color,
+                         GColor text_color,
 #ifdef PBL_COLOR
                          bool is_highlighed,
 #endif
                          size_t idx_from, size_t idx_to) {
-    graphics_context_set_text_color(ctx, stroke_color);
-    graphics_context_set_stroke_color(ctx, stroke_color);
+    graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
     bool is_from_to = (idx_to != STATION_NON);
     
@@ -164,16 +163,16 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
     bool is_highlighed = is_dark_theme || is_selected;
-    GColor stroke_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
+    GColor text_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
 #else
-    GColor stroke_color = curr_fg_color();
+    GColor text_color = curr_fg_color();
 #endif
     uint16_t section = cell_index->section;
     uint16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
         draw_main_menu_cell(ctx, cell_layer,
-                            stroke_color,
+                            text_color,
 #ifdef PBL_COLOR
                             is_highlighed,
 #endif
