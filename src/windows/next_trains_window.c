@@ -158,8 +158,14 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer,
 // MARK: Message Request callbacks
 
 static void message_succeeded_callback(DictionaryIterator *received) {
-    uint32_t size = dict_size(received);
-    printf("-=-=-=-%s\n%p %lu",__func__,received,size);
+    Tuple *tuple_type = dict_find(received, MESSAGE_KEY_RESPONSE_TYPE);
+    if (tuple_type->value->int8 != MESSAGE_TYPE_NEXT_TRAINS) {
+        return;
+    }
+//    Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD);
+//    char *payload = tuple_payload->value->cstring;
+//    uint16_t size = tuple_payload->length;
+//    printf("%u\n%s",size,payload);
 }
 
 static void message_failed_callback(void) {
@@ -181,18 +187,18 @@ static void request_next_stations() {
     uint8_t *dict_buffer = malloc(dict_size);
     dict_write_begin(&parameters, dict_buffer, dict_size);
     
-    dict_write_uint8(&parameters, MESSAGE_KEY_TYPE, MESSAGE_TYPE_NEXT_TRAINS);
+    dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_NEXT_TRAINS);
     
     if (s_from_to->from != STATION_NON) {
         char *data = malloc(STATION_CODE_LENGTH);
         stations_get_code(s_from_to->from, data, STATION_CODE_LENGTH);
-        dict_write_data(&parameters, MESSAGE_KEY_CODE_FROM, (uint8_t *)data, STATION_CODE_LENGTH);
+        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_FROM, (uint8_t *)data, STATION_CODE_LENGTH);
         free(data);
     }
     if (s_from_to->to != STATION_NON) {
         char *data = malloc(STATION_CODE_LENGTH);
         stations_get_code(s_from_to->to, data, STATION_CODE_LENGTH);
-        dict_write_data(&parameters, MESSAGE_KEY_CODE_TO, (uint8_t *)data, STATION_CODE_LENGTH);
+        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_TO, (uint8_t *)data, STATION_CODE_LENGTH);
         free(data);
     }
     
@@ -265,7 +271,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #ifdef PBL_COLOR
                                   is_highlighed,
 #endif
-                                  next_train.mission_code,
+                                  next_train.code,
                                   next_train.hour,
                                   str_terminus,
                                   next_train.platform);
@@ -339,31 +345,31 @@ static void window_load(Window *window) {
     s_next_trains = malloc(sizeof(DataModelNextTrain) * s_next_trains_count);
     
     strcpy(s_next_trains[0].number, "123456");
-    strcpy(s_next_trains[0].mission_code, "EAPE");
+    strcpy(s_next_trains[0].code, "EAPE");
     strcpy(s_next_trains[0].hour, "00:01");
     strcpy(s_next_trains[0].platform, "9");
     s_next_trains[0].terminus = 133;
     
     strcpy(s_next_trains[1].number, "123456");
-    strcpy(s_next_trains[1].mission_code, "NOPE");
+    strcpy(s_next_trains[1].code, "NOPE");
     strcpy(s_next_trains[1].hour, "00:04");
     strcpy(s_next_trains[1].platform, "27");
     s_next_trains[1].terminus = 310;
     
     strcpy(s_next_trains[2].number, "123456");
-    strcpy(s_next_trains[2].mission_code, "TOCA");
+    strcpy(s_next_trains[2].code, "TOCA");
     strcpy(s_next_trains[2].hour, "00:10");
     strcpy(s_next_trains[2].platform, "C");
     s_next_trains[2].terminus = 353;
     
     strcpy(s_next_trains[3].number, "123456");
-    strcpy(s_next_trains[3].mission_code, "SEBO");
+    strcpy(s_next_trains[3].code, "SEBO");
     strcpy(s_next_trains[3].hour, "00:13");
     strcpy(s_next_trains[3].platform, "A");
     s_next_trains[3].terminus = 393;
     
     strcpy(s_next_trains[4].number, "123456");
-    strcpy(s_next_trains[4].mission_code, "FOPE");
+    strcpy(s_next_trains[4].code, "FOPE");
     strcpy(s_next_trains[4].hour, "00:19");
     strcpy(s_next_trains[4].platform, "BL");
     s_next_trains[4].terminus = 259;
