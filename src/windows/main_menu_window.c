@@ -159,11 +159,12 @@ static int16_t get_header_height_callback(struct MenuLayer *menu_layer, uint16_t
 }
 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
+    bool is_dark_theme = status_is_dark_theme();
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
-    bool is_highlighed = status_is_dark_theme() || is_selected;
-    GColor stroke_color = is_selected?curr_bg_color():curr_fg_color();
+    bool is_highlighed = is_dark_theme || is_selected;
+    GColor stroke_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
 #else
     GColor stroke_color = curr_fg_color();
 #endif
@@ -185,7 +186,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         }
     } else if (section == MAIN_MENU_SECTION_SETTING) {
         if (row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Theme"), status_is_dark_theme()?_("Dark theme"):_("Light theme"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Theme"), is_dark_theme?_("Dark theme"):_("Light theme"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             menu_cell_basic_draw(ctx, cell_layer, "Language", _("English"), NULL);
         }

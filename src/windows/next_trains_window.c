@@ -199,8 +199,9 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
-    bool is_highlighed = status_is_dark_theme() || is_selected;
-    GColor stroke_color = is_selected?curr_bg_color():curr_fg_color();
+    bool is_dark_theme = status_is_dark_theme();
+    bool is_highlighed = is_dark_theme || is_selected;
+    GColor stroke_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
 #else
     GColor stroke_color = curr_fg_color();
 #endif
