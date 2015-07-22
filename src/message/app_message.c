@@ -57,16 +57,24 @@ void message_deinit() {
 	app_message_deregister_callbacks();
 }
 
-void message_send(MESSAGE_TYPE type,
-                  DictionaryIterator *parameters,
+void message_send(DictionaryIterator *parameters,
                   MessageCallbacks callbacks) {
     s_callbacks = callbacks;
     
     DictionaryIterator *iter;
-    
     app_message_outbox_begin(&iter);
-    dict_write_uint8(iter, MESSAGE_KEY_TYPE, type);
     
+    Tuple *tuple = dict_read_first(parameters);
+    while (tuple) {
+        dict_write_data(iter, tuple->key, tuple->value->data, tuple->length);
+        tuple = dict_read_next(parameters);
+    }
     dict_write_end(iter);
+    
     app_message_outbox_send();
+}
+
+void message_clear_callbacks() {
+    s_callbacks.message_succeeded_callback = NULL;
+    s_callbacks.message_failed_callback = NULL;
 }

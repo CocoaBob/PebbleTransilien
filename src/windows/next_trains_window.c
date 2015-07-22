@@ -155,6 +155,59 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer,
     }
 }
 
+// MARK: Message Request callbacks
+
+static void message_succeeded_callback(DictionaryIterator *received) {
+    uint32_t size = dict_size(received);
+    printf("-=-=-=-%s\n%p %lu",__func__,received,size);
+}
+
+static void message_failed_callback(void) {
+    
+}
+
+static void request_next_stations() {
+    DictionaryIterator parameters;
+    
+    // Prepare parameters
+    size_t tuple_count = 1;
+    if (s_from_to->from != STATION_NON) {
+        ++tuple_count;
+    }
+    if (s_from_to->to != STATION_NON) {
+        ++tuple_count;
+    }
+    uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), STATION_CODE_LENGTH * tuple_count);
+    uint8_t *dict_buffer = malloc(dict_size);
+    dict_write_begin(&parameters, dict_buffer, dict_size);
+    
+    dict_write_uint8(&parameters, MESSAGE_KEY_TYPE, MESSAGE_TYPE_NEXT_TRAINS);
+    
+    if (s_from_to->from != STATION_NON) {
+        char *data = malloc(STATION_CODE_LENGTH);
+        stations_get_code(s_from_to->from, data, STATION_CODE_LENGTH);
+        dict_write_data(&parameters, MESSAGE_KEY_CODE_FROM, (uint8_t *)data, STATION_CODE_LENGTH);
+        free(data);
+    }
+    if (s_from_to->to != STATION_NON) {
+        char *data = malloc(STATION_CODE_LENGTH);
+        stations_get_code(s_from_to->to, data, STATION_CODE_LENGTH);
+        dict_write_data(&parameters, MESSAGE_KEY_CODE_TO, (uint8_t *)data, STATION_CODE_LENGTH);
+        free(data);
+    }
+    
+    dict_write_end(&parameters);
+    
+    // Send message
+    message_send(&parameters,
+                 (MessageCallbacks){
+                     .message_succeeded_callback = message_succeeded_callback,
+                     .message_failed_callback = message_failed_callback
+                 });
+    
+    free(dict_buffer);
+}
+
 // MARK: Menu layer callbacks
 
 static uint16_t get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
@@ -275,8 +328,10 @@ static void window_load(Window *window) {
     // Data
     s_str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
     stations_get_name(s_from_to->from, s_str_from, STATION_NAME_MAX_LENGTH);
-    s_str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-    stations_get_name(s_from_to->to, s_str_to, STATION_NAME_MAX_LENGTH);
+    if (s_from_to->to != STATION_NON) {
+        s_str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+        stations_get_name(s_from_to->to, s_str_to, STATION_NAME_MAX_LENGTH);
+    }
     
     // Demo data
     s_is_updating = true;
@@ -366,14 +421,10 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
     // Data
-    free(s_str_from);
-    free(s_str_to);
-    free(s_from_to);
-    s_from_to = NULL;
-    
-    if (s_next_trains != NULL) {
-        free(s_next_trains);
-    }
+    NULL_FREE(s_str_from);
+    NULL_FREE(s_str_to);
+    NULL_FREE(s_from_to);
+    NULL_FREE(s_next_trains);
     
     // Window
     menu_layer_destroy(s_menu_layer);
@@ -391,11 +442,11 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
-    
+    request_next_stations();
 }
 
 static void window_disappear(Window *window) {
-    
+    message_clear_callbacks();
 }
 
 // MARK: Entry point

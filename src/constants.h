@@ -8,6 +8,8 @@
 
 #pragma once
 
+#define NULL_FREE(x) {if (x != NULL) free(x); x = NULL;}
+
 #define CELL_MARGIN 4
 #define CELL_HEIGHT 44
 #define CELL_HEIGHT_2 22

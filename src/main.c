@@ -21,6 +21,7 @@ void handle_deinit(void) {
     status_deinit();
     stations_deinit();
     message_deinit();
+    locale_deinit();
 }
 
 int main(void) {

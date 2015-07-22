@@ -1,5 +1,12 @@
 {
-  "appKeys": {},
+  "appKeys": {
+    "MESSAGE_KEY_TYPE": 100,
+    "MESSAGE_KEY_CODE_FROM": 101,
+    "MESSAGE_KEY_CODE_TO": 102,
+    "MESSAGE_KEY_TRAIN_NUMBER": 103,
+    "MESSAGE_KEY_NEXT_TRAINS": 200,
+    "MESSAGE_KEY_TRAIN_DETAILS": 201
+  },
   "capabilities": [
     "location"
   ],

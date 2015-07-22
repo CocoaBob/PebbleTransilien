@@ -1,7 +1,7 @@
 #include <pebble.h>
   
 DictionaryIterator s_locale_dict;
-
+char *s_dict_buffer;
 
 void locale_init(void) {
   //hard-coded for testing 
@@ -34,8 +34,8 @@ void locale_init(void) {
   } locale_info;
 
   int dict_buffer_size = locale_size + 7 * locale_entries; //7 byte header per item
-  char *dict_buffer = malloc(dict_buffer_size);
-  dict_write_begin(&s_locale_dict, (uint8_t*)dict_buffer, dict_buffer_size);
+  s_dict_buffer = malloc(dict_buffer_size);
+  dict_write_begin(&s_locale_dict, (uint8_t*)s_dict_buffer, dict_buffer_size);
 
   for (int i = 0; i < locale_entries; i++) {
     resource_offset += resource_load_byte_range(locale_handle, resource_offset, 
@@ -55,6 +55,10 @@ void locale_init(void) {
   }
 
   dict_write_end(&s_locale_dict);
+}
+
+void locale_deinit(void) {
+    free(s_dict_buffer);
 }
 
 char *locale_str(int hashval) { 

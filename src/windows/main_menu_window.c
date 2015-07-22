@@ -114,17 +114,6 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
     free(str_from);
 }
 
-// MARK: Message Request callbacks
-
-static void message_succeeded_callback(DictionaryIterator *received) {
-    uint32_t size = dict_size(received);
-    printf("-=-=-=- %p %lu",received,size);
-}
-
-static void message_failed_callback(void) {
-    
-}
-
 // MARK: Menu layer callbacks
 
 static uint16_t get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
@@ -212,12 +201,6 @@ static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
-//        message_send(MESSAGE_TYPE_NEXT_TRAINS,
-//                     NULL,
-//                     (MessageCallbacks){
-//                         .message_succeeded_callback = message_succeeded_callback,
-//                         .message_failed_callback = message_failed_callback
-//                     });
         Favorite favorite = fav_at_index(cell_index->row);
         push_next_trains_window(favorite);
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
