@@ -20,6 +20,12 @@
   "resources": {
     "media": [
       {
+        "menuIcon": true,
+        "type": "png",
+        "name": "IMAGE_MENU_ICON",
+        "file": "images/menu_icon.png"
+      },
+      {
         "type": "png",
         "name": "IMG_FROM_TO_DARK",
         "file": "images/img_from_to_dark.png"

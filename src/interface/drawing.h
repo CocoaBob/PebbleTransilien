@@ -10,10 +10,6 @@
 
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment);
 
-#ifdef PBL_PLATFORM_BASALT
-void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_layer, Layer **battery_layer);
-#endif
-
 void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color);
 void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color);
 
