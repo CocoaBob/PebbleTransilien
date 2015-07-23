@@ -15,14 +15,16 @@
 static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     
-    graphics_context_set_fill_color(ctx, curr_bg_color());
-    graphics_context_set_stroke_color(ctx, curr_fg_color());
+    GColor bg_color = curr_bg_color();
+    GColor fg_color = curr_fg_color();
+    graphics_context_set_fill_color(ctx, bg_color);
+    graphics_context_set_stroke_color(ctx, fg_color);
     
     // Fill background
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     
     // Show logo
-    draw_image_in_rect(ctx, status_is_dark_theme()?RESOURCE_ID_IMG_LOGO_TRANSILIEN_DARK:RESOURCE_ID_IMG_LOGO_TRANSILIEN_LIGHT, GRect(2,3,107,10));
+    draw_image_in_rect(ctx, status_is_dark_theme()?RESOURCE_ID_IMG_LOGO_TRANSILIEN_DARK:RESOURCE_ID_IMG_LOGO_TRANSILIEN_LIGHT, GRect(4,3,69,10));
     
     // Separator
     graphics_draw_line(ctx, GPoint(0, bounds.size.h - 1), GPoint(bounds.size.w, bounds.size.h - 1));
@@ -34,7 +36,7 @@ static void status_bar_overlay_layer_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_stroke_color(ctx, curr_fg_color());
     
     // Draw SNCF style time frame
-    graphics_draw_round_rect(ctx,  bounds, 4);
+    graphics_draw_round_rect(ctx,  bounds, 3);
 }
 
 void status_bar_set_colors(StatusBarLayer *status_bar_layer) {
@@ -51,14 +53,14 @@ void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_laye
     
     // Add status bar
     *status_bar_layer = status_bar_layer_create();
-    GRect status_bar_frame = GRect(111, 0, 32, STATUS_BAR_LAYER_HEIGHT);
+    GRect status_bar_frame = GRect(106, -1, 32, STATUS_BAR_LAYER_HEIGHT);
     layer_set_frame(status_bar_layer_get_layer(*status_bar_layer), status_bar_frame);
     layer_add_child(window_layer, status_bar_layer_get_layer(*status_bar_layer));
     // Setup status bar
     status_bar_set_colors(*status_bar_layer);
     
     // Add status bar overlay
-    *status_bar_overlay_layer = layer_create(GRect(status_bar_frame.origin.x, status_bar_frame.origin.y-4, status_bar_frame.size.w, status_bar_frame.size.h + 5));
+    *status_bar_overlay_layer = layer_create(GRect(status_bar_frame.origin.x, status_bar_frame.origin.y - 3, status_bar_frame.size.w, status_bar_frame.size.h + 2));
     layer_set_update_proc(*status_bar_overlay_layer, status_bar_overlay_layer_proc);
     layer_add_child(window_layer, *status_bar_overlay_layer);
 }

@@ -156,6 +156,31 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer,
     }
 }
 
+// MARK: Data
+
+static bool update_from_to(bool reverse) {
+    if (reverse) {
+        if (s_from_to->to == STATION_NON) {
+            return false;
+        }
+        size_t from = s_from_to->from;
+        s_from_to->from = s_from_to->to;
+        s_from_to->to = from;
+    }
+    
+    NULL_FREE(s_str_from);
+    NULL_FREE(s_str_to);
+    
+    s_str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+    stations_get_name(s_from_to->from, s_str_from, STATION_NAME_MAX_LENGTH);
+    if (s_from_to->to != STATION_NON) {
+        s_str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+        stations_get_name(s_from_to->to, s_str_to, STATION_NAME_MAX_LENGTH);
+    }
+    
+    return true;
+}
+
 // MARK: Message Request callbacks
 
 static void message_succeeded_callback(DictionaryIterator *received) {
@@ -289,9 +314,6 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 }
 
 static int16_t get_header_height_callback(struct MenuLayer *menu_layer, uint16_t section_index, void *context) {
-    if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
-        return HEADER_HEIGHT;
-    }
     return 0;
 }
 
@@ -342,16 +364,14 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, void *context) {
-    if (section_index == NEXT_TRAINS_SECTION_INFO) {
-        return;
-    } else if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
-        draw_menu_header(ctx, cell_layer, _("Next trains"), curr_fg_color());
-    }
+    return;
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
-        // TODO: Reverse direction
+        if (update_from_to(true)) {
+            request_next_stations();
+        }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         // TODO: Show train details
     }
@@ -386,49 +406,6 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
-    // Data
-    s_str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-    stations_get_name(s_from_to->from, s_str_from, STATION_NAME_MAX_LENGTH);
-    if (s_from_to->to != STATION_NON) {
-        s_str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-        stations_get_name(s_from_to->to, s_str_to, STATION_NAME_MAX_LENGTH);
-    }
-    
-//    // Demo data
-//    s_is_updating = true;
-//    s_next_trains_count = 5;
-//    s_next_trains = malloc(sizeof(DataModelNextTrain) * s_next_trains_count);
-//    
-//    strcpy(s_next_trains[0].number, "123456");
-//    strcpy(s_next_trains[0].code, "EAPE");
-//    strcpy(s_next_trains[0].hour, "00:01");
-//    strcpy(s_next_trains[0].platform, "9");
-//    s_next_trains[0].terminus = 133;
-//    
-//    strcpy(s_next_trains[1].number, "123456");
-//    strcpy(s_next_trains[1].code, "NOPE");
-//    strcpy(s_next_trains[1].hour, "00:04");
-//    strcpy(s_next_trains[1].platform, "27");
-//    s_next_trains[1].terminus = 310;
-//    
-//    strcpy(s_next_trains[2].number, "123456");
-//    strcpy(s_next_trains[2].code, "TOCA");
-//    strcpy(s_next_trains[2].hour, "00:10");
-//    strcpy(s_next_trains[2].platform, "C");
-//    s_next_trains[2].terminus = 353;
-//    
-//    strcpy(s_next_trains[3].number, "123456");
-//    strcpy(s_next_trains[3].code, "SEBO");
-//    strcpy(s_next_trains[3].hour, "00:13");
-//    strcpy(s_next_trains[3].platform, "A");
-//    s_next_trains[3].terminus = 393;
-//    
-//    strcpy(s_next_trains[4].number, "123456");
-//    strcpy(s_next_trains[4].code, "FOPE");
-//    strcpy(s_next_trains[4].hour, "00:19");
-//    strcpy(s_next_trains[4].platform, "BL");
-//    s_next_trains[4].terminus = 259;
-    
     // Window
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
@@ -531,6 +508,7 @@ void push_next_trains_window(DataModelFromTo from_to) {
     s_from_to = malloc(sizeof(DataModelFromTo));
     s_from_to->from = from_to.from;
     s_from_to->to = from_to.to;
+    update_from_to(false);
     
     window_stack_push(s_window, true);
 }
