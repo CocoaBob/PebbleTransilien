@@ -166,13 +166,13 @@ function requestNextTrains(from, to) {
 ]\
 }\
 ]'
+    var dataArray = JSON.parse(responseText)[0]["data"];
+    var payloadLength = dataArray.length;
     var message = {
         "MESSAGE_KEY_RESPONSE_TYPE": 0,
         "MESSAGE_KEY_RESPONSE_PAYLOAD_LENGTH":payloadLength
     };
-    var dataArray = JSON.parse(responseText)[0]["data"];
-    var payloadLength = dataArray.length;
-    var payloadBeginNumber = 202;// 202 = "MESSAGE_KEY_RESPONSE_PAYLOAD";
+    var payloadKey = 1000;// 1000 = "MESSAGE_KEY_RESPONSE_PAYLOAD";
     for(var index in dataArray){
         var nextTrain = {};
         for(var attrName in dataArray[index]){
@@ -195,11 +195,15 @@ function requestNextTrains(from, to) {
                 nextTrain["4"] = attrValue;
             }
         }
-        message[+payloadBeginNumber + +index] = JSON.stringify(nextTrain);
+        message[+payloadKey + +index] = JSON.stringify(nextTrain);
     }
     
     console.log(JSON.stringify(message));
-    Pebble.sendAppMessage(message);
+    try {
+        Pebble.sendAppMessage(message);
+    } catch (e) {
+        console.log(e.message)
+    }
 }
 
 function requestTrainDetails(trainNumber) {

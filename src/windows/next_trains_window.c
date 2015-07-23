@@ -166,6 +166,21 @@ static void message_succeeded_callback(DictionaryIterator *received) {
 //    char *payload = tuple_payload->value->cstring;
 //    uint16_t size = tuple_payload->length;
 //    printf("%u\n%s",size,payload);
+    
+    Tuple *tuple = dict_read_first(received);
+    while (tuple) {
+        if (tuple->type == TUPLE_BYTE_ARRAY) {
+            printf("\n%d %lu %u %s",tuple->type,tuple->key,tuple->length,tuple->value->data);
+        } else if (tuple->type == TUPLE_CSTRING) {
+            printf("\n%d %lu %u %s",tuple->type,tuple->key,tuple->length,tuple->value->cstring);
+        } else if (tuple->type == TUPLE_INT) {
+            printf("\n%d %lu %u %d",tuple->type,tuple->key,tuple->length,tuple->value->int16);
+        } else if (tuple->type == TUPLE_UINT) {
+            printf("\n%d %lu %u %u",tuple->type,tuple->key,tuple->length,tuple->value->uint16);
+        }
+        tuple = dict_read_next(received);
+    }
+
 }
 
 static void message_failed_callback(void) {
