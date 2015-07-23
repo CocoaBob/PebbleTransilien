@@ -162,35 +162,74 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     if (tuple_type->value->int8 != MESSAGE_TYPE_NEXT_TRAINS) {
         return;
     }
-//    Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD);
-//    char *payload = tuple_payload->value->cstring;
-//    uint16_t size = tuple_payload->length;
-//    printf("%u\n%s",size,payload);
+    Tuple *tuple_payload_count = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT);
+    size_t count = tuple_payload_count->value->int16;
     
-    Tuple *tuple = dict_read_first(received);
-    while (tuple) {
-        if (tuple->type == TUPLE_BYTE_ARRAY) {
-            printf("\n%d %lu %u %s",tuple->type,tuple->key,tuple->length,tuple->value->data);
-        } else if (tuple->type == TUPLE_CSTRING) {
-            printf("\n%d %lu %u %s",tuple->type,tuple->key,tuple->length,tuple->value->cstring);
-        } else if (tuple->type == TUPLE_INT) {
-            printf("\n%d %lu %u %d",tuple->type,tuple->key,tuple->length,tuple->value->int16);
-        } else if (tuple->type == TUPLE_UINT) {
-            printf("\n%d %lu %u %u",tuple->type,tuple->key,tuple->length,tuple->value->uint16);
-        }
-        tuple = dict_read_next(received);
+    s_next_trains_count = count;
+    if (s_next_trains != NULL) {
+        free(s_next_trains);
     }
-
+    s_next_trains = malloc(sizeof(DataModelNextTrain) * s_next_trains_count);
+    
+    for (uint32_t index = 0; index < count; ++index) {
+        Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + index);
+        if (tuple_payload->type == TUPLE_BYTE_ARRAY) {
+            uint8_t *data = tuple_payload->value->data;
+            uint16_t size_left = tuple_payload->length;
+            size_t str_length = strlen((char *)data);
+            size_t offset = str_length + 1;
+            for (size_t data_index = 0; data_index < NEXT_TRAIN_KEY_COUNT && size_left > 0; ++data_index) {
+                switch (data_index) {
+                    case NEXT_TRAIN_KEY_NUMBER:
+                        strcpy(s_next_trains[index].number, (char *)data);
+                        break;
+                    case NEXT_TRAIN_KEY_CODE:
+                        strcpy(s_next_trains[index].code, (char *)data);
+                        break;
+                    case NEXT_TRAIN_KEY_HOUR:
+                        strcpy(s_next_trains[index].hour, (char *)data);
+                        break;
+                    case NEXT_TRAIN_KEY_PLATFORM:
+                        strcpy(s_next_trains[index].platform, (char *)data);
+                        break;
+                    case NEXT_TRAIN_KEY_TERMINUS:
+                        s_next_trains[index].terminus = (data[0] << 8) + data[1];
+                        offset = 3;
+                        break;
+                    default:
+                        break;
+                }
+                
+                size_left -= (uint16_t)offset;
+                data += offset;
+                if (data_index == NEXT_TRAIN_KEY_TERMINUS) {
+                    str_length = 2;
+                } else {
+                    str_length = strlen((char *)data);
+                }
+                offset = str_length + 1;
+            }
+        }
+    }
+    
+    // Update UI
+    s_is_updating = false;
+    menu_layer_reload_data(s_menu_layer);
 }
 
 static void message_failed_callback(void) {
-    
+    // TODO: Cancel loading...
 }
 
 static void request_next_stations() {
-    DictionaryIterator parameters;
+    // Update UI
+    s_is_updating = true;
+    s_next_trains_count = 0;
+    menu_layer_reload_data(s_menu_layer);
     
     // Prepare parameters
+    DictionaryIterator parameters;
+    
     size_t tuple_count = 1;
     if (s_from_to->from != STATION_NON) {
         ++tuple_count;
@@ -354,40 +393,40 @@ static void window_load(Window *window) {
         stations_get_name(s_from_to->to, s_str_to, STATION_NAME_MAX_LENGTH);
     }
     
-    // Demo data
-    s_is_updating = true;
-    s_next_trains_count = 5;
-    s_next_trains = malloc(sizeof(DataModelNextTrain) * s_next_trains_count);
-    
-    strcpy(s_next_trains[0].number, "123456");
-    strcpy(s_next_trains[0].code, "EAPE");
-    strcpy(s_next_trains[0].hour, "00:01");
-    strcpy(s_next_trains[0].platform, "9");
-    s_next_trains[0].terminus = 133;
-    
-    strcpy(s_next_trains[1].number, "123456");
-    strcpy(s_next_trains[1].code, "NOPE");
-    strcpy(s_next_trains[1].hour, "00:04");
-    strcpy(s_next_trains[1].platform, "27");
-    s_next_trains[1].terminus = 310;
-    
-    strcpy(s_next_trains[2].number, "123456");
-    strcpy(s_next_trains[2].code, "TOCA");
-    strcpy(s_next_trains[2].hour, "00:10");
-    strcpy(s_next_trains[2].platform, "C");
-    s_next_trains[2].terminus = 353;
-    
-    strcpy(s_next_trains[3].number, "123456");
-    strcpy(s_next_trains[3].code, "SEBO");
-    strcpy(s_next_trains[3].hour, "00:13");
-    strcpy(s_next_trains[3].platform, "A");
-    s_next_trains[3].terminus = 393;
-    
-    strcpy(s_next_trains[4].number, "123456");
-    strcpy(s_next_trains[4].code, "FOPE");
-    strcpy(s_next_trains[4].hour, "00:19");
-    strcpy(s_next_trains[4].platform, "BL");
-    s_next_trains[4].terminus = 259;
+//    // Demo data
+//    s_is_updating = true;
+//    s_next_trains_count = 5;
+//    s_next_trains = malloc(sizeof(DataModelNextTrain) * s_next_trains_count);
+//    
+//    strcpy(s_next_trains[0].number, "123456");
+//    strcpy(s_next_trains[0].code, "EAPE");
+//    strcpy(s_next_trains[0].hour, "00:01");
+//    strcpy(s_next_trains[0].platform, "9");
+//    s_next_trains[0].terminus = 133;
+//    
+//    strcpy(s_next_trains[1].number, "123456");
+//    strcpy(s_next_trains[1].code, "NOPE");
+//    strcpy(s_next_trains[1].hour, "00:04");
+//    strcpy(s_next_trains[1].platform, "27");
+//    s_next_trains[1].terminus = 310;
+//    
+//    strcpy(s_next_trains[2].number, "123456");
+//    strcpy(s_next_trains[2].code, "TOCA");
+//    strcpy(s_next_trains[2].hour, "00:10");
+//    strcpy(s_next_trains[2].platform, "C");
+//    s_next_trains[2].terminus = 353;
+//    
+//    strcpy(s_next_trains[3].number, "123456");
+//    strcpy(s_next_trains[3].code, "SEBO");
+//    strcpy(s_next_trains[3].hour, "00:13");
+//    strcpy(s_next_trains[3].platform, "A");
+//    s_next_trains[3].terminus = 393;
+//    
+//    strcpy(s_next_trains[4].number, "123456");
+//    strcpy(s_next_trains[4].code, "FOPE");
+//    strcpy(s_next_trains[4].hour, "00:19");
+//    strcpy(s_next_trains[4].platform, "BL");
+//    s_next_trains[4].terminus = 259;
     
     // Window
     Layer *window_layer = window_get_root_layer(window);

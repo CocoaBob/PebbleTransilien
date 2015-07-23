@@ -264,8 +264,9 @@ static void window_load(Window *window) {
     
     // TODO: Remove in the future
     fav_add(354, 23);
-    fav_add(25, STATION_NON);
     fav_add(354, 23);
+    fav_add(23, 354);
+    fav_add(25, STATION_NON);
     fav_delete_at_index(0);
     
     Layer *window_layer = window_get_root_layer(window);

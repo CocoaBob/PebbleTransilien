@@ -309,7 +309,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble --debug install --emulator basalt";
+			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --emulator basalt";
 		};
 		4517F3361B4C04DD0078F1A0 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -399,7 +399,7 @@
 					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 				);
-				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.1";
+				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -413,7 +413,7 @@
 					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 				);
-				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.1";
+				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
