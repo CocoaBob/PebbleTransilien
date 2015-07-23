@@ -25,6 +25,5 @@ typedef struct DataModelNextTrain {
 
 typedef struct DataModelTrainDetail {
     char time[7];           // time, the time of arriving
-    char platform[3];       // lane, the platform
     size_t station;         // codeGare, Station index, e.g. 354 (PSL: Paris Saint-Lazare)
 } DataModelTrainDetail;

@@ -20,7 +20,7 @@ void draw_text(GContext *ctx, const char * text, const char * font_key, GRect fr
 void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color) {
     GRect bounds = layer_get_bounds(cell_layer);
     GRect frame = GRect(2,
-                        -CELL_TEXT_Y_OFFSET,
+                        TEXT_Y_OFFSET,
                         bounds.size.w - CELL_MARGIN * 2,
                         bounds.size.h);
     
@@ -53,7 +53,7 @@ void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect) {
 void draw_cell_title(GContext* ctx, const Layer *cell_layer, const char *title) {
     GRect bounds = layer_get_bounds(cell_layer);
     GRect frame = GRect(CELL_MARGIN,
-                        12-CELL_TEXT_Y_OFFSET,
+                        12 + TEXT_Y_OFFSET,
                         bounds.size.w - CELL_MARGIN * 2,
                         18);
     draw_text(ctx, title, FONT_KEY_GOTHIC_18_BOLD, frame, GTextAlignmentCenter);

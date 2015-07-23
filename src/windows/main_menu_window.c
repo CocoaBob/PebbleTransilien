@@ -85,14 +85,14 @@ void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
     stations_get_name(idx_from, str_from, STATION_NAME_MAX_LENGTH);
 
     GRect frame_line_1 = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
-                               -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
+                               TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
                                bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN * 3,
                                CELL_HEIGHT_2);
     if (is_from_to) {
         draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
         
         GRect frame_line_2 = frame_line_1;
-        frame_line_2.origin.y = CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
+        frame_line_2.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
         
         char *str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
         stations_get_name(idx_to, str_to, STATION_NAME_MAX_LENGTH);

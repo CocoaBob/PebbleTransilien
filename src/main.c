@@ -14,7 +14,8 @@ void handle_init(void) {
     status_init();
     stations_init();
     message_init();
-    push_main_menu_window();
+//    push_main_menu_window();
+    push_train_details_window("133871");
 }
 
 void handle_deinit(void) {

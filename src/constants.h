@@ -13,8 +13,11 @@
 #define CELL_MARGIN 4
 #define CELL_HEIGHT 44
 #define CELL_HEIGHT_2 22
+#define CELL_ICON_SIZE 19
+
 #define SEPARATOR_HEIGHT 1
-#define CELL_TEXT_Y_OFFSET 2
+#define TEXT_Y_OFFSET -2
+
 #define HEADER_HEIGHT 15
 
 #define FROM_TO_ICON_WIDTH 8

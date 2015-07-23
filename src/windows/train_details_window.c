@@ -29,12 +29,7 @@ static bool s_is_updating;
 
 // MARK: Constants
 
-#define TRAIN_DETAIL_CELL_ICON_SIZE 19
-#define TRAIN_DETAIL_CELL_ICON_W 27   // CELL_MARGIN + TRAIN_DETAIL_CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
-#define TRAIN_DETAIL_CELL_ICON_Y 4    // CELL_MARGIN = 4
-#define TRAIN_DETAIL_CELL_CODE_X 4    // CELL_MARGIN = 4
-#define TRAIN_DETAIL_CELL_CODE_W 56
-#define TRAIN_DETAIL_CELL_TIME_X 64   // CELL_MARGIN + TRAIN_DETAIL_CELL_CODE_W + CELL_MARGIN = 4 + 56
+#define TRAIN_DETAIL_CELL_TIME_W 36     // CELL_MARGIN + TRAIN_DETAIL_CELL_CODE_W + CELL_MARGIN = 4 + 56
 
 // MARK: Drawing
 
@@ -44,37 +39,33 @@ void draw_train_detail_cell(GContext *ctx, Layer *cell_layer,
                             bool is_highlighed,
 #endif
                             const char * str_time,
-                            const char * str_platform,
                             const char * str_station) {
     graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
     
-    // Time
-    GRect frame_time = GRect(TRAIN_DETAIL_CELL_TIME_X,
-                             - CELL_TEXT_Y_OFFSET - 2,
-                             bounds.size.w - TRAIN_DETAIL_CELL_TIME_X - CELL_MARGIN - TRAIN_DETAIL_CELL_ICON_SIZE - CELL_MARGIN,
-                             CELL_HEIGHT_2);
-    draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentRight);
+    GRect frame_icon = GRect(CELL_MARGIN,
+                             (CELL_HEIGHT_2 - FROM_TO_ICON_WIDTH) / 2,
+                             FROM_TO_ICON_WIDTH,
+                             FROM_TO_ICON_WIDTH);
+#ifdef PBL_COLOR
+    draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+#else
+    draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+#endif
     
-    // Platform
-    GRect frame_platform = GRect(bounds.size.w - TRAIN_DETAIL_CELL_ICON_SIZE - CELL_MARGIN,
-                               TRAIN_DETAIL_CELL_ICON_Y,
-                               TRAIN_DETAIL_CELL_ICON_SIZE,
-                               TRAIN_DETAIL_CELL_ICON_SIZE);
-    if (str_platform != NULL) {
-#ifdef PBL_COLOR
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
-#else
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
-#endif
-        draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14_BOLD, frame_platform, GTextAlignmentCenter);
-    } else {
-#ifdef PBL_COLOR
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_DOTTED_FRAME_DARK:RESOURCE_ID_IMG_DOTTED_FRAME_LIGHT, frame_platform);
-#else
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_DOTTED_FRAME_LIGHT, frame_platform);
-#endif
-    }
+    // Station
+    GRect frame_station = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
+                                TEXT_Y_OFFSET,
+                                bounds.size.w - CELL_MARGIN * 4 - TRAIN_DETAIL_CELL_TIME_W - FROM_TO_ICON_WIDTH,
+                                CELL_HEIGHT_2);
+    draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
+    
+    // Time
+    GRect frame_time = GRect(bounds.size.w - CELL_MARGIN - TRAIN_DETAIL_CELL_TIME_W,
+                             TEXT_Y_OFFSET,
+                             TRAIN_DETAIL_CELL_TIME_W,
+                             CELL_HEIGHT_2);
+    draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
 }
 
 // MARK: Message Request callbacks
@@ -102,9 +93,6 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                 switch (data_index) {
                     case TRAIN_DETAIL_KEY_TIME:
                         strcpy(s_train_details[index].time, (char *)data);
-                        break;
-                    case TRAIN_DETAIL_KEY_PLATFORM:
-                        strcpy(s_train_details[index].platform, (char *)data);
                         break;
                     case TRAIN_DETAIL_KEY_STATION:
                         s_train_details[index].station = (data[0] << 8) + data[1];
@@ -188,7 +176,7 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
 }
 
 static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    return CELL_HEIGHT;
+    return CELL_HEIGHT_2;
 }
 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
@@ -214,7 +202,6 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
                                is_highlighed,
 #endif
                                train_detail.time,
-                               train_detail.platform,
                                str_station);
         free(str_station);
     } else if (s_is_updating) {
@@ -245,6 +232,29 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
+    // Demo data
+    s_is_updating = true;
+    s_train_details_count = 6;
+    s_train_details = malloc(sizeof(DataModelTrainDetail) * s_train_details_count);
+    
+    strcpy(s_train_details[0].time, "23:58");
+    s_train_details[0].station = 354;
+    
+    strcpy(s_train_details[1].time, "00:01");
+    s_train_details[1].station = 356;
+    
+    strcpy(s_train_details[2].time, "00:04");
+    s_train_details[2].station = 86;
+    
+    strcpy(s_train_details[3].time, "00:07");
+    s_train_details[3].station = 3;
+    
+    strcpy(s_train_details[4].time, "00:08");
+    s_train_details[4].station = 23;
+    
+    strcpy(s_train_details[5].time, "00:11");
+    s_train_details[5].station = 279;
+    
     // Window
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
@@ -312,7 +322,7 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
-    request_train_details();
+//    request_train_details();
 }
 
 static void window_disappear(Window *window) {

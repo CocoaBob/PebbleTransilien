@@ -37,12 +37,10 @@ static bool s_is_updating;
 
 // MARK: Constants
 
-#define NEXT_TRAIN_CELL_ICON_SIZE 19
-#define NEXT_TRAIN_CELL_ICON_W 27   // CELL_MARGIN + NEXT_TRAIN_CELL_ICON_SIZE + CELL_MARGIN = 4 + 19 + 4
 #define NEXT_TRAIN_CELL_ICON_Y 4    // CELL_MARGIN = 4
 #define NEXT_TRAIN_CELL_CODE_X 4    // CELL_MARGIN = 4
 #define NEXT_TRAIN_CELL_CODE_W 56
-#define NEXT_TRAIN_CELL_TIME_X 64   // CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W + CELL_MARGIN = 4 + 56
+#define NEXT_TRAIN_CELL_TIME_X 64   // CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W + CELL_MARGIN = 4 + 56 + 4
 
 // MARK: Drawing
 
@@ -79,14 +77,14 @@ void draw_next_trains_info(GContext *ctx,
     
     // Draw lines
     GRect frame_line_1 = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
-                               -CELL_TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
+                               TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
                                bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN * 3,
                                CELL_HEIGHT_2);
     if (is_from_to) {
         draw_text(ctx, s_str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
         
         GRect frame_line_2 = frame_line_1;
-        frame_line_2.origin.y = CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
+        frame_line_2.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
         
         draw_text(ctx, s_str_to, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
     } else {
@@ -116,30 +114,30 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer,
     
     // Code
     GRect frame_code = GRect(NEXT_TRAIN_CELL_CODE_X,
-                             -CELL_TEXT_Y_OFFSET - 2,
+                             TEXT_Y_OFFSET - 2,
                              NEXT_TRAIN_CELL_CODE_W,
                              CELL_HEIGHT_2);
     draw_text(ctx, str_code, FONT_KEY_GOTHIC_24_BOLD, frame_code, GTextAlignmentLeft);
     
     // Time
     GRect frame_time = GRect(NEXT_TRAIN_CELL_TIME_X,
-                             - CELL_TEXT_Y_OFFSET - 2,
-                             bounds.size.w - NEXT_TRAIN_CELL_TIME_X - CELL_MARGIN - NEXT_TRAIN_CELL_ICON_SIZE - CELL_MARGIN,
+                             TEXT_Y_OFFSET - 2,
+                             bounds.size.w - NEXT_TRAIN_CELL_TIME_X - CELL_MARGIN - CELL_ICON_SIZE - CELL_MARGIN,
                              CELL_HEIGHT_2);
     draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentRight);
     
     // Terminus
     GRect frame_terminus = GRect(CELL_MARGIN,
-                                 CELL_HEIGHT_2 - CELL_TEXT_Y_OFFSET + 1,
+                                 CELL_HEIGHT_2 + TEXT_Y_OFFSET + 1,
                                  bounds.size.w - CELL_MARGIN * 2,
                                  CELL_HEIGHT_2);
     draw_text(ctx, str_terminus, FONT_KEY_GOTHIC_18, frame_terminus, GTextAlignmentLeft);
     
     // Platform
-    GRect frame_platform = GRect(bounds.size.w - NEXT_TRAIN_CELL_ICON_SIZE - CELL_MARGIN,
-                               NEXT_TRAIN_CELL_ICON_Y,
-                               NEXT_TRAIN_CELL_ICON_SIZE,
-                               NEXT_TRAIN_CELL_ICON_SIZE);
+    GRect frame_platform = GRect(bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN,
+                                 NEXT_TRAIN_CELL_ICON_Y,
+                                 CELL_ICON_SIZE,
+                                 CELL_ICON_SIZE);
     if (str_platform != NULL) {
 #ifdef PBL_COLOR
         draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
@@ -375,7 +373,11 @@ static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, Menu
 }
 
 static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
-    if (s_next_trains_count == 0 && new_index->section == NEXT_TRAINS_SECTION_TRAINS) {
+    if (new_index->section == NEXT_TRAINS_SECTION_INFO) {
+        if (s_from_to->to == STATION_NON) {
+            *new_index = old_index;
+        }
+    } else if (s_next_trains_count == 0 && new_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         *new_index = old_index;
     }
 }

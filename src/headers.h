@@ -25,3 +25,4 @@
 
 #include "windows/main_menu_window.h"
 #include "windows/next_trains_window.h"
+#include "windows/train_details_window.h"
