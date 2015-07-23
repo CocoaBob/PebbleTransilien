@@ -33,10 +33,7 @@ void load_favorites() {
 }
 
 void unload_favorites() {
-    if (s_favorites != NULL) {
-        free(s_favorites);
-        s_favorites = NULL;
-    }
+    NULL_FREE(s_favorites);
 }
 
 size_t fav_get_count() {

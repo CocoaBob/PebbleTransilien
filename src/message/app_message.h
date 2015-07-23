@@ -32,6 +32,13 @@ typedef enum {
     NEXT_TRAIN_KEY_COUNT
 } NEXT_TRAIN_KEY;
 
+typedef enum {
+    TRAIN_DETAIL_KEY_TIME   = 0,
+    TRAIN_DETAIL_KEY_PLATFORM,
+    TRAIN_DETAIL_KEY_STATION,
+    TRAIN_DETAIL_KEY_COUNT
+} TRAIN_DETAIL_KEY;
+
 typedef void (*MessageSucceededCallback)(DictionaryIterator *received);
 typedef void (*MessageFailedCallback)(void);
 

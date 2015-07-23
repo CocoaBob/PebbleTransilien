@@ -27,10 +27,7 @@ void status_init() {
 }
 
 void status_deinit() {
-    if (s_curr_locale != NULL) {
-        free(s_curr_locale);
-        s_curr_locale = NULL;
-    }
+    NULL_FREE(s_curr_locale);
 }
 
 

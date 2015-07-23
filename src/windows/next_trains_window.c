@@ -192,9 +192,7 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     size_t count = tuple_payload_count->value->int16;
     
     s_next_trains_count = count;
-    if (s_next_trains != NULL) {
-        free(s_next_trains);
-    }
+    NULL_FREE(s_next_trains);
     s_next_trains = malloc(sizeof(DataModelNextTrain) * s_next_trains_count);
     
     for (uint32_t index = 0; index < count; ++index) {
@@ -220,7 +218,6 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                         break;
                     case NEXT_TRAIN_KEY_TERMINUS:
                         s_next_trains[index].terminus = (data[0] << 8) + data[1];
-                        offset = 3;
                         break;
                     default:
                         break;
@@ -313,10 +310,6 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
     return CELL_HEIGHT;
 }
 
-static int16_t get_header_height_callback(struct MenuLayer *menu_layer, uint16_t section_index, void *context) {
-    return 0;
-}
-
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
@@ -363,10 +356,6 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     }
 }
 
-static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, void *context) {
-    return;
-}
-
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
         if (update_from_to(true)) {
@@ -375,10 +364,6 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         // TODO: Show train details
     }
-}
-
-static void select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    // TODO: Favorites
 }
 
 static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
@@ -427,11 +412,8 @@ static void window_load(Window *window) {
         .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)get_num_sections_callback,
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
-        .get_header_height = (MenuLayerGetHeaderHeightCallback)get_header_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
-        .draw_header = (MenuLayerDrawHeaderCallback)draw_header_callback,
         .select_click = (MenuLayerSelectCallback)select_callback,
-        .select_long_click = (MenuLayerSelectCallback)select_long_callback,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
 #ifdef PBL_PLATFORM_BASALT
@@ -501,10 +483,7 @@ void push_next_trains_window(DataModelFromTo from_to) {
         });
     }
     
-    if (s_from_to != NULL) {
-        free(s_from_to);
-        s_from_to = NULL;
-    }
+    NULL_FREE(s_from_to);
     s_from_to = malloc(sizeof(DataModelFromTo));
     s_from_to->from = from_to.from;
     s_from_to->to = from_to.to;

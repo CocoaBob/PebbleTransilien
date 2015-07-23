@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		45530B1B1B615EC50059867C /* train_details_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 45530B191B615EC50059867C /* train_details_window.c */; };
 		4592A2791B5BB4DD0070351C /* favorites.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2601B5BB4DD0070351C /* favorites.c */; };
 		4592A27A1B5BB4DD0070351C /* stations.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2621B5BB4DD0070351C /* stations.c */; };
 		4592A27B1B5BB4DD0070351C /* status.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2641B5BB4DD0070351C /* status.c */; };
@@ -40,6 +41,8 @@
 		4517F3641B4C0A060078F1A0 /* Basalt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Basalt; sourceTree = BUILT_PRODUCTS_DIR; };
 		454FA5B71B4EFC6C00473A4B /* locale_english.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_english.json; sourceTree = "<group>"; };
 		454FA5B81B4EFC6C00473A4B /* locale_french.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_french.json; sourceTree = "<group>"; };
+		45530B191B615EC50059867C /* train_details_window.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = train_details_window.c; sourceTree = "<group>"; };
+		45530B1A1B615EC50059867C /* train_details_window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = train_details_window.h; sourceTree = "<group>"; };
 		4592A25E1B5BB4DD0070351C /* constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = constants.h; sourceTree = "<group>"; };
 		4592A2601B5BB4DD0070351C /* favorites.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = favorites.c; sourceTree = "<group>"; };
 		4592A2611B5BB4DD0070351C /* favorites.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = favorites.h; sourceTree = "<group>"; };
@@ -171,6 +174,8 @@
 				4592A2761B5BB4DD0070351C /* main_menu_window.h */,
 				4592A2771B5BB4DD0070351C /* next_trains_window.c */,
 				4592A2781B5BB4DD0070351C /* next_trains_window.h */,
+				45530B191B615EC50059867C /* train_details_window.c */,
+				45530B1A1B615EC50059867C /* train_details_window.h */,
 			);
 			path = windows;
 			sourceTree = "<group>";
@@ -355,6 +360,7 @@
 				4592A28B1B5BBAD30070351C /* app_message.c in Sources */,
 				45B2B6891B5EE93F0065786D /* data_model.c in Sources */,
 				4592A27C1B5BB4DD0070351C /* storage.c in Sources */,
+				45530B1B1B615EC50059867C /* train_details_window.c in Sources */,
 				4592A27D1B5BB4DD0070351C /* drawing.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
