@@ -131,31 +131,14 @@ static void request_train_details() {
     // Prepare parameters
     DictionaryIterator parameters;
     
-    size_t tuple_count = 1;
-//    if (s_from_to->from != STATION_NON) {
-//        ++tuple_count;
-//    }
-//    if (s_from_to->to != STATION_NON) {
-//        ++tuple_count;
-//    }
+    size_t tuple_count = 2;
     uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), STATION_CODE_LENGTH * tuple_count);
     uint8_t *dict_buffer = malloc(dict_size);
     dict_write_begin(&parameters, dict_buffer, dict_size);
     
     dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_TRAIN_DETAILS);
-    
-//    if (s_from_to->from != STATION_NON) {
-//        char *data = malloc(STATION_CODE_LENGTH);
-//        stations_get_code(s_from_to->from, data, STATION_CODE_LENGTH);
-//        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_FROM, (uint8_t *)data, STATION_CODE_LENGTH);
-//        free(data);
-//    }
-//    if (s_from_to->to != STATION_NON) {
-//        char *data = malloc(STATION_CODE_LENGTH);
-//        stations_get_code(s_from_to->to, data, STATION_CODE_LENGTH);
-//        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_TO, (uint8_t *)data, STATION_CODE_LENGTH);
-//        free(data);
-//    }
+
+    dict_write_data(&parameters, MESSAGE_KEY_REQUEST_TRAIN_NUMBER, (uint8_t *)s_train_number, TRAIN_NUMBER_LENGTH);
     
     dict_write_end(&parameters);
     
@@ -233,27 +216,27 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 
 static void window_load(Window *window) {
     // Demo data
-    s_is_updating = true;
-    s_train_details_count = 6;
-    s_train_details = malloc(sizeof(DataModelTrainDetail) * s_train_details_count);
-    
-    strcpy(s_train_details[0].time, "23:58");
-    s_train_details[0].station = 354;
-    
-    strcpy(s_train_details[1].time, "00:01");
-    s_train_details[1].station = 356;
-    
-    strcpy(s_train_details[2].time, "00:04");
-    s_train_details[2].station = 86;
-    
-    strcpy(s_train_details[3].time, "00:07");
-    s_train_details[3].station = 3;
-    
-    strcpy(s_train_details[4].time, "00:08");
-    s_train_details[4].station = 23;
-    
-    strcpy(s_train_details[5].time, "00:11");
-    s_train_details[5].station = 279;
+//    s_is_updating = true;
+//    s_train_details_count = 6;
+//    s_train_details = malloc(sizeof(DataModelTrainDetail) * s_train_details_count);
+//    
+//    strcpy(s_train_details[0].time, "23:58");
+//    s_train_details[0].station = 354;
+//    
+//    strcpy(s_train_details[1].time, "00:01");
+//    s_train_details[1].station = 356;
+//    
+//    strcpy(s_train_details[2].time, "00:04");
+//    s_train_details[2].station = 86;
+//    
+//    strcpy(s_train_details[3].time, "00:07");
+//    s_train_details[3].station = 3;
+//    
+//    strcpy(s_train_details[4].time, "00:08");
+//    s_train_details[4].station = 23;
+//    
+//    strcpy(s_train_details[5].time, "00:11");
+//    s_train_details[5].station = 279;
     
     // Window
     Layer *window_layer = window_get_root_layer(window);
@@ -322,7 +305,7 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
-//    request_train_details();
+    request_train_details();
 }
 
 static void window_disappear(Window *window) {

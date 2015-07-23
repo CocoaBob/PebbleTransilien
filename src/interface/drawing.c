@@ -53,7 +53,7 @@ void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect) {
 void draw_cell_title(GContext* ctx, const Layer *cell_layer, const char *title) {
     GRect bounds = layer_get_bounds(cell_layer);
     GRect frame = GRect(CELL_MARGIN,
-                        12 + TEXT_Y_OFFSET,
+                        (bounds.size.h - 20) / 2 + TEXT_Y_OFFSET,
                         bounds.size.w - CELL_MARGIN * 2,
                         18);
     draw_text(ctx, title, FONT_KEY_GOTHIC_18_BOLD, frame, GTextAlignmentCenter);

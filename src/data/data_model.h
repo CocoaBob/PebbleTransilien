@@ -15,15 +15,17 @@ typedef struct DataModelFromTo {
 
 typedef DataModelFromTo Favorite;
 
+#define TRAIN_NUMBER_LENGTH 7
+
 typedef struct DataModelNextTrain {
-    char number[7];         // Train number, null-terminated string, e.g. "133871"
-    char code[5];           // Train mission code, null-terminated string, e.g. "POBI"
-    char hour[7];           // Train hour, null-terminated string, e.g. "-00:42"
-    char platform[3];       // Train dock or Train lane, null-terminated string, e.g. "C"
-    size_t terminus;        // Train terminus station index, e.g. 354 (PSL: Paris Saint-Lazare)
+    char number[TRAIN_NUMBER_LENGTH];   // Train number, null-terminated string, e.g. "133871"
+    char code[5];                       // Train mission code, null-terminated string, e.g. "POBI"
+    char hour[6];                       // Train hour, null-terminated string, e.g. "13:42"
+    char platform[3];                   // Train dock or Train lane, null-terminated string, e.g. "C"
+    size_t terminus;                    // Train terminus station index, e.g. 354 (PSL: Paris Saint-Lazare)
 } DataModelNextTrain;
 
 typedef struct DataModelTrainDetail {
-    char time[7];           // time, the time of arriving
-    size_t station;         // codeGare, Station index, e.g. 354 (PSL: Paris Saint-Lazare)
+    char time[6];                       // time, the time of arriving
+    size_t station;                     // codeGare, Station index, e.g. 354 (PSL: Paris Saint-Lazare)
 } DataModelTrainDetail;

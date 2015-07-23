@@ -179,6 +179,23 @@ static bool update_from_to(bool reverse) {
     return true;
 }
 
+static size_t verified_data_length(size_t data_length, size_t data_index) {
+    switch (data_index) {
+        case NEXT_TRAIN_KEY_NUMBER:
+            return (data_length <= 6)?data_length:6;
+        case NEXT_TRAIN_KEY_CODE:
+            return(data_length <= 4)?data_length:4;
+        case NEXT_TRAIN_KEY_HOUR:
+            return (data_length <= 5)?data_length:5;
+        case NEXT_TRAIN_KEY_PLATFORM:
+            return (data_length <= 2)?data_length:2;
+        case NEXT_TRAIN_KEY_TERMINUS:
+            return 2;
+        default:
+            return 0;
+    }
+}
+
 // MARK: Message Request callbacks
 
 static void message_succeeded_callback(DictionaryIterator *received) {
@@ -215,7 +232,9 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                         strcpy(s_next_trains[index].platform, (char *)data);
                         break;
                     case NEXT_TRAIN_KEY_TERMINUS:
-                        s_next_trains[index].terminus = (data[0] << 8) + data[1];
+                        if (size_left >= 2) {
+                            s_next_trains[index].terminus = (data[0] << 8) + data[1];
+                        }
                         break;
                     default:
                         break;
@@ -223,11 +242,7 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                 
                 size_left -= (uint16_t)offset;
                 data += offset;
-                if (data_index == NEXT_TRAIN_KEY_TERMINUS) {
-                    str_length = 2;
-                } else {
-                    str_length = strlen((char *)data);
-                }
+                str_length = verified_data_length(strlen((char *)data), data_index);
                 offset = str_length + 1;
             }
         }
