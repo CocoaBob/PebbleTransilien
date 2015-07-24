@@ -61,7 +61,7 @@ function sendAppMessageForNextTrains(responseText) {
         // Train hour
         var trainHourStr = nextTrainDict["trainHour"];
         trainHourStr = parseTrainHour(trainHourStr);
-        trainHourStr = trainHourStr.getTime() / 1000;
+        trainHourStr = trainHourStr.getTime() / 1000 - trainHourStr.getTimezoneOffset() * 60;
         trainHourStr = int322bin(trainHourStr);
         trainHourStr = makeCString(trainHourStr);
         itemData = itemData.concat(trainHourStr);
@@ -117,7 +117,7 @@ function sendAppMessageForTrainDetails(responseText) {
         // Time
         var time = nextTrainDict["time"];
         time = parseTrainHour(time);
-        time = time.getTime() / 1000;
+        time = time.getTime() / 1000 - time.getTimezoneOffset() * 60;
         time = int322bin(time);
         time = makeCString(time);
         itemData = itemData.concat(time);

@@ -208,16 +208,26 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     } else if (s_train_details_list_count > 0) {
         DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
         
-        time_t time_time = train_detail.time;
+        // Time
+        time_t time_time = train_detail.time; // Contains time zone
+        time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
+#ifndef PBL_PLATFORM_APLITE
+        time_curr += localtime(&time_curr)->tm_gmtoff; // Convert to time zone
+#endif
         if (s_show_relative_time) {
-            time_time = time_time - time(NULL);
+            time_time = time_time - time_curr; // UTC time
             if (time_time < 60) {
                 time_time = 0;
             }
         }
         char *str_time = calloc(6, sizeof(char));
+#ifdef PBL_PLATFORM_APLITE
         strftime(str_time, 6, "%H:%M", localtime(&time_time));
+#else
+        strftime(str_time, 6, "%H:%M", gmtime(&time_time));
+#endif
         
+        // Station
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
         stations_get_name(train_detail.station, str_station, STATION_NAME_MAX_LENGTH);
 
@@ -361,8 +371,10 @@ void push_train_details_window(char train_number[7]) {
     s_train_number = malloc(sizeof(char) * TRAIN_NUMBER_LENGTH);
     strncpy(s_train_number, train_number, TRAIN_NUMBER_LENGTH);
     
+    // Reset some status
     s_train_details_list_count = 0;
     NULL_FREE(s_train_details_list);
+    s_show_relative_time = false;
     
     window_stack_push(s_window, true);
 }

@@ -402,16 +402,26 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         } else if (s_next_trains_list_count > 0) {
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             
-            time_t time_hour = next_train.hour;
+            // Hour
+            time_t time_hour = next_train.hour; // Contains time zone
+            time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
+#ifndef PBL_PLATFORM_APLITE
+            time_curr += localtime(&time_curr)->tm_gmtoff; // Convert to time zone
+#endif
             if (s_show_relative_time) {
-                time_hour = time_hour - time(NULL);
+                time_hour = time_hour - time_curr; // UTC time
                 if (time_hour < 60) {
                     time_hour = 0;
                 }
             }
             char *str_hour = calloc(6, sizeof(char));
+#ifdef PBL_PLATFORM_APLITE
             strftime(str_hour, 6, "%H:%M", localtime(&time_hour));
+#else
+            strftime(str_hour, 6, "%H:%M", gmtime(&time_hour));
+#endif
             
+            // Terminus
             char *str_terminus = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
             stations_get_name(next_train.terminus, str_terminus, STATION_NAME_MAX_LENGTH);
             
@@ -454,6 +464,7 @@ static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, Menu
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
+#ifdef PBL_PLATFORM_BASALT
 static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
     if (new_index->section == NEXT_TRAINS_SECTION_INFO) {
         if (s_from_to->to == STATION_NON) {
@@ -464,7 +475,6 @@ static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuInd
     }
 }
 
-#ifdef PBL_PLATFORM_BASALT
 static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
     GRect frame = layer_get_frame(bg_layer);
     graphics_context_set_fill_color(ctx, curr_bg_color());
@@ -583,8 +593,10 @@ void push_next_trains_window(DataModelFromTo from_to) {
     s_from_to->to = from_to.to;
     update_from_to(false);
     
+    // Reset some status
     s_next_trains_list_count = 0;
     NULL_FREE(s_next_trains_list);
+    s_show_relative_time = false;
     
     window_stack_push(s_window, true);
 }
