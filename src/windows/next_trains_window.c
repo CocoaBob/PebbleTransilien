@@ -179,16 +179,16 @@ static bool update_from_to(bool reverse) {
     return true;
 }
 
-static size_t verified_data_length(size_t data_length, size_t data_index) {
+static size_t max_data_length(size_t data_index) {
     switch (data_index) {
         case NEXT_TRAIN_KEY_NUMBER:
-            return (data_length <= 6)?data_length:6;
+            return TRAIN_NUMBER_LENGTH;
         case NEXT_TRAIN_KEY_CODE:
-            return(data_length <= 4)?data_length:4;
+            return 5;
         case NEXT_TRAIN_KEY_HOUR:
-            return (data_length <= 5)?data_length:5;
+            return 6;
         case NEXT_TRAIN_KEY_PLATFORM:
-            return (data_length <= 2)?data_length:2;
+            return 3;
         case NEXT_TRAIN_KEY_TERMINUS:
             return 2;
         default:
@@ -220,16 +220,16 @@ static void message_succeeded_callback(DictionaryIterator *received) {
             for (size_t data_index = 0; data_index < NEXT_TRAIN_KEY_COUNT && size_left > 0; ++data_index) {
                 switch (data_index) {
                     case NEXT_TRAIN_KEY_NUMBER:
-                        strcpy(s_next_trains[index].number, (char *)data);
+                        strncpy(s_next_trains[index].number, (char *)data, max_data_length(data_index));
                         break;
                     case NEXT_TRAIN_KEY_CODE:
-                        strcpy(s_next_trains[index].code, (char *)data);
+                        strncpy(s_next_trains[index].code, (char *)data, max_data_length(data_index));
                         break;
                     case NEXT_TRAIN_KEY_HOUR:
-                        strcpy(s_next_trains[index].hour, (char *)data);
+                        strncpy(s_next_trains[index].hour, (char *)data, max_data_length(data_index));
                         break;
                     case NEXT_TRAIN_KEY_PLATFORM:
-                        strcpy(s_next_trains[index].platform, (char *)data);
+                        strncpy(s_next_trains[index].platform, (char *)data, max_data_length(data_index));
                         break;
                     case NEXT_TRAIN_KEY_TERMINUS:
                         if (size_left >= 2) {
@@ -242,7 +242,11 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                 
                 size_left -= (uint16_t)offset;
                 data += offset;
-                str_length = verified_data_length(strlen((char *)data), data_index);
+                if (data_index == NEXT_TRAIN_KEY_TERMINUS) {
+                    str_length = 2;
+                } else {
+                    str_length = strlen((char *)data);
+                }
                 offset = str_length + 1;
             }
         }
@@ -273,7 +277,7 @@ static void request_next_stations() {
     if (s_from_to->to != STATION_NON) {
         ++tuple_count;
     }
-    uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), STATION_CODE_LENGTH * tuple_count);
+    uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), STATION_CODE_LENGTH * (tuple_count - 1));
     uint8_t *dict_buffer = malloc(dict_size);
     dict_write_begin(&parameters, dict_buffer, dict_size);
     
@@ -375,7 +379,8 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
             request_next_stations();
         }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
-        // TODO: Show train details
+        DataModelNextTrain next_train = s_next_trains[cell_index->row];
+        push_train_details_window(next_train.number);
     }
 }
 

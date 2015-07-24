@@ -132,13 +132,12 @@ static void request_train_details() {
     DictionaryIterator parameters;
     
     size_t tuple_count = 2;
-    uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), STATION_CODE_LENGTH * tuple_count);
+    uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), TRAIN_NUMBER_LENGTH);
     uint8_t *dict_buffer = malloc(dict_size);
     dict_write_begin(&parameters, dict_buffer, dict_size);
     
     dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_TRAIN_DETAILS);
-
-    dict_write_data(&parameters, MESSAGE_KEY_REQUEST_TRAIN_NUMBER, (uint8_t *)s_train_number, TRAIN_NUMBER_LENGTH);
+    DictionaryResult result = dict_write_data(&parameters, MESSAGE_KEY_REQUEST_TRAIN_NUMBER, (uint8_t *)s_train_number, TRAIN_NUMBER_LENGTH);
     
     dict_write_end(&parameters);
     
@@ -194,6 +193,10 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         graphics_context_set_text_color(ctx, text_color);
         draw_cell_title(ctx, cell_layer, "No train.");
     }
+}
+
+static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+
 }
 
 static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
@@ -259,6 +262,7 @@ static void window_load(Window *window) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
+        .select_click = (MenuLayerSelectCallback)select_callback,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
 #ifdef PBL_PLATFORM_BASALT
@@ -326,8 +330,8 @@ void push_train_details_window(char train_number[7]) {
     }
     
     NULL_FREE(s_train_number);
-    s_train_number = malloc(sizeof(char) * 7);
-    strncpy(s_train_number, train_number, 7);
+    s_train_number = malloc(sizeof(char) * TRAIN_NUMBER_LENGTH);
+    strncpy(s_train_number, train_number, TRAIN_NUMBER_LENGTH);
     
     window_stack_push(s_window, true);
 }

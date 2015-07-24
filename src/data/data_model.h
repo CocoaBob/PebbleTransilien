@@ -15,10 +15,10 @@ typedef struct DataModelFromTo {
 
 typedef DataModelFromTo Favorite;
 
-#define TRAIN_NUMBER_LENGTH 7
+#define TRAIN_NUMBER_LENGTH 6
 
 typedef struct DataModelNextTrain {
-    char number[TRAIN_NUMBER_LENGTH];   // Train number, null-terminated string, e.g. "133871"
+    char number[TRAIN_NUMBER_LENGTH];   // Train number, e.g. "133871"
     char code[5];                       // Train mission code, null-terminated string, e.g. "POBI"
     char hour[6];                       // Train hour, null-terminated string, e.g. "13:42"
     char platform[3];                   // Train dock or Train lane, null-terminated string, e.g. "C"

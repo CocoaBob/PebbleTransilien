@@ -1,111 +1,3 @@
-var demo_train_details = '[\
-{\
-"binary": null,\
-"data": [\
-{\
-"codeGare": "PSL",\
-"lane": "BL",\
-"mention": "N",\
-"time": "23/07/2015 23:55",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "BEC",\
-"lane": "12",\
-"mention": "N",\
-"time": "24/07/2015 00:01",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "KOU",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:04",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "LDU",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:06",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "PTX",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:08",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "MVH",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:11",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "VDO",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:13",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "SCD",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:15",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "VDV",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:18",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "CWJ",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:21",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "VFD",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:23",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "MFL",\
-"lane": "1",\
-"mention": "N",\
-"time": "24/07/2015 00:25",\
-"typeTrain": "C"\
-},\
-{\
-"codeGare": "VRD",\
-"lane": "2",\
-"mention": "M",\
-"time": "24/07/2015 00:28",\
-"typeTrain": "C"\
-}\
-],\
-"headers": null,\
-"list": null,\
-"listOfMap": null,\
-"map": {\
-"trainNumber": "133871"\
-},\
-"serial": 0,\
-"state": 200,\
-"target": null\
-}\
-]';
-
 var _allStationCodes = ["AB","ABL","ACW","AEE","AEH","AGV","AHM","ALC","ANY","APK","ARK","ARP","ARW","ATH","ATW","AUU","AUW","AVF","BAM","BBN","BCO","BDE","BDY","BEC","BEL","BFM","BFX","BGK","BGV","BIH","BIS","BJN","BJR","BKR","BLA","BLU","BNR","BNY","BOF","BOM","BQA","BQC","BQQ","BQV","BRK","BRN","BRW","BSO","BSR","BSW","BUR","BVA","BVI","BVJ","BWI","BWR","BXG","BXI","BXN","BXP","BXR","BY","BYS","CAZ","CBK","CBV","CEG","CEJ","CES","CEV","CEX","CFD","CFO","CGG","CGJ","CGP","CGW","CHK","CHQ","CHR","CHV","CJN","CJR","CJV","CL","CLC","CLL","CLR","CLX","CLY","CMA","CME","CO","COE","COJ","CPA","CPK","CPM","CPO","CPW","CQQ","CSG","CSH","CTH","CUF","CVF","CVI","CVW","CWJ","CXA","CYC","CYP","CYQ","CYV","CYZ","D","DA","DAM","DDI","DEU","DFR","DMO","DRN","DX","ECZ","ELW","ELY","EM","EN","EPL","EPO","EPV","ERA","ERE","ERM","ERT","ESO","ETP","ETY","EVC","EVR","EY","EYO","EYS","FAF","FFY","FMN","FMP","FMY","FNR","FON","FPB","FPN","FPO","FSB","GAJ","GAQ","GAW","GBG","GBI","GCM","GCR","GDS","GEN","GGG","GGV","GIF","GIS","GMC","GN","GNX","GOU","GPA","GRL","GTL","GU","GUW","GYN","GZ","GZA","HAQ","HAR","HER","HOA","HRY","HSL","IAC","IAP","IBM","IGY","INV","IPO","ISP","ISY","IV","JAS","JUZ","JVL","JVR","JY","KOU","KRW","KVE","LAD","LBJ","LBT","LCB","LDU","LEG","LFA","LFC","LFJ","LFM","LGK","LGY","LIE","LIM","LIU","LJA","LJU","LMU","LNX","LON","LOV","LPE","LPN","LQK","LQN","LSD","LSI","LSW","LUZ","LVZ","LWA","LXJ","LYO","LYQ","LYV","LZO","LZV","MAE","MAG","MAL","MAQ","MBP","MBR","MDN","MDS","MEA","MEL","MFA","MFL","MFY","MHD","MJM","MJW","MKN","MKU","MLB","MLF","MLM","MLR","MLV","MNY","MOF","MOR","MP","MPJ","MPU","MRK","MRT","MS","MSN","MSO","MSX","MTE","MTQ","MTU","MVC","MVH","MVP","MVW","MW","MWI","MWO","MXK","MY","MYD","NAA","NAF","NAN","NAU","NC1","NC2","NC3","NC4","NC5","NC6","NG","NGM","NH","NIO","NLP","NO","NPT","NSL","NSP","NSY","NTN","NUE","NUN","NYC","NYG","NYP","NZL","OBP","OGB","ORM","ORS","ORY","OSN","OY","OZF","PAA","PAN","PAW","PAX","PAZ","PBY","PCX","PDM","PE","PEB","PEX","PG","PIE","PJ","PKY","PLB","PLY","PMP","PNB","PNO","POA","POP","PPD","PPT","PRF","PRO","PRQ","PRR","PRU","PRY","PSE","PSL","PSY","PTC","PTX","PV","PVA","PWR","PWZ","PXO","PYO","PZB","RBI","RBT","RF","RIS","RNS","ROB","RSB","RSS","RSY","RVM","RYR","SAO","SCD","SCR","SCW","SDE","SEV","SF","SFD","SGM","SGT","SHL","SHO","SKX","SLF","SLL","SLT","SME","SNB","SNM","SNN","SOA","SOS","SPP","SQY","SUR","SVL","SVR","SWY","SXE","SXG","TAE","TLP","TMR","TNT","TOC","TOU","TPA","TRH","TSS","TVO","TVY","US","VAI","VBB","VBO","VBV","VC","VCN","VCX","VD","VDA","VDE","VDF","VDO","VDV","VEH","VEP","VET","VFD","VFG","VFR","VGL","VGS","VIB","VII","VMD","VMK","VMS","VNC","VNL","VOM","VPN","VRD","VRG","VRI","VSG","VSM","VSS","VSW","VTV","VUN","VVG","VW","VWC","VWT","VXS","VY","VYL","WEE","XBY","XCS","XFA","XMC","XND","XOA","XPY","YES","ZTN","ZUB"];
 
 function stationCode2Index(code) {
@@ -225,18 +117,17 @@ function sendAppMessageForTrainDetails(responseText) {
 }
 
 function requestTrainDetails(trainNumber) {
-    sendAppMessageForTrainDetails(demo_train_details);
-//    var req = new XMLHttpRequest();
-//    req.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", false);
-//    req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-//    
-//    var data = JSON.stringify([{"target": "/transilien/getTrainDetails", "map": { "trainNumber": trainNumber }}]);
-//    req.send(data);
-//    if (req.readyState == 4 && req.status == 200) {
-//        sendAppMessageForTrainDetails(req.responseText);
-//    } else {
-//        // TODO: Failed
-//    }
+    var req = new XMLHttpRequest();
+    req.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", false);
+    req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+    
+    var data = JSON.stringify([{"target": "/transilien/getTrainDetails", "map": { "trainNumber": trainNumber }}]);
+    req.send(data);
+    if (req.readyState == 4 && req.status == 200) {
+        sendAppMessageForTrainDetails(req.responseText);
+    } else {
+        // TODO: Failed
+    }
 }
 
 // Called when JS is ready
@@ -247,7 +138,6 @@ Pebble.addEventListener("ready",
 // Called when incoming message from the Pebble is received
 Pebble.addEventListener("appmessage",
                         function(e) {
-                        console.log("Pebble.addEventListener(\"appmessage\"");
                         if (!e.payload) return null;
                         if (e.payload.MESSAGE_KEY_REQUEST_TYPE == 0) { // Next trains
                             var code_from = e.payload.MESSAGE_KEY_REQUEST_CODE_FROM;
