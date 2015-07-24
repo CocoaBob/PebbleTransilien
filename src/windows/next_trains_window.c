@@ -403,12 +403,9 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             
             // Hour
-            time_t time_hour = next_train.hour; // Contains time zone
-            time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
-#ifndef PBL_PLATFORM_APLITE
-            time_curr += localtime(&time_curr)->tm_gmtoff; // Convert to time zone
-#endif
+            time_t time_hour = next_train.hour; // Contains time zone for Aplite, UTC for Basalt
             if (s_show_relative_time) {
+                time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
                 time_hour = time_hour - time_curr; // UTC time
                 if (time_hour < 60) {
                     time_hour = 0;
@@ -418,7 +415,11 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #ifdef PBL_PLATFORM_APLITE
             strftime(str_hour, 6, "%H:%M", localtime(&time_hour));
 #else
-            strftime(str_hour, 6, "%H:%M", gmtime(&time_hour));
+            if (s_show_relative_time) {
+                strftime(str_hour, 6, "%H:%M", gmtime(&time_hour)); // Show UTC time
+            } else {
+                strftime(str_hour, 6, "%H:%M", localtime(&time_hour)); // Show local time
+            }
 #endif
             
             // Terminus

@@ -209,12 +209,9 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
         
         // Time
-        time_t time_time = train_detail.time; // Contains time zone
-        time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
-#ifndef PBL_PLATFORM_APLITE
-        time_curr += localtime(&time_curr)->tm_gmtoff; // Convert to time zone
-#endif
+        time_t time_time = train_detail.time; // Contains time zone for Aplite, UTC for Basalt
         if (s_show_relative_time) {
+            time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
             time_time = time_time - time_curr; // UTC time
             if (time_time < 60) {
                 time_time = 0;
@@ -224,7 +221,11 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #ifdef PBL_PLATFORM_APLITE
         strftime(str_time, 6, "%H:%M", localtime(&time_time));
 #else
-        strftime(str_time, 6, "%H:%M", gmtime(&time_time));
+        if (s_show_relative_time) {
+            strftime(str_time, 6, "%H:%M", gmtime(&time_time)); // Show UTC time
+        } else {
+            strftime(str_time, 6, "%H:%M", localtime(&time_time)); // Show local time
+        }
 #endif
         
         // Station
