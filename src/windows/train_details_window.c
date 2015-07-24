@@ -23,8 +23,8 @@ static InverterLayer *s_inverter_layer;
 
 static char* s_train_number;
 
-static size_t s_train_details_count;
-static DataModelTrainDetail *s_train_details;
+static size_t s_train_details_list_count;
+static DataModelTrainDetail *s_train_details_list;
 static bool s_is_updating;
 
 // MARK: Constants
@@ -78,9 +78,9 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     Tuple *tuple_payload_count = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT);
     size_t count = tuple_payload_count->value->int16;
     
-    s_train_details_count = count;
-    NULL_FREE(s_train_details);
-    s_train_details = malloc(sizeof(DataModelTrainDetail) * s_train_details_count);
+    s_train_details_list_count = count;
+    NULL_FREE(s_train_details_list);
+    s_train_details_list = malloc(sizeof(DataModelTrainDetail) * s_train_details_list_count);
     
     for (uint32_t index = 0; index < count; ++index) {
         Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + index);
@@ -92,10 +92,10 @@ static void message_succeeded_callback(DictionaryIterator *received) {
             for (size_t data_index = 0; data_index < TRAIN_DETAIL_KEY_COUNT && size_left > 0; ++data_index) {
                 switch (data_index) {
                     case TRAIN_DETAIL_KEY_TIME:
-                        strcpy(s_train_details[index].time, (char *)data);
+                        strcpy(s_train_details_list[index].time, (char *)data);
                         break;
                     case TRAIN_DETAIL_KEY_STATION:
-                        s_train_details[index].station = (data[0] << 8) + data[1];
+                        s_train_details_list[index].station = (data[0] << 8) + data[1];
                         break;
                     default:
                         break;
@@ -125,7 +125,7 @@ static void message_failed_callback(void) {
 static void request_train_details() {
     // Update UI
     s_is_updating = true;
-    s_train_details_count = 0;
+    s_train_details_list_count = 0;
     menu_layer_reload_data(s_menu_layer);
     
     // Prepare parameters
@@ -154,7 +154,7 @@ static void request_train_details() {
 // MARK: Menu layer callbacks
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
-    return (s_train_details_count > 0)?s_train_details_count:1;
+    return (s_train_details_list_count > 0)?s_train_details_list_count:1;
 }
 
 static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
@@ -172,8 +172,8 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     GColor text_color = curr_fg_color();
 #endif
     
-    if (s_train_details_count > 0) {
-        DataModelTrainDetail train_detail = s_train_details[cell_index->row];
+    if (s_train_details_list_count > 0) {
+        DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
         
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
         stations_get_name(train_detail.station, str_station, STATION_NAME_MAX_LENGTH);
@@ -218,29 +218,6 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
-    // Demo data
-//    s_is_updating = true;
-//    s_train_details_count = 6;
-//    s_train_details = malloc(sizeof(DataModelTrainDetail) * s_train_details_count);
-//    
-//    strcpy(s_train_details[0].time, "23:58");
-//    s_train_details[0].station = 354;
-//    
-//    strcpy(s_train_details[1].time, "00:01");
-//    s_train_details[1].station = 356;
-//    
-//    strcpy(s_train_details[2].time, "00:04");
-//    s_train_details[2].station = 86;
-//    
-//    strcpy(s_train_details[3].time, "00:07");
-//    s_train_details[3].station = 3;
-//    
-//    strcpy(s_train_details[4].time, "00:08");
-//    s_train_details[4].station = 23;
-//    
-//    strcpy(s_train_details[5].time, "00:11");
-//    s_train_details[5].station = 279;
-    
     // Window
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
@@ -290,7 +267,7 @@ static void window_load(Window *window) {
 static void window_unload(Window *window) {
     // Data
     NULL_FREE(s_train_number);
-    NULL_FREE(s_train_details);
+    NULL_FREE(s_train_details_list);
     
     // Window
     menu_layer_destroy(s_menu_layer);
@@ -309,7 +286,9 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
-    request_train_details();
+    if (s_train_details_list == NULL) {
+        request_train_details();
+    }
 }
 
 static void window_disappear(Window *window) {

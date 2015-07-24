@@ -27,12 +27,15 @@ static Layer *s_status_bar_overlay_layer;
 static InverterLayer *s_inverter_layer;
 #endif
 
+#define UPDATE_INTERVAL 15000 // 15 seconds
+static AppTimer *s_timer;
+
 static DataModelFromTo *s_from_to;
 static char *s_str_from;
 static char *s_str_to;
 
-static size_t s_next_trains_count;
-static DataModelNextTrain *s_next_trains;
+static size_t s_next_trains_list_count;
+static DataModelNextTrain *s_next_trains_list;
 static bool s_is_updating;
 
 // MARK: Constants
@@ -206,9 +209,11 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     Tuple *tuple_payload_count = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT);
     size_t count = tuple_payload_count->value->int16;
     
-    s_next_trains_count = count;
-    NULL_FREE(s_next_trains);
-    s_next_trains = malloc(sizeof(DataModelNextTrain) * s_next_trains_count);
+    s_next_trains_list_count = count;
+    NULL_FREE(s_next_trains_list);
+    if (s_next_trains_list_count > 0) {
+        s_next_trains_list = malloc(sizeof(DataModelNextTrain) * s_next_trains_list_count);
+    }
     
     for (uint32_t index = 0; index < count; ++index) {
         Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + index);
@@ -220,20 +225,20 @@ static void message_succeeded_callback(DictionaryIterator *received) {
             for (size_t data_index = 0; data_index < NEXT_TRAIN_KEY_COUNT && size_left > 0; ++data_index) {
                 switch (data_index) {
                     case NEXT_TRAIN_KEY_NUMBER:
-                        strncpy(s_next_trains[index].number, (char *)data, max_data_length(data_index));
+                        strncpy(s_next_trains_list[index].number, (char *)data, max_data_length(data_index));
                         break;
                     case NEXT_TRAIN_KEY_CODE:
-                        strncpy(s_next_trains[index].code, (char *)data, max_data_length(data_index));
+                        strncpy(s_next_trains_list[index].code, (char *)data, max_data_length(data_index));
                         break;
                     case NEXT_TRAIN_KEY_HOUR:
-                        strncpy(s_next_trains[index].hour, (char *)data, max_data_length(data_index));
+                        strncpy(s_next_trains_list[index].hour, (char *)data, max_data_length(data_index));
                         break;
                     case NEXT_TRAIN_KEY_PLATFORM:
-                        strncpy(s_next_trains[index].platform, (char *)data, max_data_length(data_index));
+                        strncpy(s_next_trains_list[index].platform, (char *)data, max_data_length(data_index));
                         break;
                     case NEXT_TRAIN_KEY_TERMINUS:
                         if (size_left >= 2) {
-                            s_next_trains[index].terminus = (data[0] << 8) + data[1];
+                            s_next_trains_list[index].terminus = (data[0] << 8) + data[1];
                         }
                         break;
                     default:
@@ -264,7 +269,6 @@ static void message_failed_callback(void) {
 static void request_next_stations() {
     // Update UI
     s_is_updating = true;
-    s_next_trains_count = 0;
     menu_layer_reload_data(s_menu_layer);
     
     // Prepare parameters
@@ -308,6 +312,26 @@ static void request_next_stations() {
     free(dict_buffer);
 }
 
+// MARK: Timer
+
+static void timer_callback(void *context);
+
+static void timer_start() {
+    s_timer = app_timer_register(UPDATE_INTERVAL, timer_callback, NULL);
+}
+
+static void timer_stop() {
+    if(s_timer) {
+        app_timer_cancel(s_timer);
+        s_timer = NULL;
+    }
+}
+
+static void timer_callback(void *context) {
+    request_next_stations();
+    timer_start();
+}
+
 // MARK: Menu layer callbacks
 
 static uint16_t get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
@@ -318,7 +342,7 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
     if (section_index == NEXT_TRAINS_SECTION_INFO) {
         return 1;
     } else if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
-        return (s_next_trains_count > 0)?s_next_trains_count:1;
+        return (s_next_trains_list_count > 0)?s_next_trains_list_count:1;
     }
     return 0;
 }
@@ -347,8 +371,11 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #endif
                               );
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
-        if (s_next_trains_count > 0) {
-            DataModelNextTrain next_train = s_next_trains[cell_index->row];
+        if (s_is_updating && s_next_trains_list_count == 0) {
+            graphics_context_set_text_color(ctx, text_color);
+            draw_cell_title(ctx, cell_layer, "Loading...");
+        } else if (s_next_trains_list_count > 0) {
+            DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             
             char *str_terminus = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
             stations_get_name(next_train.terminus, str_terminus, STATION_NAME_MAX_LENGTH);
@@ -363,9 +390,6 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
                                   str_terminus,
                                   next_train.platform);
             free(str_terminus);
-        } else if (s_is_updating) {
-            graphics_context_set_text_color(ctx, text_color);
-            draw_cell_title(ctx, cell_layer, "Loading...");
         } else {
             graphics_context_set_text_color(ctx, text_color);
             draw_cell_title(ctx, cell_layer, "No train.");
@@ -379,7 +403,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
             request_next_stations();
         }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
-        DataModelNextTrain next_train = s_next_trains[cell_index->row];
+        DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
         push_train_details_window(next_train.number);
     }
 }
@@ -397,7 +421,7 @@ static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuInd
         if (s_from_to->to == STATION_NON) {
             *new_index = old_index;
         }
-    } else if (s_next_trains_count == 0 && new_index->section == NEXT_TRAINS_SECTION_TRAINS) {
+    } else if (s_next_trains_list_count == 0 && new_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         *new_index = old_index;
     }
 }
@@ -466,7 +490,7 @@ static void window_unload(Window *window) {
     NULL_FREE(s_str_from);
     NULL_FREE(s_str_to);
     NULL_FREE(s_from_to);
-    NULL_FREE(s_next_trains);
+    NULL_FREE(s_next_trains_list);
     
     // Window
     menu_layer_destroy(s_menu_layer);
@@ -485,11 +509,19 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
-    request_next_stations();
+    if (s_next_trains_list == NULL) {
+        request_next_stations();
+    }
+    
+    // Start timer
+    timer_start();
 }
 
 static void window_disappear(Window *window) {
     message_clear_callbacks();
+    
+    // Stop timer
+    timer_stop();
 }
 
 // MARK: Entry point
