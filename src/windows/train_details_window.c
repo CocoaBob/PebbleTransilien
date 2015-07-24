@@ -21,11 +21,16 @@ static Layer *s_status_bar_overlay_layer;
 static InverterLayer *s_inverter_layer;
 #endif
 
+#define UPDATE_TIME_FORMAT_INTERVAL 3000 // 2 seconds
+static AppTimer *s_update_time_format_timer;
+
 static char* s_train_number;
 
 static size_t s_train_details_list_count;
 static DataModelTrainDetail *s_train_details_list;
 static bool s_is_updating;
+
+static bool s_show_relative_time;
 
 // MARK: Constants
 
@@ -92,10 +97,14 @@ static void message_succeeded_callback(DictionaryIterator *received) {
             for (size_t data_index = 0; data_index < TRAIN_DETAIL_KEY_COUNT && size_left > 0; ++data_index) {
                 switch (data_index) {
                     case TRAIN_DETAIL_KEY_TIME:
-                        strcpy(s_train_details_list[index].time, (char *)data);
+                        if (size_left >= 4) {
+                            s_train_details_list[index].time = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3];
+                        }
                         break;
                     case TRAIN_DETAIL_KEY_STATION:
-                        s_train_details_list[index].station = (data[0] << 8) + data[1];
+                        if (size_left >= 2) {
+                            s_train_details_list[index].station = (data[0] << 8) + data[1];
+                        }
                         break;
                     default:
                         break;
@@ -103,11 +112,7 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                 
                 size_left -= (uint16_t)offset;
                 data += offset;
-                if (data_index == TRAIN_DETAIL_KEY_STATION) {
-                    str_length = 2;
-                } else {
-                    str_length = strlen((char *)data);
-                }
+                str_length = strlen((char *)data);
                 offset = str_length + 1;
             }
         }
@@ -137,7 +142,7 @@ static void request_train_details() {
     dict_write_begin(&parameters, dict_buffer, dict_size);
     
     dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_TRAIN_DETAILS);
-    DictionaryResult result = dict_write_data(&parameters, MESSAGE_KEY_REQUEST_TRAIN_NUMBER, (uint8_t *)s_train_number, TRAIN_NUMBER_LENGTH);
+    dict_write_data(&parameters, MESSAGE_KEY_REQUEST_TRAIN_NUMBER, (uint8_t *)s_train_number, TRAIN_NUMBER_LENGTH);
     
     dict_write_end(&parameters);
     
@@ -151,10 +156,35 @@ static void request_train_details() {
     free(dict_buffer);
 }
 
+// MARK: Timer
+
+static void update_time_format_timer_callback(void *context);
+
+static void update_time_format_timer_start() {
+    s_update_time_format_timer = app_timer_register(UPDATE_TIME_FORMAT_INTERVAL, update_time_format_timer_callback, NULL);
+}
+
+static void update_time_format_timer_stop() {
+    if(s_update_time_format_timer) {
+        app_timer_cancel(s_update_time_format_timer);
+        s_update_time_format_timer = NULL;
+    }
+}
+
+static void update_time_format_timer_callback(void *context) {
+    s_show_relative_time = !s_show_relative_time;
+    menu_layer_reload_data(s_menu_layer);
+    update_time_format_timer_start();
+}
+
 // MARK: Menu layer callbacks
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
-    return (s_train_details_list_count > 0)?s_train_details_list_count:1;
+    if (s_is_updating) {
+        return 1;
+    } else {
+        return (s_train_details_list_count > 0)?s_train_details_list_count:1;
+    }
 }
 
 static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
@@ -172,23 +202,36 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     GColor text_color = curr_fg_color();
 #endif
     
-    if (s_train_details_list_count > 0) {
+    if (s_is_updating) {
+        graphics_context_set_text_color(ctx, text_color);
+        draw_cell_title(ctx, cell_layer, "Loading...");
+    } else if (s_train_details_list_count > 0) {
         DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
+        
+        time_t time_time = train_detail.time;
+        if (s_show_relative_time) {
+            time_time = time_time - time(NULL);
+            if (time_time < 60) {
+                time_time = 0;
+            }
+        }
+        char *str_time = calloc(6, sizeof(char));
+        strftime(str_time, 6, "%H:%M", localtime(&time_time));
         
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
         stations_get_name(train_detail.station, str_station, STATION_NAME_MAX_LENGTH);
-        
+
         draw_train_detail_cell(ctx, cell_layer,
                                text_color,
 #ifdef PBL_COLOR
                                is_highlighed,
 #endif
-                               train_detail.time,
+                               str_time,
                                str_station);
+        
+        // Clean
+        free(str_time);
         free(str_station);
-    } else if (s_is_updating) {
-        graphics_context_set_text_color(ctx, text_color);
-        draw_cell_title(ctx, cell_layer, "Loading...");
     } else {
         graphics_context_set_text_color(ctx, text_color);
         draw_cell_title(ctx, cell_layer, "No train.");
@@ -289,10 +332,16 @@ static void window_appear(Window *window) {
     if (s_train_details_list == NULL) {
         request_train_details();
     }
+    
+    // Start timer
+    update_time_format_timer_start();
 }
 
 static void window_disappear(Window *window) {
     message_clear_callbacks();
+    
+    // Stop timer
+    update_time_format_timer_stop();
 }
 
 // MARK: Entry point
@@ -311,6 +360,9 @@ void push_train_details_window(char train_number[7]) {
     NULL_FREE(s_train_number);
     s_train_number = malloc(sizeof(char) * TRAIN_NUMBER_LENGTH);
     strncpy(s_train_number, train_number, TRAIN_NUMBER_LENGTH);
+    
+    s_train_details_list_count = 0;
+    NULL_FREE(s_train_details_list);
     
     window_stack_push(s_window, true);
 }

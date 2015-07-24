@@ -13,18 +13,30 @@ function str2bin(str) {
     for (var i = 0; i < str.length; ++i) {
         bytes.push(str.charCodeAt(i));
     }
+    return makeCString(bytes);
+}
+
+function makeCString(bytes) {
     if (bytes[bytes.length - 1] != 0) {
         bytes.push(0);
     }
     return bytes;
 }
 
-function int2bin(int16) {
-    var bytes = [(int16 >> 8) & 0xff, (int16 & 0xff)];
-    if (bytes[bytes.length - 1] != 0) {
-        bytes.push(0);
+function int322bin(int32) {
+    return [(int32 >> 24) & 0xff, (int32 >> 16) & 0xff, (int32 >> 8) & 0xff, int32 & 0xff];
+}
+
+function int162bin(int16) {
+    return [(int16 >> 8) & 0xff, int16 & 0xff];
+}
+
+function parseTrainHour(str) {
+    var m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{2}):(\d{2})$/);
+    if (m) {
+        return new Date(m[3], m[2]-1, m[1], m[4], m[5], 0);
     }
-    return bytes;
+    return new Date(str);
 }
 
 function sendAppMessageForNextTrains(responseText) {
@@ -46,19 +58,24 @@ function sendAppMessageForNextTrains(responseText) {
         // Train mission code
         var trainMissionCode = nextTrainDict["trainMissionCode"];
         itemData = itemData.concat(str2bin(trainMissionCode));
-        // Train mission code
+        // Train hour
         var trainHourStr = nextTrainDict["trainHour"];
-        trainHourStr = trainHourStr.slice(-5);
-        itemData = itemData.concat(str2bin(trainHourStr));
-        // Train mission code
+        trainHourStr = parseTrainHour(trainHourStr);
+        trainHourStr = trainHourStr.getTime() / 1000;
+        trainHourStr = int322bin(trainHourStr);
+        trainHourStr = makeCString(trainHourStr);
+        itemData = itemData.concat(trainHourStr);
+        // Train platform
         var trainLane = nextTrainDict["trainLane"];
         var trainDock = nextTrainDict["trainDock"];
         var trainPlatform = (trainLane != null)?trainLane:((trainDock != null)?trainDock:"");
         itemData = itemData.concat(str2bin(trainPlatform));
-        // Train mission code
+        // Train terminus
         var trainTerminus = nextTrainDict["trainTerminus"];
         trainTerminus = stationCode2Index(trainTerminus);
-        itemData = itemData.concat(int2bin(trainTerminus));
+        trainTerminus = int162bin(trainTerminus)
+        trainTerminus = makeCString(trainTerminus);
+        itemData = itemData.concat(trainTerminus);
         
         message[+payloadKey + +index] = itemData;
     }
@@ -99,12 +116,18 @@ function sendAppMessageForTrainDetails(responseText) {
         
         // Time
         var time = nextTrainDict["time"];
-        time = time.slice(-5);
-        itemData = itemData.concat(str2bin(time));
+        time = parseTrainHour(time);
+        time = time.getTime() / 1000;
+        time = int322bin(time);
+        time = makeCString(time);
+        itemData = itemData.concat(time);
+        
         // Station
         var station = nextTrainDict["codeGare"];
         station = stationCode2Index(station);
-        itemData = itemData.concat(int2bin(station));
+        station = int162bin(station)
+        station = makeCString(station);
+        itemData = itemData.concat(station);
         
         message[+payloadKey + +index] = itemData;
     }
@@ -138,6 +161,7 @@ Pebble.addEventListener("ready",
 // Called when incoming message from the Pebble is received
 Pebble.addEventListener("appmessage",
                         function(e) {
+//                        console.log("Received \"appmessage\", payload:\n" + JSON.stringify(e.payload));
                         if (!e.payload) return null;
                         if (e.payload.MESSAGE_KEY_REQUEST_TYPE == 0) { // Next trains
                             var code_from = e.payload.MESSAGE_KEY_REQUEST_CODE_FROM;

@@ -27,8 +27,10 @@ static Layer *s_status_bar_overlay_layer;
 static InverterLayer *s_inverter_layer;
 #endif
 
-#define UPDATE_INTERVAL 15000 // 15 seconds
-static AppTimer *s_timer;
+#define RELOAD_DATA_TIMER_INTERVAL 15000 // 15 seconds
+static AppTimer *s_reload_data_timer;
+#define UPDATE_TIME_FORMAT_INTERVAL 3000 // 2 seconds
+static AppTimer *s_update_time_format_timer;
 
 static DataModelFromTo *s_from_to;
 static char *s_str_from;
@@ -37,6 +39,8 @@ static char *s_str_to;
 static size_t s_next_trains_list_count;
 static DataModelNextTrain *s_next_trains_list;
 static bool s_is_updating;
+
+static bool s_show_relative_time;
 
 // MARK: Constants
 
@@ -189,7 +193,7 @@ static size_t max_data_length(size_t data_index) {
         case NEXT_TRAIN_KEY_CODE:
             return 5;
         case NEXT_TRAIN_KEY_HOUR:
-            return 6;
+            return 4;
         case NEXT_TRAIN_KEY_PLATFORM:
             return 3;
         case NEXT_TRAIN_KEY_TERMINUS:
@@ -231,7 +235,9 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                         strncpy(s_next_trains_list[index].code, (char *)data, max_data_length(data_index));
                         break;
                     case NEXT_TRAIN_KEY_HOUR:
-                        strncpy(s_next_trains_list[index].hour, (char *)data, max_data_length(data_index));
+                        if (size_left >= 4) {
+                            s_next_trains_list[index].hour = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3];
+                        }
                         break;
                     case NEXT_TRAIN_KEY_PLATFORM:
                         strncpy(s_next_trains_list[index].platform, (char *)data, max_data_length(data_index));
@@ -247,11 +253,7 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                 
                 size_left -= (uint16_t)offset;
                 data += offset;
-                if (data_index == NEXT_TRAIN_KEY_TERMINUS) {
-                    str_length = 2;
-                } else {
-                    str_length = strlen((char *)data);
-                }
+                str_length = strlen((char *)data);
                 offset = str_length + 1;
             }
         }
@@ -314,22 +316,41 @@ static void request_next_stations() {
 
 // MARK: Timer
 
-static void timer_callback(void *context);
+static void update_time_format_timer_callback(void *context);
 
-static void timer_start() {
-    s_timer = app_timer_register(UPDATE_INTERVAL, timer_callback, NULL);
+static void update_time_format_timer_start() {
+    s_update_time_format_timer = app_timer_register(UPDATE_TIME_FORMAT_INTERVAL, update_time_format_timer_callback, NULL);
 }
 
-static void timer_stop() {
-    if(s_timer) {
-        app_timer_cancel(s_timer);
-        s_timer = NULL;
+static void update_time_format_timer_stop() {
+    if(s_update_time_format_timer) {
+        app_timer_cancel(s_update_time_format_timer);
+        s_update_time_format_timer = NULL;
     }
 }
 
-static void timer_callback(void *context) {
+static void update_time_format_timer_callback(void *context) {
+    s_show_relative_time = !s_show_relative_time;
+    menu_layer_reload_data(s_menu_layer);
+    update_time_format_timer_start();
+}
+
+static void reload_data_timer_callback(void *context);
+
+static void reload_data_timer_start() {
+    s_reload_data_timer = app_timer_register(RELOAD_DATA_TIMER_INTERVAL, reload_data_timer_callback, NULL);
+}
+
+static void reload_data_timer_stop() {
+    if(s_reload_data_timer) {
+        app_timer_cancel(s_reload_data_timer);
+        s_reload_data_timer = NULL;
+    }
+}
+
+static void reload_data_timer_callback(void *context) {
     request_next_stations();
-    timer_start();
+    reload_data_timer_start();
 }
 
 // MARK: Menu layer callbacks
@@ -342,7 +363,11 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
     if (section_index == NEXT_TRAINS_SECTION_INFO) {
         return 1;
     } else if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
-        return (s_next_trains_list_count > 0)?s_next_trains_list_count:1;
+        if (s_is_updating) {
+            return 1;
+        } else {
+            return (s_next_trains_list_count > 0)?s_next_trains_list_count:1;
+        }
     }
     return 0;
 }
@@ -377,6 +402,16 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         } else if (s_next_trains_list_count > 0) {
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             
+            time_t time_hour = next_train.hour;
+            if (s_show_relative_time) {
+                time_hour = time_hour - time(NULL);
+                if (time_hour < 60) {
+                    time_hour = 0;
+                }
+            }
+            char *str_hour = calloc(6, sizeof(char));
+            strftime(str_hour, 6, "%H:%M", localtime(&time_hour));
+            
             char *str_terminus = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
             stations_get_name(next_train.terminus, str_terminus, STATION_NAME_MAX_LENGTH);
             
@@ -386,9 +421,12 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
                                   is_highlighed,
 #endif
                                   next_train.code,
-                                  next_train.hour,
+                                  str_hour,
                                   str_terminus,
                                   next_train.platform);
+            
+            // Clean
+            free(str_hour);
             free(str_terminus);
         } else {
             graphics_context_set_text_color(ctx, text_color);
@@ -514,14 +552,16 @@ static void window_appear(Window *window) {
     }
     
     // Start timer
-    timer_start();
+    reload_data_timer_start();
+    update_time_format_timer_start();
 }
 
 static void window_disappear(Window *window) {
     message_clear_callbacks();
     
     // Stop timer
-    timer_stop();
+    reload_data_timer_stop();
+    update_time_format_timer_stop();
 }
 
 // MARK: Entry point
@@ -542,6 +582,9 @@ void push_next_trains_window(DataModelFromTo from_to) {
     s_from_to->from = from_to.from;
     s_from_to->to = from_to.to;
     update_from_to(false);
+    
+    s_next_trains_list_count = 0;
+    NULL_FREE(s_next_trains_list);
     
     window_stack_push(s_window, true);
 }
