@@ -163,15 +163,14 @@ void draw_next_trains_cell(GContext *ctx, Layer *cell_layer,
 
 // MARK: Data
 
-static bool update_from_to(bool reverse) {
-    if (reverse) {
-        if (s_from_to->to == STATION_NON) {
-            return false;
-        }
-        size_t from = s_from_to->from;
-        s_from_to->from = s_from_to->to;
-        s_from_to->to = from;
+static void set_from_to(size_t from, size_t to) {
+    if (from == s_from_to->from &&
+        to == s_from_to->to) {
+        return;
     }
+    
+    s_from_to->from = from;
+    s_from_to->to = to;
     
     NULL_FREE(s_str_from);
     NULL_FREE(s_str_to);
@@ -183,7 +182,16 @@ static bool update_from_to(bool reverse) {
         stations_get_name(s_from_to->to, s_str_to, STATION_NAME_MAX_LENGTH);
     }
     
-    return true;
+    s_next_trains_list_count = 0;
+}
+
+static bool reverse_from_to() {
+    if (s_from_to->to == STATION_NON) {
+        return false;
+    } else {
+        set_from_to(s_from_to->to, s_from_to->from);
+        return true;
+    }
 }
 
 static size_t max_data_length(size_t data_index) {
@@ -363,7 +371,7 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
     if (section_index == NEXT_TRAINS_SECTION_INFO) {
         return 1;
     } else if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
-        if (s_is_updating) {
+        if (s_is_updating && s_next_trains_list_count == 0) {
             return 1;
         } else {
             return (s_next_trains_list_count > 0)?s_next_trains_list_count:1;
@@ -403,24 +411,8 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             
             // Hour
-            time_t time_hour = next_train.hour; // Contains time zone for Aplite, UTC for Basalt
-            if (s_show_relative_time) {
-                time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
-                time_hour = time_hour - time_curr; // UTC time
-                if (time_hour < 60) {
-                    time_hour = 0;
-                }
-            }
-            char *str_hour = calloc(6, sizeof(char));
-#ifdef PBL_PLATFORM_APLITE
-            strftime(str_hour, 6, "%H:%M", localtime(&time_hour));
-#else
-            if (s_show_relative_time) {
-                strftime(str_hour, 6, "%H:%M", gmtime(&time_hour)); // Show UTC time
-            } else {
-                strftime(str_hour, 6, "%H:%M", localtime(&time_hour)); // Show local time
-            }
-#endif
+            char *str_hour = calloc(TIME_STRING_LENGTH, sizeof(char));
+            time_2_str(next_train.hour, str_hour, TIME_STRING_LENGTH, s_show_relative_time);
             
             // Terminus
             char *str_terminus = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
@@ -448,7 +440,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
-        if (update_from_to(true)) {
+        if (reverse_from_to()) {
             request_next_stations();
         }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
@@ -590,12 +582,9 @@ void push_next_trains_window(DataModelFromTo from_to) {
     
     NULL_FREE(s_from_to);
     s_from_to = malloc(sizeof(DataModelFromTo));
-    s_from_to->from = from_to.from;
-    s_from_to->to = from_to.to;
-    update_from_to(false);
+    set_from_to(from_to.from, from_to.to);
     
     // Reset some status
-    s_next_trains_list_count = 0;
     NULL_FREE(s_next_trains_list);
     s_show_relative_time = false;
     

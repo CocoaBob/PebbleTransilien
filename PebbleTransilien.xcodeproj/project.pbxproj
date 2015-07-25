@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		45286A5D1B63A50500A9113F /* data_process.c in Sources */ = {isa = PBXBuildFile; fileRef = 45286A5B1B63A50500A9113F /* data_process.c */; };
 		45530B1B1B615EC50059867C /* train_details_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 45530B191B615EC50059867C /* train_details_window.c */; };
 		4592A2791B5BB4DD0070351C /* favorites.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2601B5BB4DD0070351C /* favorites.c */; };
 		4592A27A1B5BB4DD0070351C /* stations.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2621B5BB4DD0070351C /* stations.c */; };
@@ -39,6 +40,8 @@
 		4517F3621B4C09DB0078F1A0 /* Aplite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Aplite; sourceTree = BUILT_PRODUCTS_DIR; };
 		4517F3631B4C09E10078F1A0 /* Device */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Device; sourceTree = BUILT_PRODUCTS_DIR; };
 		4517F3641B4C0A060078F1A0 /* Basalt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Basalt; sourceTree = BUILT_PRODUCTS_DIR; };
+		45286A5B1B63A50500A9113F /* data_process.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = data_process.c; sourceTree = "<group>"; };
+		45286A5C1B63A50500A9113F /* data_process.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = data_process.h; sourceTree = "<group>"; };
 		454FA5B71B4EFC6C00473A4B /* locale_english.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_english.json; sourceTree = "<group>"; };
 		454FA5B81B4EFC6C00473A4B /* locale_french.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_french.json; sourceTree = "<group>"; };
 		45530B191B615EC50059867C /* train_details_window.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = train_details_window.c; sourceTree = "<group>"; };
@@ -124,6 +127,8 @@
 		4592A25F1B5BB4DD0070351C /* data */ = {
 			isa = PBXGroup;
 			children = (
+				45286A5B1B63A50500A9113F /* data_process.c */,
+				45286A5C1B63A50500A9113F /* data_process.h */,
 				45B2B6871B5EE93F0065786D /* data_model.c */,
 				45B2B6881B5EE93F0065786D /* data_model.h */,
 				4592A2601B5BB4DD0070351C /* favorites.c */,
@@ -340,7 +345,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 192.168.2.9";
+			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 172.20.10.4";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -362,6 +367,7 @@
 				4592A27C1B5BB4DD0070351C /* storage.c in Sources */,
 				45530B1B1B615EC50059867C /* train_details_window.c in Sources */,
 				4592A27D1B5BB4DD0070351C /* drawing.c in Sources */,
+				45286A5D1B63A50500A9113F /* data_process.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

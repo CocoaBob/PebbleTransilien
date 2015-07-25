@@ -8,6 +8,8 @@
 
 #pragma once
 
+// MARK: DataModel
+
 typedef struct DataModelFromTo {
     size_t from;
     size_t to;

@@ -22,3 +22,5 @@
 
 #define FROM_TO_ICON_WIDTH 8
 #define FROM_TO_ICON_HEIGHT 26
+
+#define TIME_STRING_LENGTH 6

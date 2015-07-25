@@ -209,24 +209,8 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
         
         // Time
-        time_t time_time = train_detail.time; // Contains time zone for Aplite, UTC for Basalt
-        if (s_show_relative_time) {
-            time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
-            time_time = time_time - time_curr; // UTC time
-            if (time_time < 60) {
-                time_time = 0;
-            }
-        }
-        char *str_time = calloc(6, sizeof(char));
-#ifdef PBL_PLATFORM_APLITE
-        strftime(str_time, 6, "%H:%M", localtime(&time_time));
-#else
-        if (s_show_relative_time) {
-            strftime(str_time, 6, "%H:%M", gmtime(&time_time)); // Show UTC time
-        } else {
-            strftime(str_time, 6, "%H:%M", localtime(&time_time)); // Show local time
-        }
-#endif
+        char *str_time = calloc(TIME_STRING_LENGTH, sizeof(char));
+        time_2_str(train_detail.time, str_time, TIME_STRING_LENGTH, s_show_relative_time);
         
         // Station
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
