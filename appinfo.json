@@ -117,6 +117,11 @@
       },
       {
         "type": "raw",
+        "name": "STATION_NAME_POS",
+        "file": "data/station_name_pos.bin"
+      },
+      {
+        "type": "raw",
         "name": "LOCALE_ENGLISH",
         "file": "localizations/locale_english.bin"
       },

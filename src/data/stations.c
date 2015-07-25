@@ -11,39 +11,26 @@
 
 ResHandle s_code_handle;
 ResHandle s_name_handle;
-static size_t* s_name_positions;
+ResHandle s_name_pos_handle;
 
 void stations_init() {
-    // Get station codes
     s_code_handle = resource_get_handle(RESOURCE_ID_STATION_CODE);
-    size_t code_size = resource_size(s_code_handle);
-    
-    // Get station names
     s_name_handle = resource_get_handle(RESOURCE_ID_STATION_NAME);
-    
-    // Build name indexes
-    size_t count = code_size / STATION_CODE_LENGTH;
-    s_name_positions = malloc(sizeof(size_t) * count);
-    size_t position = 0;
-    char *buffer = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-    for (size_t index = 0; index < count; ++index) {
-        resource_load_byte_range(s_name_handle, position, (uint8_t *)buffer, STATION_NAME_MAX_LENGTH);
-        
-        size_t name_length = strlen(buffer) + 1;
-        s_name_positions[index] = position;
-        
-        position += name_length;
-    }
-    free(buffer);
+    s_name_pos_handle = resource_get_handle(RESOURCE_ID_STATION_NAME_POS);
 }
 
 void stations_deinit() {
-    free(s_name_positions);
+}
+
+size_t stations_get_name_pos(size_t index) {
+    uint8_t pos_bytes[STATION_NAME_POS_VALUE_LENGTH];
+    resource_load_byte_range(s_name_pos_handle, STATION_NAME_POS_VALUE_LENGTH * index, pos_bytes, STATION_NAME_POS_VALUE_LENGTH);
+    return (pos_bytes[0] << 8) + pos_bytes[1];
 }
 
 size_t stations_get_name(size_t index, char *buffer, const size_t buffer_size) {
-    size_t position = s_name_positions[index];
-    return resource_load_byte_range(s_name_handle, position, (uint8_t *)buffer, buffer_size);
+    size_t name_pos = stations_get_name_pos(index);
+    return resource_load_byte_range(s_name_handle, name_pos, (uint8_t *)buffer, buffer_size);
 }
 
 size_t stations_get_code(size_t index, char *buffer, const size_t buffer_size) {

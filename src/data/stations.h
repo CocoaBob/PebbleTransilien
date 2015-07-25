@@ -8,9 +8,10 @@
 
 #pragma once
 
-#define STATION_NAME_MAX_LENGTH 100 // We assume all the names are shorter than 100 characters.
+#define STATION_NAME_MAX_LENGTH 100 // We assume that all the names are shorter than 100 characters.
 
 #define STATION_CODE_LENGTH 3
+#define STATION_NAME_POS_VALUE_LENGTH 2
 #define STATION_NON 999
 
 void stations_init();
