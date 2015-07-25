@@ -9,21 +9,29 @@
 #include <pebble.h>
 #include "headers.h"
 
-void time_2_str(time_t timestamp, char *str, size_t str_size, bool is_relative_to_now) {
+void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relative_to_now) {
+    time_t o_time = timestamp;
+    size_t offset = 0;
     if (is_relative_to_now) {
         time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
-        timestamp = timestamp - time_curr; // UTC time
-        if (timestamp % 60 > 0) {
-            timestamp = ((timestamp / 60) + 1) * 60;
+        if (timestamp >= time_curr) {
+            o_time = timestamp - time_curr; // UTC time
+        } else {
+            o_time = time_curr - timestamp; // UTC time
+            snprintf(o_str, 2, "-");
+            offset = 1;
+        }
+        if (o_time % 60 > 0) {
+            o_time = ((o_time / 60) + 1) * 60;
         }
     }
 #ifdef PBL_PLATFORM_APLITE
-    strftime(str, str_size, "%H:%M", localtime(&timestamp));
+    strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time));
 #else
     if (is_relative_to_now) {
-        strftime(str, str_size, "%H:%M", gmtime(&timestamp)); // Show UTC time
+        strftime(o_str+offset, o_str_size-offset, "%H:%M", gmtime(&o_time)); // Show UTC time
     } else {
-        strftime(str, str_size, "%H:%M", localtime(&timestamp)); // Show local time
+        strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time)); // Show local time
     }
 #endif
 }
