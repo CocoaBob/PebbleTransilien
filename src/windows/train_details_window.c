@@ -258,17 +258,17 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 static void window_load(Window *window) {
     // Window
     Layer *window_layer = window_get_root_layer(window);
-    GRect bounds = layer_get_bounds(window_layer);
+    GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add menu layer
     int16_t status_bar_height = 0;
 #ifdef PBL_PLATFORM_BASALT
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
 #endif
-    GRect menu_layer_frame = GRect(bounds.origin.x,
-                                   bounds.origin.y + status_bar_height,
-                                   bounds.size.w,
-                                   bounds.size.h - status_bar_height);
+    GRect menu_layer_frame = GRect(window_bounds.origin.x,
+                                   window_bounds.origin.y + status_bar_height,
+                                   window_bounds.size.w,
+                                   window_bounds.size.h - status_bar_height);
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     // Setup menu layer
@@ -292,11 +292,11 @@ static void window_load(Window *window) {
 #endif
     
 #ifdef PBL_BW
-    s_inverter_layer = inverter_layer_create(menu_layer_frame);
+    s_inverter_layer = inverter_layer_create(window_bounds);
 #endif
     
 #ifdef PBL_COLOR
-    setup_ui_theme(s_menu_layer);
+    setup_ui_theme_for_menu_layer(s_menu_layer);
 #else
     setup_ui_theme(s_window, s_inverter_layer);
 #endif

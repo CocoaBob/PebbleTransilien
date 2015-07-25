@@ -169,9 +169,9 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
                             favorite.from, favorite.to);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Nearby stations"), _("Based on location"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, "Nearby...", _("Based on location"), NULL);
         } else if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            menu_cell_basic_draw(ctx, cell_layer, _("A station name"), _("By choosing letters"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, "Alphabetic...", _("By choosing letters"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_SETTING) {
         if (row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
@@ -205,13 +205,17 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
         Favorite favorite = fav_at_index(cell_index->row);
         push_next_trains_window(favorite);
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
-        // TODO: Search
+        if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
+            push_search_train_window();
+        } else {
+            // TODO: Nearby stations
+        }
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             // Change theme
             storage_set_theme(!status_is_dark_theme());
 #ifdef PBL_COLOR
-            setup_ui_theme(s_menu_layer);
+            setup_ui_theme_for_menu_layer(s_menu_layer);
 #else
             setup_ui_theme(s_window, s_inverter_layer);
 #endif
@@ -270,7 +274,7 @@ static void window_load(Window *window) {
     fav_delete_at_index(0);
     
     Layer *window_layer = window_get_root_layer(window);
-    GRect bounds = layer_get_bounds(window_layer);
+    GRect window_bounds = layer_get_bounds(window_layer);
     
     // Load favorites
     load_favorites();
@@ -280,10 +284,10 @@ static void window_load(Window *window) {
 #ifdef PBL_PLATFORM_BASALT
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
 #endif
-    GRect menu_layer_frame = GRect(bounds.origin.x,
-                                   bounds.origin.y + status_bar_height,
-                                   bounds.size.w,
-                                   bounds.size.h - status_bar_height);
+    GRect menu_layer_frame = GRect(window_bounds.origin.x,
+                                   window_bounds.origin.y + status_bar_height,
+                                   window_bounds.size.w,
+                                   window_bounds.size.h - status_bar_height);
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
@@ -310,11 +314,11 @@ static void window_load(Window *window) {
 #endif
     
 #ifdef PBL_BW
-    s_inverter_layer = inverter_layer_create(menu_layer_frame);
+    s_inverter_layer = inverter_layer_create(window_bounds);
 #endif
     
 #ifdef PBL_COLOR
-    setup_ui_theme(s_menu_layer);
+    setup_ui_theme_for_menu_layer(s_menu_layer);
 #else
     setup_ui_theme(s_window, s_inverter_layer);
 #endif

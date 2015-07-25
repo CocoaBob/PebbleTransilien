@@ -69,20 +69,17 @@ void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_laye
 // MARK: Theme
 
 #ifdef PBL_COLOR
-void setup_ui_theme(MenuLayer *menu_layer)
-#else
-void setup_ui_theme(Window *window, InverterLayer *inverter_layer)
-#endif
-{
-#ifdef PBL_COLOR
+void setup_ui_theme_for_menu_layer(MenuLayer *menu_layer) {
     menu_layer_set_normal_colors(menu_layer, curr_bg_color(), curr_fg_color());
     menu_layer_set_highlight_colors(menu_layer, GColorCobaltBlue, GColorWhite);
+}
 #else
+void setup_ui_theme(Window *window, InverterLayer *inverter_layer) {
     if (status_is_dark_theme()) {
         Layer *window_layer = window_get_root_layer(window);
         layer_add_child(window_layer, inverter_layer_get_layer(inverter_layer));
     } else {
         layer_remove_from_parent(inverter_layer_get_layer(inverter_layer));
     }
-#endif
 }
+#endif

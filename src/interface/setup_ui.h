@@ -20,7 +20,7 @@ void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_laye
 // MARK: Theme
 
 #ifdef PBL_COLOR
-void setup_ui_theme(MenuLayer *menu_layer);
+void setup_ui_theme_for_menu_layer(MenuLayer *menu_layer);
 #else
 void setup_ui_theme(Window *window_layer, InverterLayer *inverter_layer);
 #endif
