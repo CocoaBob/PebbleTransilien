@@ -537,7 +537,8 @@ static void window_unload(Window *window) {
     
     // Window
     menu_layer_destroy(s_menu_layer);
-    window_destroy(window);
+    window_destroy(s_window);
+    s_window = NULL;
     
 #ifdef PBL_PLATFORM_BASALT
     layer_destroy(s_status_bar_background_layer);

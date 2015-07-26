@@ -336,7 +336,7 @@ static void window_unload(Window *window) {
 #ifdef PBL_BW
     inverter_layer_destroy(s_inverter_layer);
 #endif
-    window_destroy(window);
+    window_destroy(s_window);
     s_window = NULL;
 }
 
