@@ -51,12 +51,12 @@ static InverterLayer *s_inverter_layer;
 
 // MARK: Drawing
 
-void draw_main_menu_cell(GContext *ctx, Layer *cell_layer,
-                         GColor text_color,
+static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
+                                 GColor text_color,
 #ifdef PBL_COLOR
-                         bool is_highlighed,
+                                 bool is_highlighed,
 #endif
-                         size_t idx_from, size_t idx_to) {
+                                 size_t idx_from, size_t idx_to) {
     graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
     bool is_from_to = (idx_to != STATION_NON);
@@ -161,12 +161,12 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     uint16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
-        draw_main_menu_cell(ctx, cell_layer,
-                            text_color,
+        draw_menu_layer_cell(ctx, cell_layer,
+                             text_color,
 #ifdef PBL_COLOR
-                            is_highlighed,
+                             is_highlighed,
 #endif
-                            favorite.from, favorite.to);
+                             favorite.from, favorite.to);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
             menu_cell_basic_draw(ctx, cell_layer, "Nearby...", _("Based on location"), NULL);

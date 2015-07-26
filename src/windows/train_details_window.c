@@ -38,13 +38,13 @@ static bool s_show_relative_time;
 
 // MARK: Drawing
 
-void draw_train_detail_cell(GContext *ctx, Layer *cell_layer,
-                            GColor text_color,
+static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
+                                 GColor text_color,
 #ifdef PBL_COLOR
-                            bool is_highlighed,
+                                 bool is_highlighed,
 #endif
-                            const char * str_time,
-                            const char * str_station) {
+                                 const char * str_time,
+                                 const char * str_station) {
     graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
     
@@ -216,13 +216,13 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
         stations_get_name(train_detail.station, str_station, STATION_NAME_MAX_LENGTH);
 
-        draw_train_detail_cell(ctx, cell_layer,
-                               text_color,
+        draw_menu_layer_cell(ctx, cell_layer,
+                             text_color,
 #ifdef PBL_COLOR
-                               is_highlighed,
+                             is_highlighed,
 #endif
-                               str_time,
-                               str_station);
+                             str_time,
+                             str_station);
         
         // Clean
         free(str_time);

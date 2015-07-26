@@ -51,13 +51,13 @@ static bool s_show_relative_time;
 
 // MARK: Drawing
 
-void draw_next_trains_info(GContext *ctx,
-                           Layer *cell_layer,
-                           GColor text_color
+static void draw_next_trains_info(GContext *ctx,
+                                  Layer *cell_layer,
+                                  GColor text_color
 #ifdef PBL_COLOR
-                           ,bool is_highlighed
+                                  ,bool is_highlighed
 #endif
-                           )
+)
 {
     graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
@@ -107,15 +107,15 @@ void draw_next_trains_info(GContext *ctx,
     }
 }
 
-void draw_next_trains_cell(GContext *ctx, Layer *cell_layer,
-                           GColor text_color,
+static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
+                                 GColor text_color,
 #ifdef PBL_COLOR
-                           bool is_highlighed,
+                                 bool is_highlighed,
 #endif
-                           const char * str_code,
-                           const char * str_time,
-                           const char * str_terminus,
-                           const char * str_platform) {
+                                 const char * str_code,
+                                 const char * str_time,
+                                 const char * str_terminus,
+                                 const char * str_platform) {
     graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
     
@@ -418,15 +418,16 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
             char *str_terminus = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
             stations_get_name(next_train.terminus, str_terminus, STATION_NAME_MAX_LENGTH);
             
-            draw_next_trains_cell(ctx, cell_layer,
-                                  text_color,
+            draw_menu_layer_cell(ctx,
+                                 cell_layer,
+                                 text_color,
 #ifdef PBL_COLOR
-                                  is_highlighed,
+                                 is_highlighed,
 #endif
-                                  next_train.code,
-                                  str_hour,
-                                  str_terminus,
-                                  next_train.platform);
+                                 next_train.code,
+                                 str_hour,
+                                 str_terminus,
+                                 next_train.platform);
             
             // Clean
             free(str_hour);
@@ -463,7 +464,8 @@ static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuInd
         if (s_from_to->to == STATION_NON) {
             *new_index = old_index;
         }
-    } else if (s_next_trains_list_count == 0 && new_index->section == NEXT_TRAINS_SECTION_TRAINS) {
+    } else if (new_index->section == NEXT_TRAINS_SECTION_TRAINS &&
+               s_next_trains_list_count == 0) {
         *new_index = old_index;
     }
 }
@@ -536,7 +538,6 @@ static void window_unload(Window *window) {
     // Window
     menu_layer_destroy(s_menu_layer);
     window_destroy(window);
-    s_window = NULL;
     
 #ifdef PBL_PLATFORM_BASALT
     layer_destroy(s_status_bar_background_layer);
