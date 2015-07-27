@@ -9,6 +9,15 @@
 #include <pebble.h>
 #include "headers.h"
 
+// MARK: Constants
+
+#define SELECTION_LAYER_HEIGHT 22
+#define SELECTION_LAYER_CELL_COUNT 8
+#define SELECTION_LAYER_VALUE_MIN 'A'
+#define SELECTION_LAYER_VALUE_MAX 'Z'
+
+// MARK: Variables
+
 static Window *s_window;
 static Layer *s_selection_layer;
 static MenuLayer *s_menu_layer;
@@ -25,12 +34,7 @@ static InverterLayer *s_inverter_layer;
 static size_t s_list_items_count;
 static size_t *s_list_items;
 static bool s_is_searching;
-
-// MARK: Constants
-
-#define SELECTION_LAYER_HEIGHT 22
-#define SELECTION_LAYER_CELL_COUNT 6
-
+static char* s_search_string;
 
 // MARK: Drawing
 
@@ -64,35 +68,39 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
 // MARK: Selection layer callbacks
 
 static char* selection_handle_get_text(int index, void *context) {
-//    PinWindow *pin_window = (PinWindow*)context;
-//    snprintf(
-//             pin_window->field_buffs[index],
-//             sizeof(pin_window->field_buffs[0]), "%d",
-//             (int)pin_window->pin.digits[index]
-//             );
-//    return pin_window->field_buffs[index];
-    return "S";
+    return &s_search_string[index << 1];
 }
 
-static void selection_handle_complete(void *context) {
-//    PinWindow *pin_window = (PinWindow*)context;
-//    pin_window->callbacks.pin_complete(pin_window->pin, pin_window);
+static void selection_handle_previous(void *context, int index) {
+    printf("%s %d",__func__,index);
+}
+
+static void selection_handle_next(void *context, int index) {
+    printf("%s %d",__func__,index);
 }
 
 static void selection_handle_inc(int index, uint8_t clicks, void *context) {
-//    PinWindow *pin_window = (PinWindow*)context;
-//    pin_window->pin.digits[index]++;
-//    if(pin_window->pin.digits[index] > MAX_VALUE) {
-//        pin_window->pin.digits[index] = 0;
-//    }
+    int real_index = index << 1;
+    if (s_search_string[real_index] == 0) {
+        s_search_string[real_index] = SELECTION_LAYER_VALUE_MIN;
+    } else {
+        ++s_search_string[real_index];
+        if (s_search_string[real_index] > SELECTION_LAYER_VALUE_MAX) {
+            s_search_string[real_index] = SELECTION_LAYER_VALUE_MIN;
+        }
+    }
 }
 
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
-//    PinWindow *pin_window = (PinWindow*)context;
-//    pin_window->pin.digits[index]--;
-//    if(pin_window->pin.digits[index] < 0) {
-//        pin_window->pin.digits[index] = MAX_VALUE;
-//    }
+    int real_index = index << 1;
+    if (s_search_string[real_index] == 0) {
+        s_search_string[real_index] = SELECTION_LAYER_VALUE_MAX;
+    } else {
+        --s_search_string[real_index];
+        if (s_search_string[real_index] < SELECTION_LAYER_VALUE_MIN) {
+            s_search_string[real_index] = SELECTION_LAYER_VALUE_MAX;
+        }
+    }
 }
 
 // MARK: Menu layer callbacks
@@ -180,6 +188,9 @@ static void window_load(Window *window) {
     s_list_items[3] = 356;
     s_list_items[4] = 474;
     
+    // Data
+    s_search_string = calloc(SELECTION_LAYER_CELL_COUNT << 1, sizeof(char));
+    
     // Window
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
@@ -205,7 +216,8 @@ static void window_load(Window *window) {
     selection_layer_set_click_config_onto_window(s_selection_layer, s_window);
     selection_layer_set_callbacks(s_selection_layer, NULL, (SelectionLayerCallbacks) {
         .get_cell_text = selection_handle_get_text,
-        .complete = selection_handle_complete,
+        .previous = selection_handle_previous,
+        .next = selection_handle_next,
         .increment = selection_handle_inc,
         .decrement = selection_handle_dec,
     });
@@ -253,6 +265,7 @@ static void window_load(Window *window) {
 static void window_unload(Window *window) {
     // Data
     NULL_FREE(s_list_items);
+    NULL_FREE(s_search_string);
     
     // Window
     menu_layer_destroy(s_menu_layer);
@@ -271,6 +284,7 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
+
 }
 
 static void window_disappear(Window *window) {
