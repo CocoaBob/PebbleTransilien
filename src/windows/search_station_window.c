@@ -10,6 +10,7 @@
 #include "headers.h"
 
 static Window *s_window;
+static Layer *s_selection_layer;
 static MenuLayer *s_menu_layer;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
@@ -26,6 +27,9 @@ static size_t *s_list_items;
 static bool s_is_searching;
 
 // MARK: Constants
+
+#define SELECTION_LAYER_HEIGHT 22
+#define SELECTION_LAYER_CELL_COUNT 6
 
 
 // MARK: Drawing
@@ -55,6 +59,40 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                                 bounds.size.w - CELL_MARGIN * 2 - FROM_TO_ICON_WIDTH,
                                 CELL_HEIGHT_2);
     draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
+}
+
+// MARK: Selection layer callbacks
+
+static char* selection_handle_get_text(int index, void *context) {
+//    PinWindow *pin_window = (PinWindow*)context;
+//    snprintf(
+//             pin_window->field_buffs[index],
+//             sizeof(pin_window->field_buffs[0]), "%d",
+//             (int)pin_window->pin.digits[index]
+//             );
+//    return pin_window->field_buffs[index];
+    return "S";
+}
+
+static void selection_handle_complete(void *context) {
+//    PinWindow *pin_window = (PinWindow*)context;
+//    pin_window->callbacks.pin_complete(pin_window->pin, pin_window);
+}
+
+static void selection_handle_inc(int index, uint8_t clicks, void *context) {
+//    PinWindow *pin_window = (PinWindow*)context;
+//    pin_window->pin.digits[index]++;
+//    if(pin_window->pin.digits[index] > MAX_VALUE) {
+//        pin_window->pin.digits[index] = 0;
+//    }
+}
+
+static void selection_handle_dec(int index, uint8_t clicks, void *context) {
+//    PinWindow *pin_window = (PinWindow*)context;
+//    pin_window->pin.digits[index]--;
+//    if(pin_window->pin.digits[index] < 0) {
+//        pin_window->pin.digits[index] = MAX_VALUE;
+//    }
 }
 
 // MARK: Menu layer callbacks
@@ -146,19 +184,42 @@ static void window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
-    // Add menu layer
+    // Prepare status bar
     int16_t status_bar_height = 0;
 #ifdef PBL_PLATFORM_BASALT
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
 #endif
+    
+    // Add selection layer
+    s_selection_layer = selection_layer_create(GRect(0, status_bar_height, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);
+    int selection_layer_cell_width = window_bounds.size.w / SELECTION_LAYER_CELL_COUNT;
+    for (int i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
+        selection_layer_set_cell_width(s_selection_layer, i, selection_layer_cell_width);
+    }
+    selection_layer_set_cell_padding(s_selection_layer, 0);
+    selection_layer_set_font(s_selection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+#ifdef PBL_COLOR
+    selection_layer_set_active_bg_color(s_selection_layer, GColorRed);
+    selection_layer_set_inactive_bg_color(s_selection_layer, GColorDarkGray);
+#endif
+    selection_layer_set_click_config_onto_window(s_selection_layer, s_window);
+    selection_layer_set_callbacks(s_selection_layer, NULL, (SelectionLayerCallbacks) {
+        .get_cell_text = selection_handle_get_text,
+        .complete = selection_handle_complete,
+        .increment = selection_handle_inc,
+        .decrement = selection_handle_dec,
+    });
+    layer_add_child(window_layer, s_selection_layer);
+    
+    // Add menu layer
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
-                                   window_bounds.origin.y + status_bar_height,
+                                   window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT,
                                    window_bounds.size.w,
-                                   window_bounds.size.h - status_bar_height);
+                                   window_bounds.size.h - status_bar_height - SELECTION_LAYER_HEIGHT);
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     // Setup menu layer
-    menu_layer_set_click_config_onto_window(s_menu_layer, window);
+//    menu_layer_set_click_config_onto_window(s_menu_layer, window);
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
