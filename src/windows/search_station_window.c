@@ -34,7 +34,7 @@ static InverterLayer *s_inverter_layer;
 static size_t s_list_items_count;
 static size_t *s_list_items;
 static bool s_is_searching;
-static char* s_search_string;
+static char s_search_string[SELECTION_LAYER_CELL_COUNT << 1] = {0};
 
 // MARK: Drawing
 
@@ -71,34 +71,49 @@ static char* selection_handle_get_text(int index, void *context) {
     return &s_search_string[index << 1];
 }
 
-static void selection_handle_previous(void *context, int index) {
-    printf("%s %d",__func__,index);
+static void selection_handle_will_change(int old_index, int *new_index, bool is_forward, void *context) {
+    if (!is_forward && old_index == 0) {
+        window_stack_pop(true);
+    }
+    printf("%s 1 %d -> %d",__func__,old_index,*new_index);
+    int index_min = 0;
+    int index_max = SELECTION_LAYER_CELL_COUNT;
+    if (*new_index > index_max || *new_index < 0) {
+        *new_index = is_forward?index_min:index_max;
+    }
+    printf("%s 2 %d -> %d",__func__,old_index,*new_index);
 }
 
-static void selection_handle_next(void *context, int index) {
-    printf("%s %d",__func__,index);
+static void selection_handle_did_change(int index, bool is_forward, void *context) {
+    printf("%s %c %d",__func__,is_forward?'>':'<',index);
+}
+
+static void selection_handle_long_click(void *context) {
+    printf("%s",__func__);
 }
 
 static void selection_handle_inc(int index, uint8_t clicks, void *context) {
     int real_index = index << 1;
-    if (s_search_string[real_index] == 0) {
+    printf("%s [%s]",__func__,&s_search_string[real_index]);
+    if (s_search_string[real_index] == '\0') {
         s_search_string[real_index] = SELECTION_LAYER_VALUE_MIN;
     } else {
         ++s_search_string[real_index];
         if (s_search_string[real_index] > SELECTION_LAYER_VALUE_MAX) {
-            s_search_string[real_index] = SELECTION_LAYER_VALUE_MIN;
+            s_search_string[real_index] = '\0';
         }
     }
 }
 
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
     int real_index = index << 1;
-    if (s_search_string[real_index] == 0) {
+    printf("%s [%s]",__func__,&s_search_string[real_index]);
+    if (s_search_string[real_index] == '\0') {
         s_search_string[real_index] = SELECTION_LAYER_VALUE_MAX;
     } else {
         --s_search_string[real_index];
         if (s_search_string[real_index] < SELECTION_LAYER_VALUE_MIN) {
-            s_search_string[real_index] = SELECTION_LAYER_VALUE_MAX;
+            s_search_string[real_index] = '\0';
         }
     }
 }
@@ -188,9 +203,6 @@ static void window_load(Window *window) {
     s_list_items[3] = 356;
     s_list_items[4] = 474;
     
-    // Data
-    s_search_string = calloc(SELECTION_LAYER_CELL_COUNT << 1, sizeof(char));
-    
     // Window
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
@@ -216,8 +228,9 @@ static void window_load(Window *window) {
     selection_layer_set_click_config_onto_window(s_selection_layer, s_window);
     selection_layer_set_callbacks(s_selection_layer, NULL, (SelectionLayerCallbacks) {
         .get_cell_text = selection_handle_get_text,
-        .previous = selection_handle_previous,
-        .next = selection_handle_next,
+        .will_change = selection_handle_will_change,
+        .did_change = selection_handle_did_change,
+        .long_click = selection_handle_long_click,
         .increment = selection_handle_inc,
         .decrement = selection_handle_dec,
     });
@@ -265,7 +278,6 @@ static void window_load(Window *window) {
 static void window_unload(Window *window) {
     // Data
     NULL_FREE(s_list_items);
-    NULL_FREE(s_search_string);
     
     // Window
     menu_layer_destroy(s_menu_layer);

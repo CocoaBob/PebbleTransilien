@@ -374,11 +374,10 @@ static void prv_slide_stopped(Animation *animation, bool finished, void *context
     
     data->slide_amin_progress = 0;
     
-    if (data->slide_is_forward) {
-        data->selected_cell_idx++;
-    } else {
-        data->selected_cell_idx--;
-    }
+    int new_index = data->selected_cell_idx + (data->slide_is_forward?1:-1);
+    data->callbacks.will_change(data->selected_cell_idx, &new_index, data->slide_is_forward, data->context);
+    data->selected_cell_idx = new_index;
+    data->callbacks.did_change(data->selected_cell_idx, data->slide_is_forward, data->context);
     
     animation_destroy(animation);
     
@@ -496,13 +495,21 @@ void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
     
     if (data->is_active) {
         animation_unschedule(data->next_cell_animation);
-        if (data->selected_cell_idx >= data->num_cells - 1) {
-            data->selected_cell_idx = 0;
-        } else {
-            data->slide_is_forward = true;
-            prv_run_slide_animation(layer);
-        }
-        data->callbacks.next(data->context, data->selected_cell_idx + 1);
+        data->slide_is_forward = true;
+        prv_run_slide_animation(layer);
+    }
+}
+
+void prv_select_long_click_handler(ClickRecognizerRef recognizer, void *context) {
+    Layer *layer = (Layer*)context;
+    SelectionLayerData *data = layer_get_data(layer);
+    
+    if (data->is_active) {
+        animation_unschedule(data->next_cell_animation);
+        data->slide_is_forward = true;
+        data->selected_cell_idx = data->num_cells;
+        prv_run_slide_animation(layer);
+        data->callbacks.long_click(data->context);
     }
 }
 
@@ -512,13 +519,8 @@ void prv_back_click_handler(ClickRecognizerRef recognizer, void *context) {
     
     if (data->is_active) {
         animation_unschedule(data->next_cell_animation);
-        if (data->selected_cell_idx == 0) {
-            data->selected_cell_idx = 0;
-        } else {
-            data->slide_is_forward = false;
-            prv_run_slide_animation(layer);
-        }
-        data->callbacks.previous(data->context, data->selected_cell_idx - 1);
+        data->slide_is_forward = false;
+        prv_run_slide_animation(layer);
     }
 }
 
@@ -532,6 +534,8 @@ static void prv_click_config_provider(Layer *layer) {
     window_single_repeating_click_subscribe(BUTTON_ID_DOWN, BUTTON_HOLD_REPEAT_MS, prv_down_click_handler);
     window_single_click_subscribe(BUTTON_ID_SELECT, prv_select_click_handler);
     window_single_click_subscribe(BUTTON_ID_BACK, prv_back_click_handler);
+    
+    window_long_click_subscribe(BUTTON_ID_SELECT, 0, prv_select_long_click_handler, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

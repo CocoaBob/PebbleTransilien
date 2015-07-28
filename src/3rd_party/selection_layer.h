@@ -6,9 +6,11 @@
 
 typedef char* (*SelectionLayerGetCellText)(int index, void *context);
 
-typedef void (*SelectionLayerPreviousCallback)(void *context, int index);
+typedef void (*SelectionLayerWillChangeCallback)(int old_index, int *new_index, bool is_forward, void *context);
 
-typedef void (*SelectionLayerNextCallback)(void *context, int index);
+typedef void (*SelectionLayerDidChangeCallback)(int index, bool is_forward, void *context);
+
+typedef void (*SelectionLayerLongClickCallback)(void *context);
 
 typedef void (*SelectionLayerIncrementCallback)(int selected_cell_idx, uint8_t reapeating_count, void *context);
 
@@ -16,8 +18,9 @@ typedef void (*SelectionLayerDecrementCallback)(int selected_cell_idx, uint8_t r
 
 typedef struct SelectionLayerCallbacks {
     SelectionLayerGetCellText get_cell_text;
-    SelectionLayerPreviousCallback previous;
-    SelectionLayerNextCallback next;
+    SelectionLayerWillChangeCallback will_change;
+    SelectionLayerDidChangeCallback did_change;
+    SelectionLayerLongClickCallback long_click;
     SelectionLayerIncrementCallback increment;
     SelectionLayerDecrementCallback decrement;
 } SelectionLayerCallbacks;
