@@ -87,6 +87,10 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
         }
         graphics_context_set_fill_color(ctx, bg_color);
         graphics_fill_rect(ctx, rect, 1, GCornerNone);
+        if (data->selected_cell_idx == i && !data->slide_amin_progress) {
+            graphics_context_set_stroke_color(ctx, GColorWhite);
+            graphics_draw_rect(ctx, rect);
+        }
 #elif PBL_SDK_2
         graphics_context_set_stroke_color(ctx, GColorBlack);
         graphics_draw_rect(ctx, rect);
@@ -136,6 +140,8 @@ static void prv_draw_slider_slide(Layer *layer, GContext *ctx) {
 #ifdef PBL_COLOR
     graphics_context_set_fill_color(ctx, data->active_background_color);
     graphics_fill_rect(ctx, rect, 1, GCornerNone);
+    graphics_context_set_stroke_color(ctx, GColorWhite);
+    graphics_draw_rect(ctx, rect);
 #else
     layer_set_frame(inverter_layer_get_layer(data->inverter), rect);
 #endif
@@ -374,9 +380,6 @@ static void prv_slide_stopped(Animation *animation, bool finished, void *context
     
     data->slide_amin_progress = 0;
     
-    int new_index = data->selected_cell_idx + (data->slide_is_forward?1:-1);
-    data->callbacks.will_change(data->selected_cell_idx, &new_index, data->slide_is_forward, data->context);
-    data->selected_cell_idx = new_index;
     data->callbacks.did_change(data->selected_cell_idx, data->slide_is_forward, data->context);
     
     animation_destroy(animation);
@@ -489,6 +492,12 @@ void prv_down_click_handler(ClickRecognizerRef recognizer, void *context) {
     }
 }
 
+void prv_update_index_before_animation(SelectionLayerData *data) {
+    int new_index = data->selected_cell_idx + (data->slide_is_forward?1:-1);
+    data->callbacks.will_change(data->selected_cell_idx, &new_index, data->slide_is_forward, data->context);
+    data->selected_cell_idx = new_index;
+}
+
 void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
     Layer *layer = (Layer*)context;
     SelectionLayerData *data = layer_get_data(layer);
@@ -496,20 +505,13 @@ void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
     if (data->is_active) {
         animation_unschedule(data->next_cell_animation);
         data->slide_is_forward = true;
-        prv_run_slide_animation(layer);
-    }
-}
-
-void prv_select_long_click_handler(ClickRecognizerRef recognizer, void *context) {
-    Layer *layer = (Layer*)context;
-    SelectionLayerData *data = layer_get_data(layer);
-    
-    if (data->is_active) {
-        animation_unschedule(data->next_cell_animation);
-        data->slide_is_forward = true;
-        data->selected_cell_idx = data->num_cells;
-        prv_run_slide_animation(layer);
-        data->callbacks.long_click(data->context);
+        prv_update_index_before_animation(data);
+        if (click_recognizer_is_repeating(recognizer)) {
+            layer_mark_dirty(layer);
+            data->callbacks.did_change(data->selected_cell_idx, data->slide_is_forward, data->context);
+        } else {
+            prv_run_slide_animation(layer);
+        }
     }
 }
 
@@ -520,6 +522,7 @@ void prv_back_click_handler(ClickRecognizerRef recognizer, void *context) {
     if (data->is_active) {
         animation_unschedule(data->next_cell_animation);
         data->slide_is_forward = false;
+        prv_update_index_before_animation(data);
         prv_run_slide_animation(layer);
     }
 }
@@ -532,10 +535,9 @@ static void prv_click_config_provider(Layer *layer) {
     
     window_single_repeating_click_subscribe(BUTTON_ID_UP, BUTTON_HOLD_REPEAT_MS, prv_up_click_handler);
     window_single_repeating_click_subscribe(BUTTON_ID_DOWN, BUTTON_HOLD_REPEAT_MS, prv_down_click_handler);
-    window_single_click_subscribe(BUTTON_ID_SELECT, prv_select_click_handler);
-    window_single_click_subscribe(BUTTON_ID_BACK, prv_back_click_handler);
+    window_single_repeating_click_subscribe(BUTTON_ID_SELECT, BUTTON_HOLD_REPEAT_MS, prv_select_click_handler);
     
-    window_long_click_subscribe(BUTTON_ID_SELECT, 0, prv_select_long_click_handler, NULL);
+    window_single_click_subscribe(BUTTON_ID_BACK, prv_back_click_handler);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

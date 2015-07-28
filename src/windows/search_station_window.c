@@ -36,6 +36,13 @@ static size_t *s_list_items;
 static bool s_is_searching;
 static char s_search_string[SELECTION_LAYER_CELL_COUNT << 1] = {0};
 
+// To deactivate the menu layer
+#ifdef PBL_COLOR
+static bool s_menu_layer_is_activated;
+#else
+static InverterLayer *s_inverter_layer_for_first_row;
+#endif
+
 // MARK: Drawing
 
 static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
@@ -74,27 +81,23 @@ static char* selection_handle_get_text(int index, void *context) {
 static void selection_handle_will_change(int old_index, int *new_index, bool is_forward, void *context) {
     if (!is_forward && old_index == 0) {
         window_stack_pop(true);
+    } else if (is_forward && old_index == SELECTION_LAYER_CELL_COUNT - 1) {
+        menu_layer_set_click_config_onto_window(s_menu_layer, s_window);
+#ifdef PBL_COLOR
+        s_menu_layer_is_activated = true;
+        set_menu_layer_activated(s_menu_layer, true);
+#else
+        set_menu_layer_activated(s_menu_layer, true, s_inverter_layer_for_first_row);
+#endif
     }
-    printf("%s 1 %d -> %d",__func__,old_index,*new_index);
-    int index_min = 0;
-    int index_max = SELECTION_LAYER_CELL_COUNT;
-    if (*new_index > index_max || *new_index < 0) {
-        *new_index = is_forward?index_min:index_max;
-    }
-    printf("%s 2 %d -> %d",__func__,old_index,*new_index);
 }
 
 static void selection_handle_did_change(int index, bool is_forward, void *context) {
-    printf("%s %c %d",__func__,is_forward?'>':'<',index);
-}
-
-static void selection_handle_long_click(void *context) {
-    printf("%s",__func__);
+    
 }
 
 static void selection_handle_inc(int index, uint8_t clicks, void *context) {
     int real_index = index << 1;
-    printf("%s [%s]",__func__,&s_search_string[real_index]);
     if (s_search_string[real_index] == '\0') {
         s_search_string[real_index] = SELECTION_LAYER_VALUE_MIN;
     } else {
@@ -107,7 +110,6 @@ static void selection_handle_inc(int index, uint8_t clicks, void *context) {
 
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
     int real_index = index << 1;
-    printf("%s [%s]",__func__,&s_search_string[real_index]);
     if (s_search_string[real_index] == '\0') {
         s_search_string[real_index] = SELECTION_LAYER_VALUE_MAX;
     } else {
@@ -133,9 +135,18 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 }
 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
+#ifdef PBL_BW
+    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    GRect row_frame = layer_get_frame(cell_layer);
+    if (menu_index_compare(cell_index, &selected_index) == 0 &&
+        layer_get_window(inverter_layer_get_layer(s_inverter_layer_for_first_row))) {
+        layer_set_frame(inverter_layer_get_layer(s_inverter_layer_for_first_row), row_frame);
+    }
+#endif
+
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+    bool is_selected = s_menu_layer_is_activated?(menu_index_compare(&selected_index, cell_index) == 0):false;
     bool is_dark_theme = status_is_dark_theme();
     bool is_highlighed = is_dark_theme || is_selected;
     GColor text_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
@@ -148,7 +159,6 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         draw_cell_title(ctx, cell_layer, "Search...");
     } else if (s_list_items_count > 0) {
         size_t station_index = s_list_items[cell_index->row];
-        printf("%u",station_index);
         
         // Station
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
@@ -170,7 +180,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    
+    window_stack_pop(true);
 }
 
 static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
@@ -213,29 +223,6 @@ static void window_load(Window *window) {
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
 #endif
     
-    // Add selection layer
-    s_selection_layer = selection_layer_create(GRect(0, status_bar_height, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);
-    int selection_layer_cell_width = window_bounds.size.w / SELECTION_LAYER_CELL_COUNT;
-    for (int i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
-        selection_layer_set_cell_width(s_selection_layer, i, selection_layer_cell_width);
-    }
-    selection_layer_set_cell_padding(s_selection_layer, 0);
-    selection_layer_set_font(s_selection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-#ifdef PBL_COLOR
-    selection_layer_set_active_bg_color(s_selection_layer, GColorRed);
-    selection_layer_set_inactive_bg_color(s_selection_layer, GColorDarkGray);
-#endif
-    selection_layer_set_click_config_onto_window(s_selection_layer, s_window);
-    selection_layer_set_callbacks(s_selection_layer, NULL, (SelectionLayerCallbacks) {
-        .get_cell_text = selection_handle_get_text,
-        .will_change = selection_handle_will_change,
-        .did_change = selection_handle_did_change,
-        .long_click = selection_handle_long_click,
-        .increment = selection_handle_inc,
-        .decrement = selection_handle_dec,
-    });
-    layer_add_child(window_layer, s_selection_layer);
-    
     // Add menu layer
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
                                    window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT,
@@ -244,7 +231,6 @@ static void window_load(Window *window) {
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     // Setup menu layer
-//    menu_layer_set_click_config_onto_window(s_menu_layer, window);
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
@@ -259,19 +245,46 @@ static void window_load(Window *window) {
     });
 
     
-    // Finally, add status bar
+    // Add status bar
 #ifdef PBL_PLATFORM_BASALT
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer, &s_status_bar_overlay_layer);
 #endif
     
+    // Add selection layer
+    s_selection_layer = selection_layer_create(GRect(0, status_bar_height, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);
+    int selection_layer_cell_width = window_bounds.size.w / SELECTION_LAYER_CELL_COUNT;
+    for (int i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
+        selection_layer_set_cell_width(s_selection_layer, i, selection_layer_cell_width);
+    }
+    selection_layer_set_cell_padding(s_selection_layer, 0);
+    selection_layer_set_font(s_selection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+#ifdef PBL_COLOR
+    selection_layer_set_active_bg_color(s_selection_layer, GColorCobaltBlue);
+    selection_layer_set_inactive_bg_color(s_selection_layer, GColorDarkGray);
+#endif
+    selection_layer_set_click_config_onto_window(s_selection_layer, s_window);
+    selection_layer_set_callbacks(s_selection_layer, NULL, (SelectionLayerCallbacks) {
+        .get_cell_text = selection_handle_get_text,
+        .will_change = selection_handle_will_change,
+        .did_change = selection_handle_did_change,
+        .increment = selection_handle_inc,
+        .decrement = selection_handle_dec,
+    });
+    layer_add_child(window_layer, s_selection_layer);
+    
+    // Finally, ass inverter layer for Aplite
 #ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(window_bounds);
+    s_inverter_layer_for_first_row = inverter_layer_create(window_bounds);
 #endif
     
+    // Setup theme
 #ifdef PBL_COLOR
     setup_ui_theme_for_menu_layer(s_menu_layer);
+    set_menu_layer_activated(s_menu_layer, false);
 #else
     setup_ui_theme(s_window, s_inverter_layer);
+    set_menu_layer_activated(s_menu_layer, false, s_inverter_layer_for_first_row);
 #endif
 }
 
@@ -292,6 +305,7 @@ static void window_unload(Window *window) {
     
 #ifdef PBL_BW
     inverter_layer_destroy(s_inverter_layer);
+    inverter_layer_destroy(s_inverter_layer_for_first_row);
 #endif
 }
 

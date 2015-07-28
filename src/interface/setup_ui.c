@@ -83,3 +83,26 @@ void setup_ui_theme(Window *window, InverterLayer *inverter_layer) {
     }
 }
 #endif
+
+// MARK: Deactivate menu layer
+
+#ifdef PBL_COLOR
+void set_menu_layer_activated(MenuLayer *menu_layer, bool activated) {
+    if (activated) {
+        menu_layer_set_highlight_colors(menu_layer, GColorCobaltBlue, GColorWhite);
+    } else {
+        menu_layer_set_highlight_colors(menu_layer, curr_bg_color(), curr_fg_color());
+    }
+}
+#else
+void set_menu_layer_activated(MenuLayer *menu_layer, bool activated, InverterLayer *inverter_layer_for_row) {
+    Layer *layer_layer = inverter_layer_get_layer(inverter_layer_for_row);
+    if (activated) {
+        if (layer_get_window(layer_layer)) {
+            layer_remove_from_parent(layer_layer);
+        }
+    } else {
+        layer_add_child(menu_layer_get_layer(menu_layer), layer_layer);
+    }
+}
+#endif
