@@ -225,9 +225,9 @@ static void window_load(Window *window) {
     
     // Add menu layer
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
-                                   window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT,
+                                   window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT + 1,
                                    window_bounds.size.w,
-                                   window_bounds.size.h - status_bar_height - SELECTION_LAYER_HEIGHT);
+                                   window_bounds.size.h - status_bar_height - SELECTION_LAYER_HEIGHT - 1);
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     // Setup menu layer
@@ -280,7 +280,7 @@ static void window_load(Window *window) {
     
     // Setup theme
 #ifdef PBL_COLOR
-    setup_ui_theme_for_menu_layer(s_menu_layer);
+    setup_ui_theme(s_window, s_menu_layer);
     set_menu_layer_activated(s_menu_layer, false);
 #else
     setup_ui_theme(s_window, s_inverter_layer);

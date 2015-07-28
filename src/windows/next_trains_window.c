@@ -522,7 +522,7 @@ static void window_load(Window *window) {
 #endif
     
 #ifdef PBL_COLOR
-    setup_ui_theme_for_menu_layer(s_menu_layer);
+    setup_ui_theme(s_window, s_menu_layer);
 #else
     setup_ui_theme(s_window, s_inverter_layer);
 #endif

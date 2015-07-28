@@ -215,7 +215,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
             // Change theme
             storage_set_theme(!status_is_dark_theme());
 #ifdef PBL_COLOR
-            setup_ui_theme_for_menu_layer(s_menu_layer);
+            setup_ui_theme(s_window, s_menu_layer);
 #else
             setup_ui_theme(s_window, s_inverter_layer);
 #endif
@@ -318,7 +318,7 @@ static void window_load(Window *window) {
 #endif
     
 #ifdef PBL_COLOR
-    setup_ui_theme_for_menu_layer(s_menu_layer);
+    setup_ui_theme(s_window, s_menu_layer);
 #else
     setup_ui_theme(s_window, s_inverter_layer);
 #endif
