@@ -212,7 +212,10 @@ static void prv_draw_text(Layer *layer, GContext *ctx) {
                 }
                 
                 GRect rect = GRect(current_x_offset, y_offset, data->cell_widths[i], height);
-                graphics_draw_text(ctx, text, data->font, rect, GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+                char *text_to_draw = calloc(2, sizeof(char));
+                strncpy(text_to_draw, text, 1);
+                graphics_draw_text(ctx, text_to_draw, data->font, rect, GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+                free(text_to_draw);
             }
         }
         

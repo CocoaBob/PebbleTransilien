@@ -35,3 +35,17 @@ void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relati
     }
 #endif
 }
+
+bool string_contains_sub_string(char *string_a, size_t size_a, char *string_b, size_t size_b) {
+    if (size_a < size_b) {
+        return false;
+    }
+    
+    for (size_t offset = 0; offset <= size_a - size_b; ++offset) {
+        if (strncmp(string_a + offset, string_b, size_b) == 0) {
+            return true;
+        }
+    }
+    
+    return false;
+}

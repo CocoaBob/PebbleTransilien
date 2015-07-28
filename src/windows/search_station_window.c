@@ -31,10 +31,16 @@ static Layer *s_status_bar_overlay_layer;
 static InverterLayer *s_inverter_layer;
 #endif
 
-static size_t s_list_items_count;
-static size_t *s_list_items;
+// Searching
 static bool s_is_searching;
-static char s_search_string[SELECTION_LAYER_CELL_COUNT << 1] = {0};
+static char s_search_string[SELECTION_LAYER_CELL_COUNT+1] = {0};
+
+typedef struct SearchStationResult {
+    size_t search_results[STATION_SEARH_RESULT_MAX_COUNT];
+    size_t search_results_count;
+} SearchStationResult;
+static SearchStationResult s_search_results[SELECTION_LAYER_CELL_COUNT];
+static int s_search_results_index;
 
 // To deactivate the menu layer
 #ifdef PBL_COLOR
@@ -42,6 +48,21 @@ static bool s_menu_layer_is_activated;
 #else
 static InverterLayer *s_inverter_layer_for_first_row;
 #endif
+
+// MARK: Searching helpers
+
+size_t current_search_results_count() {
+    size_t return_value = 0;
+    if (s_search_results_index >= 0) {
+        return_value = s_search_results[s_search_results_index].search_results_count;
+    }
+    return return_value;
+}
+
+size_t current_search_result_at_index(size_t index) {
+    size_t return_value = s_search_results[s_search_results_index].search_results[index];
+    return return_value;
+}
 
 // MARK: Drawing
 
@@ -75,47 +96,59 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
 // MARK: Selection layer callbacks
 
 static char* selection_handle_get_text(int index, void *context) {
-    return &s_search_string[index << 1];
+    return &s_search_string[index];
 }
 
 static void selection_handle_will_change(int old_index, int *new_index, bool is_forward, void *context) {
-    if (!is_forward && old_index == 0) {
-        window_stack_pop(true);
-    } else if (is_forward && old_index == SELECTION_LAYER_CELL_COUNT - 1) {
-        menu_layer_set_click_config_onto_window(s_menu_layer, s_window);
+    if (!is_forward) {
+        if (old_index == 0) {
+            window_stack_pop(true);
+        } else {
+            s_search_string[old_index] = '\0';
+        }
+    } else if (is_forward) {
+        if (old_index == SELECTION_LAYER_CELL_COUNT - 1) {
+            menu_layer_set_click_config_onto_window(s_menu_layer, s_window);
 #ifdef PBL_COLOR
-        s_menu_layer_is_activated = true;
-        set_menu_layer_activated(s_menu_layer, true);
+            s_menu_layer_is_activated = true;
+            set_menu_layer_activated(s_menu_layer, true);
 #else
-        set_menu_layer_activated(s_menu_layer, true, s_inverter_layer_for_first_row);
+            set_menu_layer_activated(s_menu_layer, true, s_inverter_layer_for_first_row);
 #endif
+        }
     }
 }
 
 static void selection_handle_did_change(int index, bool is_forward, void *context) {
-    
+    if (s_search_results_index != index - 1 && s_search_string[index - 1] != '\0') {
+        s_search_results_index = index - 1;
+        if (is_forward) {
+            size_t *search_results = (size_t *)&s_search_results[s_search_results_index].search_results;
+            size_t *search_results_count = (size_t *)&s_search_results[s_search_results_index].search_results_count;
+            stations_search_name(s_search_string, search_results, STATION_SEARH_RESULT_MAX_COUNT, search_results_count);
+        }
+        menu_layer_reload_data(s_menu_layer);
+    }
 }
 
 static void selection_handle_inc(int index, uint8_t clicks, void *context) {
-    int real_index = index << 1;
-    if (s_search_string[real_index] == '\0') {
-        s_search_string[real_index] = SELECTION_LAYER_VALUE_MIN;
+    if (s_search_string[index] == '\0') {
+        s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
     } else {
-        ++s_search_string[real_index];
-        if (s_search_string[real_index] > SELECTION_LAYER_VALUE_MAX) {
-            s_search_string[real_index] = '\0';
+        ++s_search_string[index];
+        if (s_search_string[index] > SELECTION_LAYER_VALUE_MAX) {
+            s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
         }
     }
 }
 
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
-    int real_index = index << 1;
-    if (s_search_string[real_index] == '\0') {
-        s_search_string[real_index] = SELECTION_LAYER_VALUE_MAX;
+    if (s_search_string[index] == '\0') {
+        s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
     } else {
-        --s_search_string[real_index];
-        if (s_search_string[real_index] < SELECTION_LAYER_VALUE_MIN) {
-            s_search_string[real_index] = '\0';
+        --s_search_string[index];
+        if (s_search_string[index] < SELECTION_LAYER_VALUE_MIN) {
+            s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
         }
     }
 }
@@ -126,7 +159,12 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
     if (s_is_searching) {
         return 1;
     } else {
-        return (s_list_items_count > 0)?s_list_items_count:1;
+        size_t return_value = current_search_results_count();
+        if (return_value == 0) {
+            return 1;
+        } else {
+            return return_value;
+        }
     }
 }
 
@@ -157,8 +195,8 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     if (s_is_searching) {
         graphics_context_set_text_color(ctx, text_color);
         draw_cell_title(ctx, cell_layer, "Search...");
-    } else if (s_list_items_count > 0) {
-        size_t station_index = s_list_items[cell_index->row];
+    } else if (current_search_results_count() > 0) {
+        size_t station_index = current_search_result_at_index(cell_index->row);
         
         // Station
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
@@ -202,16 +240,8 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
-    //Demo data
-    s_list_items_count = 5;
-    NULL_FREE(s_list_items);
-    s_list_items = malloc(sizeof(size_t) * s_list_items_count);
-    
-    s_list_items[0] = 33;
-    s_list_items[1] = 101;
-    s_list_items[2] = 205;
-    s_list_items[3] = 356;
-    s_list_items[4] = 474;
+    // Data
+    s_search_results_index = -1;
     
     // Window
     Layer *window_layer = window_get_root_layer(window);
@@ -290,7 +320,6 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
     // Data
-    NULL_FREE(s_list_items);
     
     // Window
     menu_layer_destroy(s_menu_layer);
@@ -310,10 +339,11 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
-
+    stations_search_name_begin();
 }
 
 static void window_disappear(Window *window) {
+    stations_search_name_end();
 }
 
 // MARK: Entry point
