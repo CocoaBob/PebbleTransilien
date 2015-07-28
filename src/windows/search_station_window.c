@@ -32,7 +32,6 @@ static InverterLayer *s_inverter_layer;
 #endif
 
 // Searching
-static bool s_is_searching;
 static char s_search_string[SELECTION_LAYER_CELL_COUNT+1] = {0};
 
 typedef struct SearchStationResult {
@@ -120,7 +119,8 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
 }
 
 static void selection_handle_did_change(int index, bool is_forward, void *context) {
-    if (s_search_results_index != index - 1 && s_search_string[index - 1] != '\0') {
+    if (index == 0 ||                           // Reset to beginning
+        s_search_string[index - 1] != '\0') {   // Fast forward to end, no need to reload
         s_search_results_index = index - 1;
         if (is_forward) {
             size_t *search_results = (size_t *)&s_search_results[s_search_results_index].search_results;
@@ -156,15 +156,11 @@ static void selection_handle_dec(int index, uint8_t clicks, void *context) {
 // MARK: Menu layer callbacks
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
-    if (s_is_searching) {
+    size_t return_value = current_search_results_count();
+    if (return_value == 0) {
         return 1;
     } else {
-        size_t return_value = current_search_results_count();
-        if (return_value == 0) {
-            return 1;
-        } else {
-            return return_value;
-        }
+        return return_value;
     }
 }
 
@@ -192,10 +188,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     GColor text_color = curr_fg_color();
 #endif
     
-    if (s_is_searching) {
-        graphics_context_set_text_color(ctx, text_color);
-        draw_cell_title(ctx, cell_layer, "Search...");
-    } else if (current_search_results_count() > 0) {
+    if (current_search_results_count() > 0) {
         size_t station_index = current_search_result_at_index(cell_index->row);
         
         // Station
@@ -213,7 +206,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         free(str_station);
     } else {
         graphics_context_set_text_color(ctx, text_color);
-        draw_cell_title(ctx, cell_layer, "Not found.");
+        draw_cell_title(ctx, cell_layer, (s_search_results_index > 0)?"Not found.":"Input a name...");
     }
 }
 
