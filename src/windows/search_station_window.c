@@ -63,6 +63,10 @@ size_t current_search_result_at_index(size_t index) {
     return return_value;
 }
 
+bool value_is_valid(char value) {
+    return (value >= SELECTION_LAYER_VALUE_MIN && value <= SELECTION_LAYER_VALUE_MAX);
+}
+
 // MARK: Drawing
 
 static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
@@ -106,7 +110,13 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
             s_search_string[old_index] = '\0';
         }
     } else if (is_forward) {
-        if (old_index == SELECTION_LAYER_CELL_COUNT - 1) {
+        if (old_index == 0 && !value_is_valid(s_search_string[old_index])) {
+            *new_index = old_index;
+        } else if (old_index == SELECTION_LAYER_CELL_COUNT - 1 ||
+                   (old_index > 0 &&
+                    !value_is_valid(s_search_string[old_index]) &&
+                    !value_is_valid(s_search_string[old_index - 1]))) {
+            *new_index = SELECTION_LAYER_CELL_COUNT;
             menu_layer_set_click_config_onto_window(s_menu_layer, s_window);
 #ifdef PBL_COLOR
             s_menu_layer_is_activated = true;
@@ -119,8 +129,8 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
 }
 
 static void selection_handle_did_change(int index, bool is_forward, void *context) {
-    if (index == 0 ||                           // Reset to beginning
-        s_search_string[index - 1] != '\0') {   // Fast forward to end, no need to reload
+    if ((!is_forward && index == 0) ||                  // Reset to beginning
+        value_is_valid(s_search_string[index - 1])) {   // Fast forward to end, no need to reload
         s_search_results_index = index - 1;
         if (is_forward) {
             size_t *search_results = (size_t *)&s_search_results[s_search_results_index].search_results;
@@ -132,7 +142,7 @@ static void selection_handle_did_change(int index, bool is_forward, void *contex
 }
 
 static void selection_handle_inc(int index, uint8_t clicks, void *context) {
-    if (s_search_string[index] == '\0') {
+    if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
     } else {
         ++s_search_string[index];
@@ -143,7 +153,7 @@ static void selection_handle_inc(int index, uint8_t clicks, void *context) {
 }
 
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
-    if (s_search_string[index] == '\0') {
+    if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
     } else {
         --s_search_string[index];
