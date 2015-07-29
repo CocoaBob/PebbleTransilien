@@ -110,7 +110,8 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
             s_search_string[old_index] = '\0';
         }
     } else if (is_forward) {
-        if (old_index == 0 && !value_is_valid(s_search_string[old_index])) {
+        if ((old_index == 0 && !value_is_valid(s_search_string[old_index])) ||
+            (!value_is_valid(s_search_string[old_index]) && current_search_results_count() == 0)) {
             *new_index = old_index;
         } else if (old_index == SELECTION_LAYER_CELL_COUNT - 1 ||
                    (old_index > 0 &&
