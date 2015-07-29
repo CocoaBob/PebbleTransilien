@@ -104,20 +104,26 @@ static char* selection_handle_get_text(int index, void *context) {
 
 static void selection_handle_will_change(int old_index, int *new_index, bool is_forward, void *context) {
     if (!is_forward) {
+        // Return to the last window
         if (old_index == 0) {
             window_stack_pop(true);
-        } else {
+        }
+        // Clear last index
+        else {
             s_search_string[old_index] = '\0';
         }
     } else if (is_forward) {
-        if ((old_index == 0 && !value_is_valid(s_search_string[old_index])) ||
-            (!value_is_valid(s_search_string[old_index]) && current_search_results_count() == 0)) {
+        // If no result for the last index, and the value of current index (old_index) is empty
+        // Forbid to forward, because we have nothing to select in the list
+        if (current_search_results_count() == 0 && !value_is_valid(s_search_string[old_index])) {
             *new_index = old_index;
-        } else if (old_index == SELECTION_LAYER_CELL_COUNT - 1 ||
-                   (old_index > 0 &&
-                    !value_is_valid(s_search_string[old_index]) &&
-                    !value_is_valid(s_search_string[old_index - 1]))) {
-            *new_index = SELECTION_LAYER_CELL_COUNT;
+        }
+        // If it's the last index
+        else if (old_index == SELECTION_LAYER_CELL_COUNT - 1 ||
+                 // Or we want to skip 2 indexes to go the list directly
+                 (old_index > 0 && !value_is_valid(s_search_string[old_index]) && !value_is_valid(s_search_string[old_index - 1])))
+        {
+            *new_index = SELECTION_LAYER_CELL_COUNT; // To hide the highlight of selection layer
             menu_layer_set_click_config_onto_window(s_menu_layer, s_window);
 #ifdef PBL_COLOR
             s_menu_layer_is_activated = true;
@@ -130,8 +136,8 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
 }
 
 static void selection_handle_did_change(int index, bool is_forward, void *context) {
-    if ((!is_forward && index == 0) ||                  // Reset to beginning
-        value_is_valid(s_search_string[index - 1])) {   // Fast forward to end, no need to reload
+    // We update the list only if the value at index-1 is valid
+    if (value_is_valid(s_search_string[index - 1])) {
         s_search_results_index = index - 1;
         if (is_forward) {
             size_t *search_results = (size_t *)&s_search_results[s_search_results_index].search_results;
@@ -143,6 +149,11 @@ static void selection_handle_did_change(int index, bool is_forward, void *contex
 }
 
 static void selection_handle_inc(int index, uint8_t clicks, void *context) {
+     // If the value at index-1 isn't valid, forbid to choose
+    if (index != 0 && !value_is_valid(s_search_string[index - 1])) {
+        return;
+    }
+    
     if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
     } else {
@@ -154,6 +165,11 @@ static void selection_handle_inc(int index, uint8_t clicks, void *context) {
 }
 
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
+    // If the value at index-1 isn't valid, forbid to choose
+    if (index != 0 && !value_is_valid(s_search_string[index - 1])) {
+        return;
+    }
+    
     if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
     } else {
@@ -217,7 +233,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         free(str_station);
     } else {
         graphics_context_set_text_color(ctx, text_color);
-        draw_cell_title(ctx, cell_layer, (s_search_results_index > 0)?"Not found.":"Input a name...");
+        draw_cell_title(ctx, cell_layer, (s_search_results_index > 0)?"Not found.":"UP/DOWN to input...");
     }
 }
 
@@ -244,9 +260,6 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
-    // Data
-    s_search_results_index = -1;
-    
     // Window
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
@@ -343,6 +356,9 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
+    // Initialize Data
+    s_search_results_index = -1;
+    memset(s_search_string, 0, sizeof(s_search_string));
     stations_search_name_begin();
 }
 
