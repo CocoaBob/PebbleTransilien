@@ -1,8 +1,22 @@
 # Transilien
-An unofficial Pebble Time app of SNCF Transilien
+This is an unofficial Pebble app for SNCF Transilien, it will be published to Pebble appstore later when it's more polished.
+
+The main features are searching stations and checking real-time schedules on your wrist.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/0.gif" width="144" height="168"/>
+<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/1.gif" width="144" height="168"/>
+<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/2.gif" width="144" height="168"/>
+</p>
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/3.gif" width="144" height="168"/>
+<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/4.gif" width="144" height="168"/>
+<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/5.png" width="144" height="168"/>
+</p>
 
 # Database specifications
-## Where is it from?
+## Where is the data from?
 Train station codes and coordinates are extracted from the official app's database. If it's the iOS version, the database is located in `/Documents/Transilien.sqlite`.
 
 It's a SQLite database, we can simply query what we want, for example, I need stations' codes, names, coordinates (average value if duplicated), so my query is like the following one:
@@ -735,3 +749,29 @@ Response
   }
 ]
 ```
+
+## The MIT License (MIT)
+
+Copyright (c) 2015 CocoaBob
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## Donation
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=E3GKFYXYUZAQ2)
