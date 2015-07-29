@@ -149,10 +149,13 @@ static void selection_handle_did_change(int index, bool is_forward, void *contex
 }
 
 static void selection_handle_inc(int index, uint8_t clicks, void *context) {
-     // If the value at index-1 isn't valid, forbid to choose
-    if (index != 0 && !value_is_valid(s_search_string[index - 1])) {
-        return;
-    }
+    if (index != 0 &&
+        // If the value at index-1 isn't valid, forbid to choose
+        (!value_is_valid(s_search_string[index - 1]) ||
+         // Or if the results for last index is 0, no need to continue
+         current_search_results_count() == 0)) {
+            return;
+        }
     
     if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
@@ -165,10 +168,13 @@ static void selection_handle_inc(int index, uint8_t clicks, void *context) {
 }
 
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
-    // If the value at index-1 isn't valid, forbid to choose
-    if (index != 0 && !value_is_valid(s_search_string[index - 1])) {
-        return;
-    }
+    if (index != 0 &&
+        // If the value at index-1 isn't valid, forbid to choose
+        (!value_is_valid(s_search_string[index - 1]) ||
+         // Or if the results for last index is 0, no need to continue
+         current_search_results_count() == 0)) {
+            return;
+        }
     
     if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
@@ -328,10 +334,8 @@ static void window_load(Window *window) {
     // Setup theme
 #ifdef PBL_COLOR
     setup_ui_theme(s_window, s_menu_layer);
-    set_menu_layer_activated(s_menu_layer, false);
 #else
     setup_ui_theme(s_window, s_inverter_layer);
-    set_menu_layer_activated(s_menu_layer, false, s_inverter_layer_for_first_row);
 #endif
 }
 
@@ -359,7 +363,18 @@ static void window_appear(Window *window) {
     // Initialize Data
     s_search_results_index = -1;
     memset(s_search_string, 0, sizeof(s_search_string));
+    for (size_t i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
+        s_search_results[i].search_results_count = 0;
+    }
     stations_search_name_begin();
+    
+    // Deactivate the menu layer
+#ifdef PBL_COLOR
+    s_menu_layer_is_activated = false;
+    set_menu_layer_activated(s_menu_layer, false);
+#else
+    set_menu_layer_activated(s_menu_layer, false, s_inverter_layer_for_first_row);
+#endif
 }
 
 static void window_disappear(Window *window) {
