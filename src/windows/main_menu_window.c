@@ -35,8 +35,16 @@ enum {
     MAIN_MENU_SECTION_ABOUT_ROW_COUNT
 };
 
+enum {
+    MAIN_MENU_ACTIONS_MOVE_UP = 0,
+    MAIN_MENU_ACTIONS_EDIT,
+    MAIN_MENU_ACTIONS_DELETE,
+    MAIN_MENU_ACTIONS_COUNT
+};
+
 static Window *s_window;
 static MenuLayer *s_menu_layer;
+static ClickConfigProvider s_ccp_of_menu_layer;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
@@ -46,6 +54,10 @@ static Layer *s_status_bar_overlay_layer;
 #ifdef PBL_BW
 static InverterLayer *s_inverter_layer;
 #endif
+
+// MARK: Forward declaration
+
+static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context);
 
 // MARK: Constants
 
@@ -113,6 +125,86 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
     }
     
     free(str_from);
+}
+
+// MARK: Action list callbacks
+
+static GColor action_list_get_bar_color(void) {
+#ifdef PBL_COLOR
+    return GColorCobaltBlue;
+#else
+    return GColorWhite;
+#endif
+}
+
+static size_t action_list_get_num_rows_callback(void) {
+    return MAIN_MENU_ACTIONS_COUNT;
+}
+
+static size_t action_list_get_default_selection_callback(void) {
+    return MAIN_MENU_ACTIONS_EDIT;
+}
+
+static char* action_list_get_title_callback(size_t index) {
+    switch (index) {
+        case MAIN_MENU_ACTIONS_MOVE_UP:
+            return "Move up";
+            break;
+        case MAIN_MENU_ACTIONS_EDIT:
+            return "Edit";
+            break;
+        case MAIN_MENU_ACTIONS_DELETE:
+            return "Delete";
+            break;
+        default:
+            return "";
+            break;
+    }
+}
+
+static void action_list_select_callback(Window *action_list_window, size_t index) {
+    MenuIndex current_selection = menu_layer_get_selected_index(s_menu_layer);
+    switch (index) {
+        case MAIN_MENU_ACTIONS_MOVE_UP:
+            window_stack_remove(action_list_window, true);
+            break;
+        case MAIN_MENU_ACTIONS_EDIT:
+            window_stack_remove(action_list_window, false);
+            push_search_train_window();
+            break;
+        case MAIN_MENU_ACTIONS_DELETE:
+            window_stack_remove(action_list_window, true);
+            fav_delete_at_index(current_selection.row);
+            break;
+        default:
+            break;
+    }
+}
+
+// MARK: Click Config Provider for Action List
+
+static void select_handler(ClickRecognizerRef recognizer, void *context) {
+    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    select_callback(s_menu_layer, &selected_index, context);
+}
+
+static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
+    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    if (selected_index.section == MAIN_MENU_SECTION_FAV) {
+        action_list_present_with_callbacks((ActionListCallbacks) {
+            .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+            .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
+            .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
+            .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+            .select_click = (ActionListSelectCallback)action_list_select_callback
+        });
+    }
+}
+
+static void click_config_provider(void *context) {
+    s_ccp_of_menu_layer(context);
+    window_single_click_subscribe(BUTTON_ID_SELECT, select_handler);
+    window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler, NULL);
 }
 
 // MARK: Menu layer callbacks
@@ -235,7 +327,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
             storage_set_locale(result);
             locale_init();
         }
-        menu_layer_reload_data(menu_layer);
+        menu_layer_reload_data(s_menu_layer);
     }
 }
 
@@ -282,6 +374,8 @@ static void window_load(Window *window) {
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
+    s_ccp_of_menu_layer = window_get_click_config_provider(window);
+    window_set_click_config_provider_with_context(window, click_config_provider, s_menu_layer);
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)get_num_sections_callback,
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
