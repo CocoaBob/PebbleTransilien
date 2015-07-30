@@ -56,7 +56,7 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
 #ifdef PBL_COLOR
                                  bool is_highlighed,
 #endif
-                                 size_t idx_from, size_t idx_to) {
+                                 StationIndex idx_from, StationIndex idx_to) {
     graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
     bool is_from_to = (idx_to != STATION_NON);

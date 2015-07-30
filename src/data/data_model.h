@@ -10,9 +10,11 @@
 
 // MARK: DataModel
 
+typedef size_t StationIndex;
+
 typedef struct DataModelFromTo {
-    size_t from;
-    size_t to;
+    StationIndex from;
+    StationIndex to;
 } DataModelFromTo;
 
 typedef DataModelFromTo Favorite;
@@ -24,10 +26,10 @@ typedef struct DataModelNextTrain {
     char code[5];                       // Train mission code, null-terminated string, e.g. "POBI"
     time_t hour;                        // Train hour, 8 Bytes unsigned integer, seconds since January 1st 1970, e.g. "1437738167"
     char platform[3];                   // Train dock or Train lane, null-terminated string, e.g. "C"
-    size_t terminus;                    // Train terminus station index, 2 Bytes unsigned integer, e.g. 354 (PSL: Paris Saint-Lazare)
+    StationIndex terminus;                    // Train terminus station index, 2 Bytes unsigned integer, e.g. 354 (PSL: Paris Saint-Lazare)
 } DataModelNextTrain;
 
 typedef struct DataModelTrainDetail {
     time_t time;                        // time, the time of arriving, 8 Bytes unsigned integer, seconds since January 1st 1970, e.g. "1437738167"
-    size_t station;                     // codeGare, Station index, e.g. 354 (PSL: Paris Saint-Lazare)
+    StationIndex station;                     // codeGare, Station index, e.g. 354 (PSL: Paris Saint-Lazare)
 } DataModelTrainDetail;

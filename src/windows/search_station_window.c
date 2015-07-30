@@ -18,8 +18,8 @@
 
 enum {
     NEXT_TRAIN_ACTIONS_ADD_DEST = 0,
-    NEXT_TRAIN_ACTIONS_ADD_FAV,
     NEXT_TRAIN_ACTIONS_SCHEDULE,
+    NEXT_TRAIN_ACTIONS_ADD_FAV,
     NEXT_TRAIN_ACTIONS_COUNT
 };
 
@@ -42,7 +42,7 @@ static InverterLayer *s_inverter_layer;
 static char s_search_string[SELECTION_LAYER_CELL_COUNT+1] = {0};
 
 typedef struct SearchStationResult {
-    size_t search_results[STATION_SEARH_RESULT_MAX_COUNT];
+    StationIndex search_results[STATION_SEARH_RESULT_MAX_COUNT];
     size_t search_results_count;
 } SearchStationResult;
 static SearchStationResult s_search_results[SELECTION_LAYER_CELL_COUNT];
@@ -118,7 +118,7 @@ static size_t action_list_get_num_rows_callback(void) {
 }
 
 static size_t action_list_get_default_selection_callback(void) {
-    return NEXT_TRAIN_ACTIONS_ADD_FAV;
+    return NEXT_TRAIN_ACTIONS_SCHEDULE;
 }
 
 static char* action_list_get_title_callback(size_t index) {
@@ -144,7 +144,7 @@ static void action_list_select_callback(size_t index) {
 
             break;
         case NEXT_TRAIN_ACTIONS_ADD_FAV:
-
+            
             break;
         case NEXT_TRAIN_ACTIONS_SCHEDULE:
 
@@ -152,7 +152,8 @@ static void action_list_select_callback(size_t index) {
         default:
             break;
     }
-    window_stack_pop(true);
+    
+    window_stack_remove(s_window, true);
 }
 
 // MARK: Selection layer callbacks
@@ -201,7 +202,7 @@ static void selection_handle_did_change(int index, bool is_forward, void *contex
     if (value_is_valid(s_search_string[index - 1])) {
         s_search_results_index = index - 1;
         if (is_forward) {
-            size_t *search_results = (size_t *)&s_search_results[s_search_results_index].search_results;
+            StationIndex *search_results = (StationIndex *)&s_search_results[s_search_results_index].search_results;
             size_t *search_results_count = (size_t *)&s_search_results[s_search_results_index].search_results_count;
             stations_search_name(s_search_string, search_results, STATION_SEARH_RESULT_MAX_COUNT, search_results_count);
         }
@@ -283,7 +284,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #endif
     
     if (current_search_results_count() > 0) {
-        size_t station_index = current_search_result_at_index(cell_index->row);
+        StationIndex station_index = current_search_result_at_index(cell_index->row);
         
         // Station
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
@@ -427,21 +428,7 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
-    // Initialize Data
-    s_search_results_index = -1;
-    memset(s_search_string, 0, sizeof(s_search_string));
-    for (size_t i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
-        s_search_results[i].search_results_count = 0;
-    }
     stations_search_name_begin();
-    
-    // Deactivate the menu layer
-#ifdef PBL_COLOR
-    s_menu_layer_is_activated = false;
-    set_menu_layer_activated(s_menu_layer, false);
-#else
-    set_menu_layer_activated(s_menu_layer, false, s_inverter_layer_for_first_row);
-#endif
 }
 
 static void window_disappear(Window *window) {
@@ -462,4 +449,19 @@ void push_search_train_window() {
     }
     
     window_stack_push(s_window, true);
+    
+    // Initialize Data
+    s_search_results_index = -1;
+    memset(s_search_string, 0, sizeof(s_search_string));
+    for (size_t i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
+        s_search_results[i].search_results_count = 0;
+    }
+    
+    // Deactivate the menu layer
+#ifdef PBL_COLOR
+    s_menu_layer_is_activated = false;
+    set_menu_layer_activated(s_menu_layer, false);
+#else
+    set_menu_layer_activated(s_menu_layer, false, s_inverter_layer_for_first_row);
+#endif
 }

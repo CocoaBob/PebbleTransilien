@@ -163,7 +163,7 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
 
 // MARK: Data
 
-static void set_from_to(size_t from, size_t to) {
+static void set_from_to(StationIndex from, StationIndex to) {
     if (from == s_from_to->from &&
         to == s_from_to->to) {
         return;

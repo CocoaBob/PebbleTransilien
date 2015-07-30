@@ -27,18 +27,18 @@ void stations_init() {
 void stations_deinit() {
 }
 
-size_t stations_get_name_pos(size_t index) {
+size_t stations_get_name_pos(StationIndex index) {
     uint8_t pos_bytes[STATION_NAME_POS_VALUE_LENGTH];
     resource_load_byte_range(s_name_pos_handle, STATION_NAME_POS_VALUE_LENGTH * index, pos_bytes, STATION_NAME_POS_VALUE_LENGTH);
     return (pos_bytes[0] << 8) + pos_bytes[1];
 }
 
-size_t stations_get_name(size_t index, char *buffer, const size_t buffer_size) {
+size_t stations_get_name(StationIndex index, char *buffer, const size_t buffer_size) {
     size_t name_pos = stations_get_name_pos(index);
     return resource_load_byte_range(s_name_handle, name_pos, (uint8_t *)buffer, buffer_size);
 }
 
-size_t stations_get_code(size_t index, char *buffer, const size_t buffer_size) {
+size_t stations_get_code(StationIndex index, char *buffer, const size_t buffer_size) {
     return resource_load_byte_range(s_code_handle, STATION_CODE_LENGTH * index, (uint8_t *)buffer, buffer_size);
 }
 
@@ -50,7 +50,7 @@ void stations_search_name_begin() {
 
 void stations_search_name(char *search_string, size_t *buffer, size_t buffer_size, size_t *result_size) {
     size_t index_result = 0;    // Index of the results array
-    size_t index_searching = 0; // Index of all the names to search
+    StationIndex index_searching = 0; // Index of all the names to search
     size_t search_string_offset = 0;
     size_t size_of_search_string = strlen(search_string);
     while (search_string_offset < s_names_to_search_size && index_result < buffer_size) {
