@@ -10,7 +10,7 @@
 
 #include "data/data_model.h"
 
-#define FAV_MAX_COUNT 64// 4*64=256, 256 is persist data max lenght
+#define FAV_MAX_COUNT 64// 4*64=256, 256 is persist data max length
 
 size_t size_of_Favorite();
 void load_favorites();

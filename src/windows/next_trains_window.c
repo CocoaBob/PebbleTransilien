@@ -300,13 +300,21 @@ static void request_next_stations() {
     if (s_from_to->from != STATION_NON) {
         char *data = malloc(STATION_CODE_LENGTH);
         stations_get_code(s_from_to->from, data, STATION_CODE_LENGTH);
-        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_FROM, (uint8_t *)data, STATION_CODE_LENGTH);
+        size_t length = strlen(data);
+        if (length > STATION_CODE_LENGTH) {
+            length = STATION_CODE_LENGTH;
+        }
+        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_FROM, (uint8_t *)data, length);
         free(data);
     }
     if (s_from_to->to != STATION_NON) {
         char *data = malloc(STATION_CODE_LENGTH);
         stations_get_code(s_from_to->to, data, STATION_CODE_LENGTH);
-        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_TO, (uint8_t *)data, STATION_CODE_LENGTH);
+        size_t length = strlen(data);
+        if (length > STATION_CODE_LENGTH) {
+            length = STATION_CODE_LENGTH;
+        }
+        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_TO, (uint8_t *)data, length);
         free(data);
     }
     
