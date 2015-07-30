@@ -15,7 +15,7 @@ typedef GColor (*ActionListGetBarColorCallback)(void);
 typedef size_t (*ActionListGetNumberOfRowsCallback)(void);
 typedef size_t (*ActionListGetDefaultSelectionCallback)(void);
 typedef char* (*ActionListGetTitleCallback)(size_t index);
-typedef void (*ActionListSelectCallback)(size_t index);
+typedef void (*ActionListSelectCallback)(Window *action_list_window, size_t index);
 
 typedef struct ActionListCallbacks {
     ActionListGetBackgroundColorCallback get_background_color;

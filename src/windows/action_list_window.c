@@ -84,8 +84,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    s_callbacks.select_click(cell_index->row);
-    window_stack_pop(true);
+    s_callbacks.select_click(s_window, cell_index->row);
 }
 
 // MARK: Window callbacks

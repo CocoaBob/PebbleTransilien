@@ -65,9 +65,14 @@ size_t current_search_results_count() {
     return return_value;
 }
 
-size_t current_search_result_at_index(size_t index) {
+StationIndex current_search_result_at_index(size_t index) {
     size_t return_value = s_search_results[s_search_results_index].search_results[index];
     return return_value;
+}
+
+StationIndex current_search_result() {
+    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    return s_search_results[s_search_results_index].search_results[selected_index.row];
 }
 
 bool value_is_valid(char value) {
@@ -138,22 +143,27 @@ static char* action_list_get_title_callback(size_t index) {
     }
 }
 
-static void action_list_select_callback(size_t index) {
+static void action_list_select_callback(Window *action_list_window, size_t index) {
+    StationIndex selected_station_index = current_search_result();
     switch (index) {
         case NEXT_TRAIN_ACTIONS_ADD_DEST:
-
-            break;
-        case NEXT_TRAIN_ACTIONS_ADD_FAV:
-            
+            window_stack_remove(s_window, false);
+            window_stack_remove(action_list_window, false);
+            push_search_train_window();
             break;
         case NEXT_TRAIN_ACTIONS_SCHEDULE:
-
+            window_stack_remove(s_window, false);
+            window_stack_remove(action_list_window, false);
+            push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON});
+            break;
+        case NEXT_TRAIN_ACTIONS_ADD_FAV:
+            fav_add(selected_station_index, STATION_NON);
+            window_stack_remove(s_window, true);
+            window_stack_remove(action_list_window, true);
             break;
         default:
             break;
     }
-    
-    window_stack_remove(s_window, true);
 }
 
 // MARK: Selection layer callbacks

@@ -264,15 +264,6 @@ static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool 
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
-    persist_delete(102);
-    persist_delete(103);
-    
-    // TODO: Remove in the future
-    fav_add(354, 23);
-    fav_add(354, 23);
-    fav_add(354, STATION_NON);
-    fav_delete_at_index(0);
-    
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
