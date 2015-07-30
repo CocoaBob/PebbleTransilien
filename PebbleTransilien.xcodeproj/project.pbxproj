@@ -10,6 +10,7 @@
 		45286A5D1B63A50500A9113F /* data_process.c in Sources */ = {isa = PBXBuildFile; fileRef = 45286A5B1B63A50500A9113F /* data_process.c */; };
 		45286A601B63DCCF00A9113F /* search_station_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 45286A5E1B63DCCF00A9113F /* search_station_window.c */; };
 		45530B1B1B615EC50059867C /* train_details_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 45530B191B615EC50059867C /* train_details_window.c */; };
+		455934BA1B6A193F00D76A9A /* action_list_window.c in Sources */ = {isa = PBXBuildFile; fileRef = 455934B81B6A193F00D76A9A /* action_list_window.c */; };
 		4592A2791B5BB4DD0070351C /* favorites.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2601B5BB4DD0070351C /* favorites.c */; };
 		4592A27A1B5BB4DD0070351C /* stations.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2621B5BB4DD0070351C /* stations.c */; };
 		4592A27B1B5BB4DD0070351C /* status.c in Sources */ = {isa = PBXBuildFile; fileRef = 4592A2641B5BB4DD0070351C /* status.c */; };
@@ -50,6 +51,8 @@
 		454FA5B81B4EFC6C00473A4B /* locale_french.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_french.json; sourceTree = "<group>"; };
 		45530B191B615EC50059867C /* train_details_window.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = train_details_window.c; sourceTree = "<group>"; };
 		45530B1A1B615EC50059867C /* train_details_window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = train_details_window.h; sourceTree = "<group>"; };
+		455934B81B6A193F00D76A9A /* action_list_window.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = action_list_window.c; sourceTree = "<group>"; };
+		455934B91B6A193F00D76A9A /* action_list_window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = action_list_window.h; sourceTree = "<group>"; };
 		4592A25E1B5BB4DD0070351C /* constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = constants.h; sourceTree = "<group>"; };
 		4592A2601B5BB4DD0070351C /* favorites.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = favorites.c; sourceTree = "<group>"; };
 		4592A2611B5BB4DD0070351C /* favorites.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = favorites.h; sourceTree = "<group>"; };
@@ -182,6 +185,8 @@
 		4592A2741B5BB4DD0070351C /* windows */ = {
 			isa = PBXGroup;
 			children = (
+				455934B81B6A193F00D76A9A /* action_list_window.c */,
+				455934B91B6A193F00D76A9A /* action_list_window.h */,
 				4592A2751B5BB4DD0070351C /* main_menu_window.c */,
 				4592A2761B5BB4DD0070351C /* main_menu_window.h */,
 				4592A2771B5BB4DD0070351C /* next_trains_window.c */,
@@ -383,6 +388,7 @@
 				4592A2801B5BB4DD0070351C /* main.c in Sources */,
 				4592A2791B5BB4DD0070351C /* favorites.c in Sources */,
 				4592A28B1B5BBAD30070351C /* app_message.c in Sources */,
+				455934BA1B6A193F00D76A9A /* action_list_window.c in Sources */,
 				45B2B6891B5EE93F0065786D /* data_model.c in Sources */,
 				4592A27C1B5BB4DD0070351C /* storage.c in Sources */,
 				45530B1B1B615EC50059867C /* train_details_window.c in Sources */,

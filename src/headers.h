@@ -10,6 +10,8 @@
 
 #include "3rd_party/selection_layer.h"
 
+#include "windows/action_list_window.h"
+
 #include "locale_framework/localize.h"
 
 #include "constants.h"

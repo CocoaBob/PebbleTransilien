@@ -16,6 +16,13 @@
 #define SELECTION_LAYER_VALUE_MIN 'A'
 #define SELECTION_LAYER_VALUE_MAX 'Z'
 
+enum {
+    NEXT_TRAIN_ACTIONS_ADD_DEST = 0,
+    NEXT_TRAIN_ACTIONS_ADD_FAV,
+    NEXT_TRAIN_ACTIONS_SCHEDULE,
+    NEXT_TRAIN_ACTIONS_COUNT
+};
+
 // MARK: Variables
 
 static Window *s_window;
@@ -96,6 +103,58 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
     draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
 }
 
+// MARK: Action list callbacks
+
+static GColor action_list_get_bar_color(void) {
+#ifdef PBL_COLOR
+    return GColorCobaltBlue;
+#else
+    return GColorWhite;
+#endif
+}
+
+static size_t action_list_get_num_rows_callback(void) {
+    return NEXT_TRAIN_ACTIONS_COUNT;
+}
+
+static size_t action_list_get_default_selection_callback(void) {
+    return NEXT_TRAIN_ACTIONS_ADD_FAV;
+}
+
+static char* action_list_get_title_callback(size_t index) {
+    switch (index) {
+        case NEXT_TRAIN_ACTIONS_ADD_DEST:
+            return "Add destination";
+            break;
+        case NEXT_TRAIN_ACTIONS_ADD_FAV:
+            return "Add to favorite";
+            break;
+        case NEXT_TRAIN_ACTIONS_SCHEDULE:
+            return "Check schedule";
+            break;
+        default:
+            return "";
+            break;
+    }
+}
+
+static void action_list_select_callback(size_t index) {
+    switch (index) {
+        case NEXT_TRAIN_ACTIONS_ADD_DEST:
+
+            break;
+        case NEXT_TRAIN_ACTIONS_ADD_FAV:
+
+            break;
+        case NEXT_TRAIN_ACTIONS_SCHEDULE:
+
+            break;
+        default:
+            break;
+    }
+    window_stack_pop(true);
+}
+
 // MARK: Selection layer callbacks
 
 static char* selection_handle_get_text(int index, void *context) {
@@ -123,7 +182,9 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
                  // Or we want to skip 2 indexes to go the list directly
                  (old_index > 0 && !value_is_valid(s_search_string[old_index]) && !value_is_valid(s_search_string[old_index - 1])))
         {
-            *new_index = SELECTION_LAYER_CELL_COUNT; // To hide the highlight of selection layer
+            // To hide the highlight of selection layer
+            *new_index = SELECTION_LAYER_CELL_COUNT;
+            // Register click handlers
             menu_layer_set_click_config_onto_window(s_menu_layer, s_window);
 #ifdef PBL_COLOR
             s_menu_layer_is_activated = true;
@@ -244,7 +305,13 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    window_stack_pop(true);
+    action_list_present_with_callbacks((ActionListCallbacks) {
+        .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+        .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
+        .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
+        .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+        .select_click = (ActionListSelectCallback)action_list_select_callback
+    });
 }
 
 static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
