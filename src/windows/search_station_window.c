@@ -143,7 +143,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     StationIndex selected_station_index = current_search_result();
     switch (index) {
         case SEARCH_STATION_ACTIONS_TIMETABLE:
-            window_stack_remove(s_window, false);
             window_stack_remove(action_list_window, false);
             push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON});
             break;

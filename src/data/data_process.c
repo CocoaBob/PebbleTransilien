@@ -14,15 +14,23 @@ void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relati
     size_t offset = 0;
     if (is_relative_to_now) {
         time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
-        if (timestamp >= time_curr) {
-            o_time = timestamp - time_curr; // UTC time
+        o_time = timestamp - time_curr; // UTC time
+        if (o_time < 0) {
+            o_time = -o_time;
+            time_t mod = o_time % 60;
+            if (mod > 0) {
+                o_time -= mod;
+            }
         } else {
-            o_time = time_curr - timestamp; // UTC time
+            time_t mod = o_time % 60;
+            if (mod > 0) {
+                o_time += (60 - mod);
+            }
+        }
+        
+        if (o_time != 0 && timestamp < time_curr) {
             snprintf(o_str, 2, "-");
             offset = 1;
-        }
-        if (o_time % 60 > 0) {
-            o_time = ((o_time / 60) + 1) * 60;
         }
     }
 #ifdef PBL_PLATFORM_APLITE

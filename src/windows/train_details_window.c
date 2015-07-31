@@ -38,10 +38,6 @@ static bool s_is_updating;
 
 static bool s_show_relative_time;
 
-// MARK: Constants
-
-#define TRAIN_DETAIL_CELL_TIME_W 36     // CELL_MARGIN + TRAIN_DETAIL_CELL_CODE_W + CELL_MARGIN = 4 + 56
-
 // MARK: Drawing
 
 static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
@@ -64,19 +60,27 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
     draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
 #endif
     
+    // Time
+    GRect frame_time = GRect(0,
+                             TEXT_Y_OFFSET,
+                             bounds.size.w,
+                             CELL_HEIGHT_2);
+    
+    GSize time_size = graphics_text_layout_get_content_size(str_time,
+                                                            fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
+                                                            frame_time,
+                                                            GTextOverflowModeTrailingEllipsis,
+                                                            GTextAlignmentRight);
+    frame_time.origin.x = bounds.size.w - CELL_MARGIN - time_size.w;
+    frame_time.size.w = time_size.w;
+    draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
+    
     // Station
     GRect frame_station = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
                                 TEXT_Y_OFFSET,
-                                bounds.size.w - CELL_MARGIN * 4 - TRAIN_DETAIL_CELL_TIME_W - FROM_TO_ICON_WIDTH,
+                                bounds.size.w - CELL_MARGIN * 4 - time_size.w - FROM_TO_ICON_WIDTH,
                                 CELL_HEIGHT_2);
     draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
-    
-    // Time
-    GRect frame_time = GRect(bounds.size.w - CELL_MARGIN - TRAIN_DETAIL_CELL_TIME_W,
-                             TEXT_Y_OFFSET,
-                             TRAIN_DETAIL_CELL_TIME_W,
-                             CELL_HEIGHT_2);
-    draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
 }
 
 // MARK: Action list callbacks
