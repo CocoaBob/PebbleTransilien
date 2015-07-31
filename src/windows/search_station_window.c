@@ -28,6 +28,7 @@ enum {
 static Window *s_window;
 static Layer *s_selection_layer;
 static MenuLayer *s_menu_layer;
+static ClickConfigProvider s_ccp_of_menu_layer;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
@@ -54,6 +55,11 @@ static bool s_menu_layer_is_activated;
 #else
 static InverterLayer *s_inverter_layer_for_first_row;
 #endif
+
+// MARK: Forward declaration
+
+static void move_focus_to_selection_layer();
+static void move_focus_to_menu_layer();
 
 // MARK: Searching helpers
 
@@ -147,8 +153,8 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     StationIndex selected_station_index = current_search_result();
     switch (index) {
         case SEARCH_STATION_ACTIONS_ANOTHER:
-            window_stack_pop_all(false);
-            push_main_menu_window(false);
+            window_stack_remove(action_list_window, false);
+            window_stack_remove(s_window, false);
             push_search_train_window(true);
             break;
         case SEARCH_STATION_ACTIONS_TIMETABLE:
@@ -158,12 +164,53 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         case SEARCH_STATION_ACTIONS_FAV:
             // TODO:
             fav_add(selected_station_index, STATION_NON);
-            window_stack_pop_all(false);
-            push_main_menu_window(true);
+            window_stack_remove(action_list_window, true);
             break;
         default:
             break;
     }
+}
+
+// MARK: Click Config Provider
+
+static void button_back_handler(ClickRecognizerRef recognizer, void *context) {
+    move_focus_to_selection_layer();
+}
+
+static void click_config_provider(void *context) {
+    s_ccp_of_menu_layer(context);
+    window_single_click_subscribe(BUTTON_ID_BACK, button_back_handler);
+}
+
+// MARK: Move focus
+
+static void move_focus_to_selection_layer() {
+    selection_layer_set_click_config_onto_window(s_selection_layer, s_window);
+    selection_layer_set_active(s_selection_layer, true);
+    
+    // Deactivate the menu layer
+#ifdef PBL_COLOR
+    s_menu_layer_is_activated = false;
+    set_menu_layer_activated(s_menu_layer, false);
+#else
+    set_menu_layer_activated(s_menu_layer, false, s_inverter_layer_for_first_row);
+#endif
+}
+
+static void move_focus_to_menu_layer() {
+    selection_layer_set_active(s_selection_layer, false);
+    
+    // Setup Click Config Providers
+    menu_layer_set_click_config_onto_window(s_menu_layer, s_window);
+    s_ccp_of_menu_layer = window_get_click_config_provider(s_window);
+    window_set_click_config_provider_with_context(s_window, click_config_provider, s_menu_layer);
+    
+#ifdef PBL_COLOR
+    s_menu_layer_is_activated = true;
+    set_menu_layer_activated(s_menu_layer, true);
+#else
+    set_menu_layer_activated(s_menu_layer, true, s_inverter_layer_for_first_row);
+#endif
 }
 
 // MARK: Selection layer callbacks
@@ -195,14 +242,8 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
         {
             // To hide the highlight of selection layer
             *new_index = SELECTION_LAYER_CELL_COUNT;
-            // Register click handlers
-            menu_layer_set_click_config_onto_window(s_menu_layer, s_window);
-#ifdef PBL_COLOR
-            s_menu_layer_is_activated = true;
-            set_menu_layer_activated(s_menu_layer, true);
-#else
-            set_menu_layer_activated(s_menu_layer, true, s_inverter_layer_for_first_row);
-#endif
+            
+            move_focus_to_menu_layer();
         }
     }
 }
@@ -393,7 +434,6 @@ static void window_load(Window *window) {
     selection_layer_set_active_bg_color(s_selection_layer, GColorCobaltBlue);
     selection_layer_set_inactive_bg_color(s_selection_layer, GColorDarkGray);
 #endif
-    selection_layer_set_click_config_onto_window(s_selection_layer, s_window);
     selection_layer_set_callbacks(s_selection_layer, NULL, (SelectionLayerCallbacks) {
         .get_cell_text = selection_handle_get_text,
         .will_change = selection_handle_will_change,
@@ -467,11 +507,5 @@ void push_search_train_window(bool animated) {
         s_search_results[i].search_results_count = 0;
     }
     
-    // Deactivate the menu layer
-#ifdef PBL_COLOR
-    s_menu_layer_is_activated = false;
-    set_menu_layer_activated(s_menu_layer, false);
-#else
-    set_menu_layer_activated(s_menu_layer, false, s_inverter_layer_for_first_row);
-#endif
+    move_focus_to_selection_layer();
 }

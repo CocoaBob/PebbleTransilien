@@ -252,7 +252,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     }
 }
 
-// MARK: Click Config Provider for Action List
+// MARK: Click Config Provider
 
 static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);

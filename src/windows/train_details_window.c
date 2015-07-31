@@ -125,8 +125,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
     switch (index) {
         case TRAIN_DETAINS_ACTIONS_TIMETABLE:
-            window_stack_pop_all(false); // Pop Next Trains
-            push_main_menu_window(false);
+            window_stack_remove(action_list_window, false);
             push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON}, true);
             break;
         case TRAIN_DETAINS_ACTIONS_FAV:
@@ -243,7 +242,7 @@ static void update_time_format_timer_callback(void *context) {
     update_time_format_timer_start();
 }
 
-// MARK: Click Config Provider for Action List
+// MARK: Click Config Provider
 
 static void button_up_handler(ClickRecognizerRef recognizer, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
