@@ -38,7 +38,7 @@ static AppTimer *s_reload_data_timer;
 #define UPDATE_TIME_FORMAT_INTERVAL 3000 // 2 seconds
 static AppTimer *s_update_time_format_timer;
 
-static DataModelFromTo *s_from_to;
+static DataModelFromTo s_from_to;
 static char *s_str_from;
 static char *s_str_to;
 
@@ -67,7 +67,7 @@ static void draw_next_trains_info(GContext *ctx,
 {
     graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
-    bool is_from_to = (s_from_to->to != STATION_NON);
+    bool is_from_to = (s_from_to.to != STATION_NON);
     
     // Draw left icon
     GRect frame_icon = GRect(CELL_MARGIN,
@@ -170,32 +170,27 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
 // MARK: Data
 
 static void set_from_to(StationIndex from, StationIndex to) {
-    if (from == s_from_to->from &&
-        to == s_from_to->to) {
-        return;
-    }
-    
-    s_from_to->from = from;
-    s_from_to->to = to;
+    s_from_to.from = from;
+    s_from_to.to = to;
     
     NULL_FREE(s_str_from);
     NULL_FREE(s_str_to);
     
     s_str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-    stations_get_name(s_from_to->from, s_str_from, STATION_NAME_MAX_LENGTH);
-    if (s_from_to->to != STATION_NON) {
+    stations_get_name(s_from_to.from, s_str_from, STATION_NAME_MAX_LENGTH);
+    if (s_from_to.to != STATION_NON) {
         s_str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-        stations_get_name(s_from_to->to, s_str_to, STATION_NAME_MAX_LENGTH);
+        stations_get_name(s_from_to.to, s_str_to, STATION_NAME_MAX_LENGTH);
     }
     
     s_next_trains_list_count = 0;
 }
 
 static bool reverse_from_to() {
-    if (s_from_to->to == STATION_NON) {
+    if (s_from_to.to == STATION_NON) {
         return false;
     } else {
-        set_from_to(s_from_to->to, s_from_to->from);
+        set_from_to(s_from_to.to, s_from_to.from);
         return true;
     }
 }
@@ -249,7 +244,7 @@ static char* action_list_get_title_callback(size_t index) {
 static void action_list_select_callback(Window *action_list_window, size_t index) {
     switch (index) {
         case NEXT_TRAINS_ACTIONS_FAV:
-            fav_add(s_from_to->from, s_from_to->to);
+            fav_add(s_from_to.from, s_from_to.to);
             window_stack_remove(action_list_window, true);
             break;
         default:
@@ -351,10 +346,10 @@ static void request_next_stations() {
     DictionaryIterator parameters;
     
     size_t tuple_count = 1;
-    if (s_from_to->from != STATION_NON) {
+    if (s_from_to.from != STATION_NON) {
         ++tuple_count;
     }
-    if (s_from_to->to != STATION_NON) {
+    if (s_from_to.to != STATION_NON) {
         ++tuple_count;
     }
     uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), STATION_CODE_LENGTH * (tuple_count - 1));
@@ -363,9 +358,9 @@ static void request_next_stations() {
     
     dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_NEXT_TRAINS);
     
-    if (s_from_to->from != STATION_NON) {
+    if (s_from_to.from != STATION_NON) {
         char *data = malloc(STATION_CODE_LENGTH);
-        stations_get_code(s_from_to->from, data, STATION_CODE_LENGTH);
+        stations_get_code(s_from_to.from, data, STATION_CODE_LENGTH);
         size_t length = strlen(data);
         if (length > STATION_CODE_LENGTH) {
             length = STATION_CODE_LENGTH;
@@ -373,9 +368,9 @@ static void request_next_stations() {
         dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_FROM, (uint8_t *)data, length);
         free(data);
     }
-    if (s_from_to->to != STATION_NON) {
+    if (s_from_to.to != STATION_NON) {
         char *data = malloc(STATION_CODE_LENGTH);
-        stations_get_code(s_from_to->to, data, STATION_CODE_LENGTH);
+        stations_get_code(s_from_to.to, data, STATION_CODE_LENGTH);
         size_t length = strlen(data);
         if (length > STATION_CODE_LENGTH) {
             length = STATION_CODE_LENGTH;
@@ -520,7 +515,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
         }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
-        push_train_details_window(next_train.number);
+        push_train_details_window(next_train.number, true);
     }
 }
 
@@ -605,7 +600,6 @@ static void window_unload(Window *window) {
     // Data
     NULL_FREE(s_str_from);
     NULL_FREE(s_str_to);
-    NULL_FREE(s_from_to);
     NULL_FREE(s_next_trains_list);
     
     // Window
@@ -644,7 +638,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_next_trains_window(DataModelFromTo from_to) {
+void push_next_trains_window(DataModelFromTo from_to, bool animated) {
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
@@ -656,8 +650,6 @@ void push_next_trains_window(DataModelFromTo from_to) {
     }
     
     // Reset data
-    NULL_FREE(s_from_to);
-    s_from_to = malloc(sizeof(DataModelFromTo));
     set_from_to(from_to.from, from_to.to);
     
     s_next_trains_list_count = 0;
@@ -668,5 +660,5 @@ void push_next_trains_window(DataModelFromTo from_to) {
     s_show_relative_time = false;
     
     // Push window
-    window_stack_push(s_window, true);
+    window_stack_push(s_window, animated);
 }

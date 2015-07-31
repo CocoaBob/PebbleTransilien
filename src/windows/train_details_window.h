@@ -8,4 +8,4 @@
 
 #pragma once
 
-void push_train_details_window(char train_number[TRAIN_NUMBER_LENGTH]);
+void push_train_details_window(char train_number[TRAIN_NUMBER_LENGTH], bool animated);

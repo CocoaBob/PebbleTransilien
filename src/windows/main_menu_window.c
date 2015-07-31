@@ -170,8 +170,9 @@ static void action_list_select_callback(Window *action_list_window, size_t index
             window_stack_remove(action_list_window, true);
             break;
         case MAIN_MENU_ACTIONS_EDIT:
+            // TODO:
             window_stack_remove(action_list_window, false);
-            push_search_train_window();
+            push_search_train_window(true);
             break;
         case MAIN_MENU_ACTIONS_DELETE:
             window_stack_remove(action_list_window, true);
@@ -292,10 +293,10 @@ static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         Favorite favorite = fav_at_index(cell_index->row);
-        push_next_trains_window(favorite);
+        push_next_trains_window(favorite, true);
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            push_search_train_window();
+            push_search_train_window(true);
         } else {
             // TODO: Nearby stations
         }
@@ -442,7 +443,7 @@ static void window_unload(Window *window) {
 
 // MARK: Entry point
 
-void push_main_menu_window() {
+void push_main_menu_window(bool animated) {
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
@@ -451,5 +452,5 @@ void push_main_menu_window() {
             .unload = window_unload,
         });
     }
-    window_stack_push(s_window, true);
+    window_stack_push(s_window, animated);
 }

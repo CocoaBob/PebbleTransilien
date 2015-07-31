@@ -10,11 +10,13 @@
 #include "headers.h"
 
 void handle_init(void) {
+//    persist_delete(102);
+//    persist_delete(103);    
     locale_init();
     status_init();
     stations_init();
     message_init();
-    push_main_menu_window();
+    push_main_menu_window(true);
 }
 
 void handle_deinit(void) {

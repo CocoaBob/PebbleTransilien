@@ -8,3 +8,7 @@
 
 #include <pebble.h>
 #include "headers.h"
+
+void push_edit_favorite_window(bool animated) {
+    
+}

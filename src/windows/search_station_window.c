@@ -17,7 +17,8 @@
 #define SELECTION_LAYER_VALUE_MAX 'Z'
 
 enum {
-    SEARCH_STATION_ACTIONS_TIMETABLE = 0,
+    SEARCH_STATION_ACTIONS_ANOTHER = 0,
+    SEARCH_STATION_ACTIONS_TIMETABLE,
     SEARCH_STATION_ACTIONS_FAV,
     SEARCH_STATION_ACTIONS_COUNT
 };
@@ -127,6 +128,9 @@ static size_t action_list_get_default_selection_callback(void) {
 
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
+        case SEARCH_STATION_ACTIONS_ANOTHER:
+            return "Search another";
+            break;
         case SEARCH_STATION_ACTIONS_TIMETABLE:
             return "Timetable";
             break;
@@ -142,14 +146,20 @@ static char* action_list_get_title_callback(size_t index) {
 static void action_list_select_callback(Window *action_list_window, size_t index) {
     StationIndex selected_station_index = current_search_result();
     switch (index) {
+        case SEARCH_STATION_ACTIONS_ANOTHER:
+            window_stack_pop_all(false);
+            push_main_menu_window(false);
+            push_search_train_window(true);
+            break;
         case SEARCH_STATION_ACTIONS_TIMETABLE:
             window_stack_remove(action_list_window, false);
-            push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON});
+            push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON}, true);
             break;
         case SEARCH_STATION_ACTIONS_FAV:
+            // TODO:
             fav_add(selected_station_index, STATION_NON);
-            window_stack_remove(action_list_window, false);
-            window_stack_remove(s_window, true);
+            window_stack_pop_all(false);
+            push_main_menu_window(true);
             break;
         default:
             break;
@@ -437,7 +447,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_search_train_window() {
+void push_search_train_window(bool animated) {
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
@@ -448,7 +458,7 @@ void push_search_train_window() {
         });
     }
     
-    window_stack_push(s_window, true);
+    window_stack_push(s_window, animated);
     
     // Initialize Data
     s_search_results_index = -1;

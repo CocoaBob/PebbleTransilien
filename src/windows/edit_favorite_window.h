@@ -8,4 +8,4 @@
 
 #pragma once
 
-void push_search_train_window();
+void push_edit_favorite_window(bool animated);

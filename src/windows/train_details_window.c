@@ -120,13 +120,13 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
     switch (index) {
         case TRAIN_DETAINS_ACTIONS_TIMETABLE:
-            window_stack_remove(s_window, false);
-            window_stack_remove(action_list_window, false);
-            push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON});
+            window_stack_pop_all(false); // Pop Next Trains
+            push_main_menu_window(false);
+            push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON}, true);
             break;
         case TRAIN_DETAINS_ACTIONS_FAV:
+            // TODO:
             fav_add(selected_station_index, STATION_NON);
-            window_stack_remove(s_window, true);
             window_stack_remove(action_list_window, true);
             break;
         default:
@@ -410,7 +410,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_train_details_window(char train_number[7]) {
+void push_train_details_window(char train_number[7], bool animated) {
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
@@ -430,5 +430,5 @@ void push_train_details_window(char train_number[7]) {
     NULL_FREE(s_train_details_list);
     s_show_relative_time = false;
     
-    window_stack_push(s_window, true);
+    window_stack_push(s_window, animated);
 }
