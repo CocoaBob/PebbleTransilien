@@ -392,21 +392,12 @@ static void window_load(Window *window) {
 #endif
 }
 
-//static void window_appear(Window *window) {
-//    int16_t status_bar_height = 0;
-//#ifdef PBL_PLATFORM_BASALT
-//    status_bar_height = STATUS_BAR_LAYER_HEIGHT;
-//#endif
-//    
-//    Layer *window_layer = window_get_root_layer(window);
-//    GRect window_bounds = layer_get_bounds(window_layer);
-//    GRect menu_layer_frame = GRect(window_bounds.origin.x,
-//                                   window_bounds.origin.y + status_bar_height,
-//                                   window_bounds.size.w,
-//                                   window_bounds.size.h - status_bar_height);
-//    Layer *menu_layer = menu_layer_get_layer(s_menu_layer);
-//    layer_set_frame(menu_layer, menu_layer_frame);
-//}
+static void window_appear(Window *window) {
+    // BUG FIX:
+    // Fixed the wrong menu layer origin when returning to main menu window after adding a favorite
+    // Reload the layer to fix it
+    menu_layer_reload_data(s_menu_layer);
+}
 
 static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
@@ -431,7 +422,7 @@ void push_main_menu_window(bool animated) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
             .load = window_load,
-//            .appear = window_appear,
+            .appear = window_appear,
             .unload = window_unload,
         });
     }
