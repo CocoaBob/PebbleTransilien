@@ -115,7 +115,7 @@ function requestNextTrains(from, to) {
     req.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", false);
     req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     
-    var data = JSON.stringify([{"target": "/transilien/getNextTrains", "map": { "codeDepart": from, "codeArrivee": to }}]);
+    var data = JSON.stringify([{"target": "/transilien/getNextTrains", "map": { "codeDepart": from, "codeArrivee": to, "theoric": "false" }}]);
     req.send(data);
     if (req.readyState == 4 && req.status == 200) {
         sendAppMessageForNextTrains(req.responseText);
@@ -171,7 +171,7 @@ function requestTrainDetails(trainNumber) {
     req.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", false);
     req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     
-    var data = JSON.stringify([{"target": "/transilien/getTrainDetails", "map": { "trainNumber": trainNumber }}]);
+    var data = JSON.stringify([{"target": "/transilien/getTrainDetails", "map": { "trainNumber": trainNumber, "theoric": "false"}}]);
     req.send(data);
     if (req.readyState == 4 && req.status == 200) {
         sendAppMessageForTrainDetails(req.responseText);
