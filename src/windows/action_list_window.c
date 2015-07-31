@@ -56,11 +56,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     graphics_context_set_text_color(ctx, is_selected?s_highlight_text_color:s_text_color);
     
     GFont font;
-#ifdef PBL_PLATFORM_BASALT
-    font =  fonts_get_system_font(FONT_KEY_GOTHIC_18);
-#else
     font =  fonts_get_system_font(is_selected?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
-#endif
     
     char *text = s_callbacks.get_title(cell_index->row);
     

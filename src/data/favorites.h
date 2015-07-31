@@ -19,3 +19,4 @@ size_t fav_get_count();
 Favorite fav_at_index(size_t index);
 bool fav_add(StationIndex from, StationIndex to);
 bool fav_delete_at_index(size_t index);
+bool fav_move_up_index(size_t index);

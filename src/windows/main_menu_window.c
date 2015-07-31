@@ -166,6 +166,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     MenuIndex current_selection = menu_layer_get_selected_index(s_menu_layer);
     switch (index) {
         case MAIN_MENU_ACTIONS_MOVE_UP:
+            fav_move_up_index(current_selection.row);
             window_stack_remove(action_list_window, true);
             break;
         case MAIN_MENU_ACTIONS_EDIT:
@@ -193,6 +194,8 @@ static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
             .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
             .select_click = (ActionListSelectCallback)action_list_select_callback
         });
+    } else {
+        select_callback(s_menu_layer, &selected_index, context);
     }
 }
 

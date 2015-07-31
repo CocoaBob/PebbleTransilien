@@ -107,3 +107,14 @@ bool fav_delete_at_index(size_t index) {
     }
     return false;
 }
+
+bool fav_move_up_index(size_t index) {
+    if (index == 0 || index >= fav_get_count()) {
+        return false;
+    }
+    Favorite fav_up = s_favorites[index - 1];
+    s_favorites[index - 1] = s_favorites[index];
+    s_favorites[index] = fav_up;
+    storage_set_favorites(s_favorites, fav_get_count());
+    return true;
+}
