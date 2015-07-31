@@ -17,6 +17,7 @@ enum {
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
+static ClickConfigProvider s_ccp_of_menu_layer;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
@@ -37,6 +38,10 @@ static DataModelTrainDetail *s_train_details_list;
 static bool s_is_updating;
 
 static bool s_show_relative_time;
+
+// Forward declaration
+
+static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context);
 
 // MARK: Drawing
 
@@ -238,6 +243,34 @@ static void update_time_format_timer_callback(void *context) {
     update_time_format_timer_start();
 }
 
+// MARK: Click Config Provider for Action List
+
+static void button_up_handler(ClickRecognizerRef recognizer, void *context) {
+    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    if (selected_index.row == 0) {
+        uint16_t num_rows = get_num_rows_callback(s_menu_layer, 0, NULL);
+        menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, num_rows - 1), MenuRowAlignBottom, true);
+    } else {
+        menu_layer_set_selected_next(s_menu_layer, true, MenuRowAlignCenter, true);
+    }
+}
+
+static void button_down_handler(ClickRecognizerRef recognizer, void *context) {
+    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    uint16_t num_rows = get_num_rows_callback(s_menu_layer, 0, NULL);
+    if (selected_index.row == num_rows - 1) {
+        menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, 0), MenuRowAlignTop, true);
+    } else {
+        menu_layer_set_selected_next(s_menu_layer, false, MenuRowAlignCenter, true);
+    }
+}
+
+static void click_config_provider(void *context) {
+    s_ccp_of_menu_layer(context);
+    window_single_repeating_click_subscribe(BUTTON_ID_UP, 30, button_up_handler);
+    window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 30, button_down_handler);
+}
+
 // MARK: Menu layer callbacks
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
@@ -338,7 +371,11 @@ static void window_load(Window *window) {
                                    window_bounds.size.h - status_bar_height);
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
+    
     // Setup menu layer
+#ifdef PBL_PLATFORM_BASALT
+    menu_layer_pad_bottom_enable(s_menu_layer, false);
+#endif
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
@@ -354,6 +391,8 @@ static void window_load(Window *window) {
     
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
+    s_ccp_of_menu_layer = window_get_click_config_provider(window);
+    window_set_click_config_provider_with_context(window, click_config_provider, s_menu_layer);
     
     // Finally, add status bar
 #ifdef PBL_PLATFORM_BASALT

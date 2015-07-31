@@ -44,7 +44,6 @@ enum {
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
-static ClickConfigProvider s_ccp_of_menu_layer;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
@@ -183,28 +182,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     }
 }
 
-// MARK: Click Config Provider for Action List
-
-static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    if (selected_index.section == MAIN_MENU_SECTION_FAV) {
-        action_list_present_with_callbacks((ActionListCallbacks) {
-            .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
-            .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
-            .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
-            .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
-            .select_click = (ActionListSelectCallback)action_list_select_callback
-        });
-    } else {
-        select_callback(s_menu_layer, &selected_index, context);
-    }
-}
-
-static void click_config_provider(void *context) {
-    s_ccp_of_menu_layer(context);
-    window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler, NULL);
-}
-
 // MARK: Menu layer callbacks
 
 static uint16_t get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
@@ -331,7 +308,15 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
 
 static void select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
-        // Delete selected favorite
+        action_list_present_with_callbacks((ActionListCallbacks) {
+            .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+            .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
+            .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
+            .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+            .select_click = (ActionListSelectCallback)action_list_select_callback
+        });
+    } else {
+        select_callback(s_menu_layer, cell_index, context);
     }
 }
 
@@ -390,8 +375,6 @@ static void window_load(Window *window) {
     
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
-    s_ccp_of_menu_layer = window_get_click_config_provider(window);
-    window_set_click_config_provider_with_context(window, click_config_provider, s_menu_layer);
     
     // Finally, add status bar
 #ifdef PBL_PLATFORM_BASALT
