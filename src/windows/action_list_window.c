@@ -11,6 +11,8 @@
 #include "action_list_window.h"
 
 #define ACTION_LIST_BAR_WIDTH 14
+#define ACTION_LIST_BAR_POINT_X 7
+#define ACTION_LIST_BAR_POINT_Y 10
 #define ACTION_LIST_ROW_HEIGHT_MIN 22
 #define ACTION_LIST_TITLE_MARGIN 6
 
@@ -36,8 +38,7 @@ static void action_list_bar_layer_proc(Layer *layer, GContext *ctx) {
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     
     graphics_context_set_fill_color(ctx, s_background_color);
-    size_t position = ACTION_LIST_BAR_WIDTH/2;
-    graphics_fill_circle(ctx, GPoint(position, position), 2);
+    graphics_fill_circle(ctx, GPoint(ACTION_LIST_BAR_POINT_X, ACTION_LIST_BAR_POINT_Y), 2);
 }
 
 // MARK: Menu layer callbacks
