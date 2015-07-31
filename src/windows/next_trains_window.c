@@ -15,8 +15,14 @@ enum {
     NEXT_TRAINS_SECTION_COUNT
 };
 
+enum {
+    NEXT_TRAINS_ACTIONS_FAV = 0,
+    NEXT_TRAINS_ACTIONS_COUNT
+};
+
 static Window *s_window;
 static MenuLayer *s_menu_layer;
+static ClickConfigProvider s_ccp_of_menu_layer;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
@@ -209,6 +215,66 @@ static size_t max_data_length(size_t data_index) {
         default:
             return 0;
     }
+}
+
+// MARK: Action list callbacks
+
+static GColor action_list_get_bar_color(void) {
+#ifdef PBL_COLOR
+    return GColorCobaltBlue;
+#else
+    return GColorWhite;
+#endif
+}
+
+static size_t action_list_get_num_rows_callback(void) {
+    return NEXT_TRAINS_ACTIONS_COUNT;
+}
+
+static size_t action_list_get_default_selection_callback(void) {
+    return NEXT_TRAINS_ACTIONS_FAV;
+}
+
+static char* action_list_get_title_callback(size_t index) {
+    switch (index) {
+        case NEXT_TRAINS_ACTIONS_FAV:
+            return "Favorite";
+            break;
+        default:
+            return "";
+            break;
+    }
+}
+
+static void action_list_select_callback(Window *action_list_window, size_t index) {
+    switch (index) {
+        case NEXT_TRAINS_ACTIONS_FAV:
+            fav_add(s_from_to->from, s_from_to->to);
+            window_stack_remove(action_list_window, true);
+            break;
+        default:
+            break;
+    }
+}
+
+// MARK: Click Config Provider for Action List
+
+static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
+    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    if (selected_index.section == NEXT_TRAINS_SECTION_INFO) {
+        action_list_present_with_callbacks((ActionListCallbacks) {
+            .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+            .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
+            .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
+            .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+            .select_click = (ActionListSelectCallback)action_list_select_callback
+        });
+    }
+}
+
+static void click_config_provider(void *context) {
+    s_ccp_of_menu_layer(context);
+    window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler, NULL);
 }
 
 // MARK: Message Request callbacks
@@ -499,7 +565,6 @@ static void window_load(Window *window) {
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     // Setup menu layer
-    menu_layer_set_click_config_onto_window(s_menu_layer, window);
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)get_num_sections_callback,
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
@@ -514,6 +579,11 @@ static void window_load(Window *window) {
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
+    
+    // Setup Click Config Providers
+    menu_layer_set_click_config_onto_window(s_menu_layer, window);
+    s_ccp_of_menu_layer = window_get_click_config_provider(window);
+    window_set_click_config_provider_with_context(window, click_config_provider, s_menu_layer);
     
     // Finally, add status bar
 #ifdef PBL_PLATFORM_BASALT

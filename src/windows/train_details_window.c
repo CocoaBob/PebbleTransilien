@@ -339,7 +339,6 @@ static void window_load(Window *window) {
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     // Setup menu layer
-    menu_layer_set_click_config_onto_window(s_menu_layer, window);
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
@@ -352,6 +351,9 @@ static void window_load(Window *window) {
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
+    
+    // Setup Click Config Providers
+    menu_layer_set_click_config_onto_window(s_menu_layer, window);
     
     // Finally, add status bar
 #ifdef PBL_PLATFORM_BASALT

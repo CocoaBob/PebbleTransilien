@@ -367,9 +367,6 @@ static void window_load(Window *window) {
                                    window_bounds.size.h - status_bar_height);
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
-    menu_layer_set_click_config_onto_window(s_menu_layer, window);
-    s_ccp_of_menu_layer = window_get_click_config_provider(window);
-    window_set_click_config_provider_with_context(window, click_config_provider, s_menu_layer);
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)get_num_sections_callback,
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
@@ -386,6 +383,11 @@ static void window_load(Window *window) {
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
+    
+    // Setup Click Config Providers
+    menu_layer_set_click_config_onto_window(s_menu_layer, window);
+    s_ccp_of_menu_layer = window_get_click_config_provider(window);
+    window_set_click_config_provider_with_context(window, click_config_provider, s_menu_layer);
     
     // Finally, add status bar
 #ifdef PBL_PLATFORM_BASALT
