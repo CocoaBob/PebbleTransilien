@@ -12,7 +12,7 @@
 
 #define ACTION_LIST_BAR_WIDTH 14
 #define ACTION_LIST_ROW_HEIGHT_MIN 22
-#define ACTION_LIST_TITLE_MARGIN 4
+#define ACTION_LIST_TITLE_MARGIN 6
 
 static ActionListCallbacks s_callbacks;
 
@@ -57,7 +57,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     
     GFont font;
 #ifdef PBL_PLATFORM_BASALT
-    font =  fonts_get_system_font(FONT_KEY_GOTHIC_18);
+    font =  fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD);
 #else
     font =  fonts_get_system_font(is_selected?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
 #endif
@@ -103,7 +103,10 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     
     // Setup menu layer
-    menu_layer_set_click_config_onto_window(s_menu_layer, window);
+#ifdef PBL_PLATFORM_BASALT
+    menu_layer_pad_bottom_enable(s_menu_layer, false);
+#endif
+    
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
@@ -111,16 +114,15 @@ static void window_load(Window *window) {
         .select_click = (MenuLayerSelectCallback)select_callback
     });
     
-#ifdef PBL_PLATFORM_BASALT
-    menu_layer_pad_bottom_enable(s_menu_layer, false);
-#endif
-    
 #ifdef PBL_COLOR
     menu_layer_set_normal_colors(s_menu_layer, s_background_color, s_text_color);
     menu_layer_set_highlight_colors(s_menu_layer, s_background_color, s_highlight_text_color);
 #endif
     
     menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, s_default_selection), MenuRowAlignNone, false);
+    
+    // Setup Click Config Providers
+    menu_layer_set_click_config_onto_window(s_menu_layer, window);
     
     // Add bar layer
     GRect bar_layer_frame = GRect(window_bounds.origin.x,
@@ -130,6 +132,16 @@ static void window_load(Window *window) {
     Layer *bar_layer = layer_create(bar_layer_frame);
     layer_set_update_proc(bar_layer, action_list_bar_layer_proc);
     layer_add_child(window_layer, bar_layer);
+    
+    // Calculate row height
+    if (s_num_rows > 0) {
+        Layer *window_layer = window_get_root_layer(s_window);
+        GRect window_bounds = layer_get_bounds(window_layer);
+        s_row_height = window_bounds.size.h / s_num_rows;
+        if (s_row_height < ACTION_LIST_ROW_HEIGHT_MIN) {
+            s_row_height = ACTION_LIST_ROW_HEIGHT_MIN;
+        }
+    }
 }
 
 static void window_unload(Window *window) {
@@ -202,15 +214,6 @@ void action_list_present_with_callbacks(ActionListCallbacks callbacks) {
         s_bar_color = s_callbacks.get_bar_color();
     } else {
         s_bar_color = GColorWhite;
-    }
-    
-    if (s_num_rows > 0) {
-        Layer *window_layer = window_get_root_layer(s_window);
-        GRect window_bounds = layer_get_bounds(window_layer);
-        s_row_height = window_bounds.size.h / s_num_rows;
-        if (s_row_height < ACTION_LIST_ROW_HEIGHT_MIN) {
-            s_row_height = ACTION_LIST_ROW_HEIGHT_MIN;
-        }
     }
     
     // Push the window
