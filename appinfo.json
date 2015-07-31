@@ -117,13 +117,18 @@
       },
       {
         "type": "raw",
+        "name": "STATION_NAME_POS",
+        "file": "data/station_name_pos.bin"
+      },
+      {
+        "type": "raw",
         "name": "STATION_NAME_SEARCH",
         "file": "data/station_name_search.bin"
       },
       {
         "type": "raw",
-        "name": "STATION_NAME_POS",
-        "file": "data/station_name_pos.bin"
+        "name": "STATION_NAME_SEARCH_POS",
+        "file": "data/station_name_search_pos.bin"
       },
       {
         "type": "raw",

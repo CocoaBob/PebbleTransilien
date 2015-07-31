@@ -478,11 +478,15 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
+#ifdef PBL_PLATFORM_BASALT
     stations_search_name_begin();
+#endif
 }
 
 static void window_disappear(Window *window) {
+#ifdef PBL_PLATFORM_BASALT
     stations_search_name_end();
+#endif
 }
 
 // MARK: Entry point
