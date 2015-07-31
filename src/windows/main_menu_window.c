@@ -183,11 +183,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 
 // MARK: Click Config Provider for Action List
 
-static void select_handler(ClickRecognizerRef recognizer, void *context) {
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    select_callback(s_menu_layer, &selected_index, context);
-}
-
 static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     if (selected_index.section == MAIN_MENU_SECTION_FAV) {
@@ -203,7 +198,6 @@ static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
 
 static void click_config_provider(void *context) {
     s_ccp_of_menu_layer(context);
-    window_single_click_subscribe(BUTTON_ID_SELECT, select_handler);
     window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler, NULL);
 }
 
@@ -409,6 +403,22 @@ static void window_load(Window *window) {
 #endif
 }
 
+//static void window_appear(Window *window) {
+//    int16_t status_bar_height = 0;
+//#ifdef PBL_PLATFORM_BASALT
+//    status_bar_height = STATUS_BAR_LAYER_HEIGHT;
+//#endif
+//    
+//    Layer *window_layer = window_get_root_layer(window);
+//    GRect window_bounds = layer_get_bounds(window_layer);
+//    GRect menu_layer_frame = GRect(window_bounds.origin.x,
+//                                   window_bounds.origin.y + status_bar_height,
+//                                   window_bounds.size.w,
+//                                   window_bounds.size.h - status_bar_height);
+//    Layer *menu_layer = menu_layer_get_layer(s_menu_layer);
+//    layer_set_frame(menu_layer, menu_layer_frame);
+//}
+
 static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
     unload_favorites();
@@ -432,6 +442,7 @@ void push_main_menu_window() {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
             .load = window_load,
+//            .appear = window_appear,
             .unload = window_unload,
         });
     }

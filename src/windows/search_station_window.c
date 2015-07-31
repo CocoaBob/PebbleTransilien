@@ -17,10 +17,9 @@
 #define SELECTION_LAYER_VALUE_MAX 'Z'
 
 enum {
-    NEXT_TRAIN_ACTIONS_ADD_DEST = 0,
-    NEXT_TRAIN_ACTIONS_SCHEDULE,
-    NEXT_TRAIN_ACTIONS_ADD_FAV,
-    NEXT_TRAIN_ACTIONS_COUNT
+    SEARCH_STATION_ACTIONS_TIMETABLE = 0,
+    SEARCH_STATION_ACTIONS_FAV,
+    SEARCH_STATION_ACTIONS_COUNT
 };
 
 // MARK: Variables
@@ -119,23 +118,20 @@ static GColor action_list_get_bar_color(void) {
 }
 
 static size_t action_list_get_num_rows_callback(void) {
-    return NEXT_TRAIN_ACTIONS_COUNT;
+    return SEARCH_STATION_ACTIONS_COUNT;
 }
 
 static size_t action_list_get_default_selection_callback(void) {
-    return NEXT_TRAIN_ACTIONS_SCHEDULE;
+    return SEARCH_STATION_ACTIONS_TIMETABLE;
 }
 
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
-        case NEXT_TRAIN_ACTIONS_ADD_DEST:
-            return "Add destination";
+        case SEARCH_STATION_ACTIONS_TIMETABLE:
+            return "Timetable";
             break;
-        case NEXT_TRAIN_ACTIONS_ADD_FAV:
-            return "Add to favorite";
-            break;
-        case NEXT_TRAIN_ACTIONS_SCHEDULE:
-            return "Check schedule";
+        case SEARCH_STATION_ACTIONS_FAV:
+            return "Favorite";
             break;
         default:
             return "";
@@ -146,20 +142,15 @@ static char* action_list_get_title_callback(size_t index) {
 static void action_list_select_callback(Window *action_list_window, size_t index) {
     StationIndex selected_station_index = current_search_result();
     switch (index) {
-        case NEXT_TRAIN_ACTIONS_ADD_DEST:
-            window_stack_remove(s_window, false);
-            window_stack_remove(action_list_window, false);
-            push_search_train_window();
-            break;
-        case NEXT_TRAIN_ACTIONS_SCHEDULE:
+        case SEARCH_STATION_ACTIONS_TIMETABLE:
             window_stack_remove(s_window, false);
             window_stack_remove(action_list_window, false);
             push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON});
             break;
-        case NEXT_TRAIN_ACTIONS_ADD_FAV:
+        case SEARCH_STATION_ACTIONS_FAV:
             fav_add(selected_station_index, STATION_NON);
+            window_stack_remove(action_list_window, false);
             window_stack_remove(s_window, true);
-            window_stack_remove(action_list_window, true);
             break;
         default:
             break;

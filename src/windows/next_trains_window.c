@@ -468,12 +468,7 @@ static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, Menu
 
 #ifdef PBL_PLATFORM_BASALT
 static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
-    if (new_index->section == NEXT_TRAINS_SECTION_INFO) {
-        if (s_from_to->to == STATION_NON) {
-            *new_index = old_index;
-        }
-    } else if (new_index->section == NEXT_TRAINS_SECTION_TRAINS &&
-               s_next_trains_list_count == 0) {
+    if (new_index->section == NEXT_TRAINS_SECTION_TRAINS && s_next_trains_list_count == 0) {
         *new_index = old_index;
     }
 }
@@ -590,13 +585,18 @@ void push_next_trains_window(DataModelFromTo from_to) {
         });
     }
     
+    // Reset data
     NULL_FREE(s_from_to);
     s_from_to = malloc(sizeof(DataModelFromTo));
     set_from_to(from_to.from, from_to.to);
+    
+    s_next_trains_list_count = 0;
+    s_is_updating = false;
     
     // Reset some status
     NULL_FREE(s_next_trains_list);
     s_show_relative_time = false;
     
+    // Push window
     window_stack_push(s_window, true);
 }

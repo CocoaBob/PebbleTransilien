@@ -34,9 +34,28 @@ function int162bin(int16) {
 function parseTrainHour(str) {
     var m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{2}):(\d{2})$/);
     if (m) {
-        return new Date(m[3], m[2]-1, m[1], m[4], m[5], 0);
+        return new Date(m[3],   // Year
+                        m[2]-1, // Month
+                        m[1],   // Day
+                        m[4],   // Hour
+                        m[5],   // Minute
+                        0,      // Second
+                        0);     // Millisecond
     }
-    return new Date(str);
+    var now = new Date();
+    
+    m = str.match(/^(\d{2}):(\d{2})$/);
+    if (m) {
+        return new Date(now.getUTCFullYear(),  // Year
+                        now.getUTCMonth(),      // Month
+                        now.getUTCDate(),      // Day
+                        m[1],                   // Hour
+                        m[2],                   // Minute
+                        0,                      // Second
+                        0);                     // Millisecond
+    }
+    
+    return now;
 }
 
 function sendAppMessageForNextTrains(responseText) {

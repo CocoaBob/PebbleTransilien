@@ -9,6 +9,12 @@
 #include <pebble.h>
 #include "headers.h"
 
+enum {
+    TRAIN_DETAINS_ACTIONS_TIMETABLE = 0,
+    TRAIN_DETAINS_ACTIONS_FAV,
+    TRAIN_DETAINS_ACTIONS_COUNT
+};
+
 static Window *s_window;
 static MenuLayer *s_menu_layer;
 #ifdef PBL_PLATFORM_BASALT
@@ -71,6 +77,57 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                              TRAIN_DETAIL_CELL_TIME_W,
                              CELL_HEIGHT_2);
     draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
+}
+
+// MARK: Action list callbacks
+
+static GColor action_list_get_bar_color(void) {
+#ifdef PBL_COLOR
+    return GColorCobaltBlue;
+#else
+    return GColorWhite;
+#endif
+}
+
+static size_t action_list_get_num_rows_callback(void) {
+    return TRAIN_DETAINS_ACTIONS_COUNT;
+}
+
+static size_t action_list_get_default_selection_callback(void) {
+    return TRAIN_DETAINS_ACTIONS_TIMETABLE;
+}
+
+static char* action_list_get_title_callback(size_t index) {
+    switch (index) {
+        case TRAIN_DETAINS_ACTIONS_TIMETABLE:
+            return "Timetable";
+            break;
+        case TRAIN_DETAINS_ACTIONS_FAV:
+            return "Favorite";
+            break;
+        default:
+            return "";
+            break;
+    }
+}
+
+static void action_list_select_callback(Window *action_list_window, size_t index) {
+    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
+    switch (index) {
+        case TRAIN_DETAINS_ACTIONS_TIMETABLE:
+            window_stack_remove(s_window, false);
+            window_stack_remove(action_list_window, false);
+            push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON});
+            break;
+        case TRAIN_DETAINS_ACTIONS_FAV:
+            fav_add(selected_station_index, STATION_NON);
+            window_stack_remove(s_window, true);
+            window_stack_remove(action_list_window, true);
+            break;
+        default:
+            break;
+    }
 }
 
 // MARK: Message Request callbacks
@@ -234,7 +291,13 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-
+    action_list_present_with_callbacks((ActionListCallbacks) {
+        .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+        .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
+        .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
+        .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+        .select_click = (ActionListSelectCallback)action_list_select_callback
+    });
 }
 
 static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
