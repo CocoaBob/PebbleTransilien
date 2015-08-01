@@ -107,6 +107,11 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
 static void prv_draw_slider_slide(Layer *layer, GContext *ctx) {
     SelectionLayerData *data = layer_get_data(layer);
     
+    // If it's deactivated
+    if (data->selected_cell_idx == MAX_SELECTION_LAYER_CELLS) {
+        return;
+    }
+    
     int starting_x_offset = 0;
     for (int i = 0; i < data->num_cells; i++) {
         if (data->selected_cell_idx == i) {
@@ -149,6 +154,12 @@ static void prv_draw_slider_slide(Layer *layer, GContext *ctx) {
 
 static void prv_draw_slider_settle(Layer *layer, GContext *ctx) {
     SelectionLayerData *data = layer_get_data(layer);
+    
+    // If it's deactivated
+    if (data->selected_cell_idx == MAX_SELECTION_LAYER_CELLS) {
+        return;
+    }
+    
     int starting_x_offset = 0;
     for (int i = 0; i < data->num_cells; i++) {
         if (data->selected_cell_idx == i) {
@@ -498,7 +509,9 @@ void prv_down_click_handler(ClickRecognizerRef recognizer, void *context) {
 void prv_update_index_before_animation(SelectionLayerData *data) {
     int new_index = data->selected_cell_idx + (data->slide_is_forward?1:-1);
     data->callbacks.will_change(data->selected_cell_idx, &new_index, data->slide_is_forward, data->context);
-    data->selected_cell_idx = new_index;
+    if (data->selected_cell_idx != MAX_SELECTION_LAYER_CELLS) {
+        data->selected_cell_idx = new_index;
+    }
 }
 
 void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -655,7 +668,7 @@ void selection_layer_set_active(Layer *layer, bool is_active) {
         if (is_active && !data->is_active) {
             data->selected_cell_idx = 0;
         } if (!is_active && data->is_active) {
-            data->selected_cell_idx = MAX_SELECTION_LAYER_CELLS + 1;
+            data->selected_cell_idx = MAX_SELECTION_LAYER_CELLS;
         }
         
         data->is_active = is_active;

@@ -16,6 +16,8 @@
 #define SELECTION_LAYER_VALUE_MIN 'A'
 #define SELECTION_LAYER_VALUE_MAX 'Z'
 
+#define SERAPATOR_LAYER_HEIGHT 1
+
 enum {
     SEARCH_STATION_ACTIONS_ANOTHER = 0,
     SEARCH_STATION_ACTIONS_TIMETABLE,
@@ -87,6 +89,12 @@ bool value_is_valid(char value) {
 
 // MARK: Drawing
 
+static void separator_layer_proc(Layer *layer, GContext *ctx) {
+    GRect bounds = layer_get_bounds(layer);
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+}
+
 static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                                  GColor text_color,
 #ifdef PBL_COLOR
@@ -135,13 +143,13 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case SEARCH_STATION_ACTIONS_ANOTHER:
-            return "Search another";
+            return "Add destination";
             break;
         case SEARCH_STATION_ACTIONS_TIMETABLE:
-            return "Timetable";
+            return "Check timetable";
             break;
         case SEARCH_STATION_ACTIONS_FAV:
-            return "Favorite";
+            return "Add to favorites";
             break;
         default:
             return "";
@@ -240,9 +248,6 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
                  // Or we want to skip 2 indexes to go the list directly
                  (old_index > 0 && !value_is_valid(s_search_string[old_index]) && !value_is_valid(s_search_string[old_index - 1])))
         {
-            // To hide the highlight of selection layer
-            *new_index = SELECTION_LAYER_CELL_COUNT;
-            
             move_focus_to_menu_layer();
         }
     }
@@ -389,19 +394,27 @@ static void window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
-    // Prepare status bar
+    
+    // Add status bar
     int16_t status_bar_height = 0;
 #ifdef PBL_PLATFORM_BASALT
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
+    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer, &s_status_bar_overlay_layer);
 #endif
+    
+    // Add separator between selection layer and menu layer
+    Layer *separator_layer = layer_create(GRect(0, status_bar_height + SELECTION_LAYER_HEIGHT, window_bounds.size.w, SERAPATOR_LAYER_HEIGHT));
+    layer_set_update_proc(separator_layer, separator_layer_proc);
+    layer_add_child(window_layer, separator_layer);
     
     // Add menu layer
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
-                                   window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT + 1,
+                                   window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT + SERAPATOR_LAYER_HEIGHT,
                                    window_bounds.size.w,
-                                   window_bounds.size.h - status_bar_height - SELECTION_LAYER_HEIGHT - 1);
+                                   window_bounds.size.h - status_bar_height - SELECTION_LAYER_HEIGHT - SERAPATOR_LAYER_HEIGHT);
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
+    
     // Setup menu layer
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
@@ -415,12 +428,6 @@ static void window_load(Window *window) {
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
-
-    
-    // Add status bar
-#ifdef PBL_PLATFORM_BASALT
-    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer, &s_status_bar_overlay_layer);
-#endif
     
     // Add selection layer
     s_selection_layer = selection_layer_create(GRect(0, status_bar_height, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);
@@ -443,7 +450,7 @@ static void window_load(Window *window) {
     });
     layer_add_child(window_layer, s_selection_layer);
     
-    // Finally, ass inverter layer for Aplite
+    // Add inverter layer for Aplite
 #ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(window_bounds);
     s_inverter_layer_for_first_row = inverter_layer_create(window_bounds);

@@ -109,10 +109,10 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case TRAIN_DETAINS_ACTIONS_TIMETABLE:
-            return "Timetable";
+            return "Check timetable";
             break;
         case TRAIN_DETAINS_ACTIONS_FAV:
-            return "Favorite";
+            return "Add to favorites";
             break;
         default:
             return "";
@@ -359,6 +359,11 @@ static void window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
+    // Add status bar
+#ifdef PBL_PLATFORM_BASALT
+    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer, &s_status_bar_overlay_layer);
+#endif
+    
     // Add menu layer
     int16_t status_bar_height = 0;
 #ifdef PBL_PLATFORM_BASALT
@@ -393,15 +398,12 @@ static void window_load(Window *window) {
     s_ccp_of_menu_layer = window_get_click_config_provider(window);
     window_set_click_config_provider_with_context(window, click_config_provider, s_menu_layer);
     
-    // Finally, add status bar
-#ifdef PBL_PLATFORM_BASALT
-    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer, &s_status_bar_overlay_layer);
-#endif
-    
+    // Add inverter layer for Aplite
 #ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(window_bounds);
 #endif
     
+    // Setup theme
 #ifdef PBL_COLOR
     setup_ui_theme(s_window, s_menu_layer);
 #else

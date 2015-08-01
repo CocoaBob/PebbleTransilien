@@ -345,6 +345,11 @@ static void window_load(Window *window) {
     // Load favorites
     load_favorites();
     
+    // Add status bar
+#ifdef PBL_PLATFORM_BASALT
+    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer, &s_status_bar_overlay_layer);
+#endif
+    
     // Add menu layer
     int16_t status_bar_height = 0;
 #ifdef PBL_PLATFORM_BASALT
@@ -376,15 +381,12 @@ static void window_load(Window *window) {
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
     
-    // Finally, add status bar
-#ifdef PBL_PLATFORM_BASALT
-    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer, &s_status_bar_overlay_layer);
-#endif
-    
+    // Add inverter layer for Aplite
 #ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(window_bounds);
 #endif
     
+    // Setup theme
 #ifdef PBL_COLOR
     setup_ui_theme(s_window, s_menu_layer);
 #else
