@@ -45,6 +45,11 @@ Favorite fav_at_index(size_t index) {
 }
 
 bool fav_add(StationIndex from, StationIndex to) {
+    // Check if exists
+    if (fav_exists((Favorite){from, to})) {
+        return false;
+    }
+    
     // If s_favorites hasn't been loaded
     if (s_favorites == NULL) {
         load_favorites();
