@@ -241,6 +241,13 @@ static char* action_list_get_title_callback(size_t index) {
     }
 }
 
+static bool action_list_is_enabled_callback(size_t index) {
+    if (index == NEXT_TRAINS_ACTIONS_FAV) {
+        return !fav_exists(s_from_to);
+    }
+    return true;
+}
+
 static void action_list_select_callback(Window *action_list_window, size_t index) {
     switch (index) {
         case NEXT_TRAINS_ACTIONS_FAV:
@@ -262,6 +269,7 @@ static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
             .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
             .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
             .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+            .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
             .select_click = (ActionListSelectCallback)action_list_select_callback
         });
     }

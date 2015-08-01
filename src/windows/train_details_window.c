@@ -120,6 +120,15 @@ static char* action_list_get_title_callback(size_t index) {
     }
 }
 
+static bool action_list_is_enabled_callback(size_t index) {
+    if (index == TRAIN_DETAINS_ACTIONS_FAV) {
+        MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+        StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
+        return !fav_exists((Favorite){selected_station_index, STATION_NON});
+    }
+    return true;
+}
+
 static void action_list_select_callback(Window *action_list_window, size_t index) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
@@ -332,6 +341,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
         .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
         .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
         .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+        .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
         .select_click = (ActionListSelectCallback)action_list_select_callback
     });
 }

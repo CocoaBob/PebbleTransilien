@@ -118,3 +118,14 @@ bool fav_move_up_index(size_t index) {
     storage_set_favorites(s_favorites, fav_get_count());
     return true;
 }
+
+bool fav_exists(Favorite i_fav) {
+    for (size_t i = 0; i < fav_get_count(); ++i) {
+        Favorite fav = fav_at_index(i);
+        if (fav.from == i_fav.from &&
+            fav.to == i_fav.to) {
+            return true;
+        }
+    }
+    return false;
+}

@@ -25,6 +25,7 @@ static GColor s_background_color;
 static GColor s_bar_color;
 static GColor s_text_color;
 static GColor s_highlight_text_color;
+static GColor s_disabled_text_color;
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
@@ -54,11 +55,15 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
-    graphics_context_set_text_color(ctx, is_selected?s_highlight_text_color:s_text_color);
+    bool is_enabled = true;
+    if (s_callbacks.is_enabled && !s_callbacks.is_enabled(cell_index->row)) {
+        is_enabled = false;
+    }
+    graphics_context_set_text_color(ctx, is_enabled?(is_selected?s_highlight_text_color:s_text_color):s_disabled_text_color);
     
     GFont font;
 #ifdef PBL_PLATFORM_BASALT
-    font =  fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD);
+    font =  fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
 #else
     font =  fonts_get_system_font(is_selected?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
 #endif
@@ -88,6 +93,14 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     s_callbacks.select_click(s_window, cell_index->row);
 }
 
+#ifdef PBL_PLATFORM_BASALT
+static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
+    if (s_callbacks.is_enabled && !s_callbacks.is_enabled(new_index->row)) {
+        *new_index = old_index;
+    }
+}
+#endif
+
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
@@ -113,6 +126,10 @@ static void window_load(Window *window) {
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
         .select_click = (MenuLayerSelectCallback)select_callback
+#ifdef PBL_PLATFORM_BASALT
+        ,
+        .selection_will_change = (MenuLayerSelectionWillChangeCallback)selection_will_change_callback
+#endif
     });
     
 #ifdef PBL_COLOR
@@ -209,6 +226,16 @@ void action_list_present_with_callbacks(ActionListCallbacks callbacks) {
         s_highlight_text_color = s_callbacks.get_highlight_text_color();
     } else {
         s_highlight_text_color = GColorWhite;
+    }
+    
+    if (s_callbacks.get_disabled_text_color) {
+        s_disabled_text_color = s_callbacks.get_disabled_text_color();
+    } else {
+#ifdef PBL_COLOR
+        s_disabled_text_color = GColorDarkGray;
+#else
+        s_disabled_text_color = GColorWhite;
+#endif
     }
     
     if (s_callbacks.get_bar_color) {
