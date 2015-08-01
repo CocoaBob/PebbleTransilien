@@ -90,8 +90,6 @@ void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_laye
 
 #ifdef PBL_COLOR
 void setup_ui_theme(Window *window_layer, MenuLayer *menu_layer) {
-    window_set_background_color(window_layer, curr_fg_color());
-    
     menu_layer_set_normal_colors(menu_layer, curr_bg_color(), curr_fg_color());
     menu_layer_set_highlight_colors(menu_layer, GColorCobaltBlue, GColorWhite);
 }

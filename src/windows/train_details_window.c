@@ -32,6 +32,7 @@ static InverterLayer *s_inverter_layer;
 static AppTimer *s_update_time_format_timer;
 
 static char* s_train_number;
+static StationIndex s_from_station;
 
 static size_t s_train_details_list_count;
 static DataModelTrainDetail *s_train_details_list;
@@ -109,14 +110,11 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case TRAIN_DETAINS_ACTIONS_TIMETABLE:
-            return "Check timetable";
-            break;
+            return "Timetable";
         case TRAIN_DETAINS_ACTIONS_FAV:
-            return "Add to favorites";
-            break;
+            return "Favorite";
         default:
             return "";
-            break;
     }
 }
 
@@ -139,7 +137,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
             break;
         case TRAIN_DETAINS_ACTIONS_FAV:
             // TODO:
-            fav_add(selected_station_index, STATION_NON);
+            fav_add(s_from_station, selected_station_index);
             window_stack_remove(action_list_window, true);
             break;
         default:
@@ -460,7 +458,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_train_details_window(char train_number[7], bool animated) {
+void push_train_details_window(char train_number[7], StationIndex from_station, bool animated) {
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
@@ -474,6 +472,8 @@ void push_train_details_window(char train_number[7], bool animated) {
     NULL_FREE(s_train_number);
     s_train_number = malloc(sizeof(char) * TRAIN_NUMBER_LENGTH);
     strncpy(s_train_number, train_number, TRAIN_NUMBER_LENGTH);
+    
+    s_from_station = from_station;
     
     // Reset some status
     s_train_details_list_count = 0;

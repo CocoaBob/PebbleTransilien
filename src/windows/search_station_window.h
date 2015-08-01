@@ -8,4 +8,4 @@
 
 #pragma once
 
-void push_search_train_window(bool animated);
+void push_search_train_window(StationIndex from, StationIndex to, bool animated);

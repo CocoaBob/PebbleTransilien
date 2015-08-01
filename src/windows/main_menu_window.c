@@ -148,16 +148,12 @@ static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case MAIN_MENU_ACTIONS_MOVE_UP:
             return "Move up";
-            break;
         case MAIN_MENU_ACTIONS_EDIT:
             return "Edit";
-            break;
         case MAIN_MENU_ACTIONS_DELETE:
             return "Delete";
-            break;
         default:
             return "";
-            break;
     }
 }
 
@@ -165,18 +161,24 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     MenuIndex current_selection = menu_layer_get_selected_index(s_menu_layer);
     switch (index) {
         case MAIN_MENU_ACTIONS_MOVE_UP:
+        {
             fav_move_up_index(current_selection.row);
             window_stack_remove(action_list_window, true);
             break;
+        }
         case MAIN_MENU_ACTIONS_EDIT:
-            // TODO:
+        {
+            Favorite favorite = fav_at_index(current_selection.row);
             window_stack_remove(action_list_window, false);
-            push_search_train_window(true);
+            push_search_train_window(favorite.from, favorite.to, true);
             break;
+        }
         case MAIN_MENU_ACTIONS_DELETE:
+        {
             window_stack_remove(action_list_window, true);
             fav_delete_at_index(current_selection.row);
             break;
+        }
         default:
             break;
     }
@@ -273,7 +275,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
         push_next_trains_window(favorite, true);
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            push_search_train_window(true);
+            push_search_train_window(STATION_NON, STATION_NON, true);
         } else {
             // TODO: Nearby stations
         }

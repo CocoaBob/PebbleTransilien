@@ -127,8 +127,8 @@ bool fav_move_up_index(size_t index) {
 bool fav_exists(Favorite i_fav) {
     for (size_t i = 0; i < fav_get_count(); ++i) {
         Favorite fav = fav_at_index(i);
-        if (fav.from == i_fav.from &&
-            fav.to == i_fav.to) {
+        if ((fav.from == i_fav.from && fav.to == i_fav.to) ||
+            (fav.from == i_fav.to && fav.to == i_fav.from)) {
             return true;
         }
     }

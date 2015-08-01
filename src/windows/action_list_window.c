@@ -75,7 +75,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         is_enabled = false;
     }
     
-    graphics_context_set_text_color(ctx, is_enabled?(is_selected?s_highlight_text_color:s_text_color):s_disabled_text_color);
+    graphics_context_set_text_color(ctx, is_selected?s_highlight_text_color:(is_enabled?s_text_color:s_disabled_text_color));
     
     GFont font;
 #ifdef PBL_PLATFORM_BASALT
@@ -106,20 +106,14 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    s_callbacks.select_click(s_window, cell_index->row);
+    if (!s_callbacks.is_enabled || s_callbacks.is_enabled(cell_index->row)) {
+        s_callbacks.select_click(s_window, cell_index->row);
+    }
 }
 
 static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     return 0;
 }
-
-#ifdef PBL_PLATFORM_BASALT
-static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
-    if (s_callbacks.is_enabled && !s_callbacks.is_enabled(new_index->row)) {
-        *new_index = old_index;
-    }
-}
-#endif
 
 // MARK: Window callbacks
 
@@ -147,10 +141,6 @@ static void window_load(Window *window) {
         .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
         .select_click = (MenuLayerSelectCallback)select_callback,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback
-#ifdef PBL_PLATFORM_BASALT
-        ,
-        .selection_will_change = (MenuLayerSelectionWillChangeCallback)selection_will_change_callback
-#endif
     });
     
 #ifdef PBL_COLOR

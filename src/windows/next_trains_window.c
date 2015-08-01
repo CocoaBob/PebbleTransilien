@@ -233,11 +233,9 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case NEXT_TRAINS_ACTIONS_FAV:
-            return "Add to favorites";
-            break;
+            return "Favorite";
         default:
             return "";
-            break;
     }
 }
 
@@ -523,7 +521,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
         }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
-        push_train_details_window(next_train.number, true);
+        push_train_details_window(next_train.number, s_from_to.from, true);
     }
 }
 
