@@ -187,9 +187,9 @@ static void prv_draw_slider_settle(Layer *layer, GContext *ctx) {
     if (data->slide_is_forward) {
         rect.origin.x -= data->cell_widths[data->selected_cell_idx];
         rect.size.w += data->cell_widths[data->selected_cell_idx];
-    }
-    else
+    } else {
         rect.size.w += data->cell_widths[data->selected_cell_idx];
+    }
     layer_set_frame(inverter_layer_get_layer(data->inverter), rect);
 #endif
 }
@@ -667,8 +667,14 @@ void selection_layer_set_active(Layer *layer, bool is_active) {
     if (data) {
         if (is_active && !data->is_active) {
             data->selected_cell_idx = 0;
+#ifndef PBL_COLOR
+            layer_add_child(layer, inverter_layer_get_layer(data->inverter));
+#endif
         } if (!is_active && data->is_active) {
             data->selected_cell_idx = MAX_SELECTION_LAYER_CELLS;
+#ifndef PBL_COLOR
+            layer_remove_from_parent(inverter_layer_get_layer(data->inverter));
+#endif
         }
         
         data->is_active = is_active;
