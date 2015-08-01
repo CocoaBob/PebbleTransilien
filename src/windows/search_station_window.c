@@ -105,6 +105,17 @@ static void verify_from_to(DataModelFromTo *i_o_from_to) {
     }
 }
 
+static void reset_search_results() {
+    s_search_results_index = -1;
+    memset(s_search_string, 0, sizeof(s_search_string));
+    for (size_t i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
+        s_search_results[i].search_results_count = 0;
+        for (size_t result = 0; result < STATION_SEARH_RESULT_MAX_COUNT; ++result) {
+            s_search_results[i].search_results[result] = STATION_NON;
+        }
+    }
+}
+
 // MARK: Drawing
 
 static void separator_layer_proc(Layer *layer, GContext *ctx) {
@@ -260,12 +271,17 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         case SEARCH_STATION_ACTIONS_FROM:
         {
             s_from_to.from = selected_station_index;
+            reset_search_results();
+            move_focus_to_selection_layer();
             window_stack_remove(action_list_window, true);
+            
             break;
         }
         case SEARCH_STATION_ACTIONS_TO:
         {
             s_from_to.to = selected_station_index;
+            reset_search_results();
+            move_focus_to_selection_layer();
             window_stack_remove(action_list_window, true);
             break;
         }
@@ -378,9 +394,11 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
         if (old_index == 0) {
             window_stack_pop(true);
         }
-        // Clear last index
+        // Clear all indexes behind
         else {
-            s_search_string[old_index] = '\0';
+            for (int i = old_index; i <= SELECTION_LAYER_CELL_COUNT; ++i) {
+                s_search_string[i] = '\0';
+            }
         }
     } else if (is_forward) {
         // If no result for the last index, and the value of current index (old_index) is empty
@@ -502,7 +520,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         free(str_station);
     } else {
         graphics_context_set_text_color(ctx, text_color);
-        draw_cell_title(ctx, cell_layer, (s_search_results_index > 0)?"Not found.":"UP/DOWN to input...");
+        draw_cell_title(ctx, cell_layer, (s_search_results_index >= 0)?"Not found.":"UP/DOWN to input...");
     }
 }
 
@@ -658,14 +676,7 @@ void push_search_train_window(StationIndex from, StationIndex to, bool animated)
     window_stack_push(s_window, animated);
     
     // Initialize Data
-    s_search_results_index = -1;
-    memset(s_search_string, 0, sizeof(s_search_string));
-    for (size_t i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
-        s_search_results[i].search_results_count = 0;
-        for (size_t result = 0; result < STATION_SEARH_RESULT_MAX_COUNT; ++result) {
-            s_search_results[i].search_results[result] = STATION_NON;
-        }
-    }
+    reset_search_results();
     s_from_to.from = from;
     s_from_to.to = to;
     
