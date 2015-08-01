@@ -120,9 +120,7 @@ void set_menu_layer_activated(MenuLayer *menu_layer, bool activated) {
 void set_menu_layer_activated(MenuLayer *menu_layer, bool activated, InverterLayer *inverter_layer_for_row) {
     Layer *layer_layer = inverter_layer_get_layer(inverter_layer_for_row);
     if (activated) {
-        if (layer_get_window(layer_layer)) {
-            layer_remove_from_parent(layer_layer);
-        }
+        layer_remove_from_parent(layer_layer);
     } else {
         layer_add_child(menu_layer_get_layer(menu_layer), layer_layer);
     }

@@ -30,6 +30,11 @@ static GColor s_disabled_text_color;
 static Window *s_window;
 static MenuLayer *s_menu_layer;
 
+#ifdef PBL_BW
+static InverterLayer *s_inverter_layer;
+static InverterLayer *s_inverter_layer_for_selected_row;
+#endif
+
 // MARK: Bar Layer
 
 static void action_list_bar_layer_proc(Layer *layer, GContext *ctx) {
@@ -55,10 +60,21 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+    
+#ifdef PBL_BW
+    if (is_selected) {
+        Layer *inverter_layer_for_row_layer = inverter_layer_get_layer(s_inverter_layer_for_selected_row);
+        
+        GRect row_frame = layer_get_frame(cell_layer);
+        layer_set_frame(inverter_layer_for_row_layer, row_frame);
+    }
+#endif
+    
     bool is_enabled = true;
     if (s_callbacks.is_enabled && !s_callbacks.is_enabled(cell_index->row)) {
         is_enabled = false;
     }
+    
     graphics_context_set_text_color(ctx, is_enabled?(is_selected?s_highlight_text_color:s_text_color):s_disabled_text_color);
     
     GFont font;
@@ -93,6 +109,10 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     s_callbacks.select_click(s_window, cell_index->row);
 }
 
+static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+    return 0;
+}
+
 #ifdef PBL_PLATFORM_BASALT
 static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
     if (s_callbacks.is_enabled && !s_callbacks.is_enabled(new_index->row)) {
@@ -125,7 +145,8 @@ static void window_load(Window *window) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)select_callback
+        .select_click = (MenuLayerSelectCallback)select_callback,
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
         .selection_will_change = (MenuLayerSelectionWillChangeCallback)selection_will_change_callback
@@ -141,6 +162,15 @@ static void window_load(Window *window) {
     
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
+    
+    // Add inverter layer for Aplite
+#ifdef PBL_BW
+    s_inverter_layer = inverter_layer_create(menu_layer_frame);
+    layer_add_child(window_layer, inverter_layer_get_layer(s_inverter_layer));
+    
+    s_inverter_layer_for_selected_row = inverter_layer_create(menu_layer_frame);
+    layer_add_child(menu_layer_get_layer(s_menu_layer), inverter_layer_get_layer(s_inverter_layer_for_selected_row));
+#endif
     
     // Add bar layer
     GRect bar_layer_frame = GRect(window_bounds.origin.x,
@@ -167,10 +197,18 @@ static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
     window_destroy(s_window);
     s_window = NULL;
+    
+#ifdef PBL_BW
+    inverter_layer_destroy(s_inverter_layer);
+    inverter_layer_destroy(s_inverter_layer_for_selected_row);
+#endif
 }
 
 static void window_appear(Window *window) {
-    
+#ifdef PBL_BW
+    // BUG FIX: When it appears for the 1st time, the selected row's inverter layer position is incorrect
+    menu_layer_reload_data(s_menu_layer);
+#endif
 }
 
 static void window_disappear(Window *window) {
@@ -218,14 +256,18 @@ void action_list_present_with_callbacks(ActionListCallbacks callbacks) {
 #ifdef PBL_COLOR
         s_text_color = GColorLightGray;
 #else
-        s_text_color = GColorWhite;
+        s_text_color = GColorBlack;
 #endif
     }
     
     if (s_callbacks.get_highlight_text_color) {
         s_highlight_text_color = s_callbacks.get_highlight_text_color();
     } else {
+#ifdef PBL_COLOR
         s_highlight_text_color = GColorWhite;
+#else
+        s_highlight_text_color = GColorBlack;
+#endif
     }
     
     if (s_callbacks.get_disabled_text_color) {
@@ -234,7 +276,7 @@ void action_list_present_with_callbacks(ActionListCallbacks callbacks) {
 #ifdef PBL_COLOR
         s_disabled_text_color = GColorDarkGray;
 #else
-        s_disabled_text_color = GColorWhite;
+        s_disabled_text_color = GColorBlack;
 #endif
     }
     
