@@ -103,11 +103,7 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
 #endif
         draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14_BOLD, frame_platform, GTextAlignmentCenter);
     } else {
-#ifdef PBL_COLOR
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_DOTTED_FRAME_DARK:RESOURCE_ID_IMG_DOTTED_FRAME_LIGHT, frame_platform);
-#else
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_DOTTED_FRAME_LIGHT, frame_platform);
-#endif
+        // TODO: No platform string
     }
 }
 
