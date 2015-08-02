@@ -54,6 +54,11 @@ bool storage_set_favorites(const Favorite *favorites, size_t fav_count) {
     return (result == (int)(size_of_Favorite() * fav_count));
 }
 
+bool storage_delete_all_favorites() {
+    status_t result = persist_delete(SETTING_FAVORITES);
+    return result == S_SUCCESS;
+}
+
 size_t storage_get_favorites_count() {
     return persist_read_int(SETTING_FAVORITES_COUNT);
 }

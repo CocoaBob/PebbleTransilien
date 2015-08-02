@@ -16,7 +16,7 @@ size_t size_of_Favorite() {
     return _favorite_size;
 }
 
-void copy_favorite(Favorite *dest, Favorite *src) {
+void favorite_copy(Favorite *dest, Favorite *src) {
     dest->from = src->from;
     dest->to = src->to;
 }
@@ -96,19 +96,27 @@ bool fav_delete_at_index(size_t index) {
         return false;
     }
     size_t new_fav_count = fav_get_count() - 1;
-    if (index != new_fav_count) {
+    if (index != new_fav_count) { // If the deleted index wasn't the last one (last_one = count - 1)
         for (size_t i = index; i < new_fav_count; ++i) {
-            copy_favorite(&s_favorites[i], &s_favorites[i+1]);
+            favorite_copy(&s_favorites[i], &s_favorites[i+1]);
         }
     }
-    Favorite* new_favorites = realloc(s_favorites, size_of_Favorite() * new_fav_count);
-    if (new_favorites != NULL) {
-        s_favorites = new_favorites;
-        
-        // Save data
-        storage_set_favorites_count(new_fav_count);
-        storage_set_favorites(s_favorites, new_fav_count);
+    
+    // Save new count
+    storage_set_favorites_count(new_fav_count);
+    
+    // Save new favorites list
+    if (new_fav_count == 0) {
+        storage_delete_all_favorites();
         return true;
+    } else {
+        Favorite* new_favorites = realloc(s_favorites, size_of_Favorite() * new_fav_count);
+        if (new_favorites != NULL) {
+            s_favorites = new_favorites;
+            
+            storage_set_favorites(s_favorites, new_fav_count);
+            return true;
+        }
     }
     return false;
 }

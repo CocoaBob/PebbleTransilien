@@ -93,6 +93,19 @@ static char* action_list_get_title_callback(size_t index) {
     }
 }
 
+static bool action_list_is_enabled_callback(size_t index) {
+    switch (index) {
+        case MAIN_MENU_ACTIONS_MOVE_UP:
+            return (fav_get_count() > 1);
+        case MAIN_MENU_ACTIONS_EDIT:
+            return true;
+        case MAIN_MENU_ACTIONS_DELETE:
+            return true;
+        default:
+            return true;
+    }
+}
+
 static void action_list_select_callback(Window *action_list_window, size_t index) {
     MenuIndex current_selection = menu_layer_get_selected_index(s_menu_layer);
     switch (index) {
@@ -100,6 +113,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         {
             fav_move_up_index(current_selection.row);
             window_stack_remove(action_list_window, true);
+            menu_layer_set_selected_next(s_menu_layer, true, MenuRowAlignCenter, false);
             break;
         }
         case MAIN_MENU_ACTIONS_EDIT:
@@ -111,8 +125,8 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         }
         case MAIN_MENU_ACTIONS_DELETE:
         {
-            window_stack_remove(action_list_window, true);
             fav_delete_at_index(current_selection.row);
+            window_stack_remove(action_list_window, true);
             break;
         }
         default:
@@ -337,6 +351,9 @@ static void window_appear(Window *window) {
     // Fixed the wrong menu layer origin when returning to main menu window after adding a favorite
     // Reload the layer to fix it
     menu_layer_reload_data(s_menu_layer);
+    
+    // Show the selected row
+    menu_layer_set_selected_index(s_menu_layer, menu_layer_get_selected_index(s_menu_layer), MenuRowAlignCenter, false);
 }
 
 static void window_unload(Window *window) {

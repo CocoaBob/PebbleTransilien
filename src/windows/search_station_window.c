@@ -398,8 +398,9 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         }
         case SEARCH_STATION_ACTIONS_FAV:
         {
-            verify_from_to(&s_from_to);
-            fav_add(s_from_to.from, s_from_to.to);
+            DataModelFromTo from_to = s_from_to;
+            verify_from_to(&from_to);
+            fav_add(from_to.from, from_to.to);
             window_stack_remove(action_list_window, true);
             break;
         }
