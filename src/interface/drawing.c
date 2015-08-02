@@ -58,3 +58,70 @@ void draw_cell_title(GContext* ctx, const Layer *cell_layer, const char *title) 
                         18);
     draw_text(ctx, title, FONT_KEY_GOTHIC_18_BOLD, frame, GTextAlignmentCenter);
 }
+
+// MARK: Draw From To Layer, layer height must be CELL_HEIGHT = 44
+
+void draw_from_to_layer(GContext* ctx,
+                        const Layer *layer,
+                        DataModelFromTo from_to,
+#ifdef PBL_COLOR
+                        bool is_highlighed,
+#endif
+                        GColor text_color) {
+    graphics_context_set_text_color(ctx, text_color);
+    GRect bounds = layer_get_bounds(layer);
+    bool is_from_to = (from_to.to != STATION_NON);
+    
+    // Draw left icon
+    GRect frame_icon = GRect(CELL_MARGIN,
+                             (CELL_HEIGHT - FROM_TO_ICON_HEIGHT) / 2,
+                             FROM_TO_ICON_WIDTH,
+                             is_from_to?FROM_TO_ICON_HEIGHT:FROM_TO_ICON_WIDTH);
+#ifdef PBL_COLOR
+    if (is_from_to) {
+        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
+    } else {
+        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+    }
+#else
+    if (is_from_to) {
+        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
+    } else {
+        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+    }
+#endif
+    
+    // Draw lines
+    char *str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+    stations_get_name(from_to.from, str_from, STATION_NAME_MAX_LENGTH);
+    
+    GRect frame_line_1 = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
+                               TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
+                               bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN * 3,
+                               CELL_HEIGHT_2);
+    if (is_from_to) {
+        draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
+        
+        GRect frame_line_2 = frame_line_1;
+        frame_line_2.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
+        
+        char *str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+        stations_get_name(from_to.to, str_to, STATION_NAME_MAX_LENGTH);
+        
+        draw_text(ctx, str_to, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
+        
+        free(str_to);
+    } else {
+        frame_line_1.size.h = bounds.size.h;
+        GSize text_size = graphics_text_layout_get_content_size(str_from,
+                                                                fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
+                                                                frame_line_1,
+                                                                GTextOverflowModeTrailingEllipsis,
+                                                                GTextAlignmentLeft);
+        frame_line_1.size.h = text_size.h;
+        
+        draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
+    }
+    
+    free(str_from);
+}

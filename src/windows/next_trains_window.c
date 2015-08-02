@@ -57,62 +57,6 @@ static bool s_show_relative_time;
 
 // MARK: Drawing
 
-static void draw_next_trains_info(GContext *ctx,
-                                  Layer *cell_layer,
-                                  GColor text_color
-#ifdef PBL_COLOR
-                                  ,bool is_highlighed
-#endif
-)
-{
-    graphics_context_set_text_color(ctx, text_color);
-    GRect bounds = layer_get_bounds(cell_layer);
-    bool is_from_to = (s_from_to.to != STATION_NON);
-    
-    // Draw left icon
-    GRect frame_icon = GRect(CELL_MARGIN,
-                             (CELL_HEIGHT - FROM_TO_ICON_HEIGHT) / 2,
-                             FROM_TO_ICON_WIDTH,
-                             is_from_to?FROM_TO_ICON_HEIGHT:FROM_TO_ICON_WIDTH);
-#ifdef PBL_COLOR
-    if (is_from_to) {
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
-    } else {
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-    }
-#else
-    if (is_from_to) {
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
-    } else {
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-    }
-#endif
-    
-    // Draw lines
-    GRect frame_line_1 = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
-                               TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
-                               bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN * 3,
-                               CELL_HEIGHT_2);
-    if (is_from_to) {
-        draw_text(ctx, s_str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
-        
-        GRect frame_line_2 = frame_line_1;
-        frame_line_2.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
-        
-        draw_text(ctx, s_str_to, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
-    } else {
-        frame_line_1.size.h = bounds.size.h;
-        GSize text_size = graphics_text_layout_get_content_size(s_str_from,
-                                                                fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
-                                                                frame_line_1,
-                                                                GTextOverflowModeTrailingEllipsis,
-                                                                GTextAlignmentLeft);
-        frame_line_1.size.h = text_size.h;
-        
-        draw_text(ctx, s_str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
-    }
-}
-
 static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                                  GColor text_color,
 #ifdef PBL_COLOR
@@ -471,13 +415,13 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #endif
     
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
-        draw_next_trains_info(ctx,
-                              cell_layer,
-                              text_color
+        draw_from_to_layer(ctx,
+                           cell_layer,
+                           s_from_to,
 #ifdef PBL_COLOR
-                              ,is_highlighed
+                           is_highlighed,
 #endif
-                              );
+                           text_color);
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (s_is_updating && s_next_trains_list_count == 0) {
             graphics_context_set_text_color(ctx, text_color);

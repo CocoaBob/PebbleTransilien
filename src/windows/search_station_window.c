@@ -32,6 +32,8 @@ enum {
 static Window *s_window;
 static Layer *s_selection_layer;
 static MenuLayer *s_menu_layer;
+static Layer *s_menu_layer_layer;
+static Layer *s_panel_layer;
 static ClickConfigProvider s_last_ccp;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
@@ -60,6 +62,7 @@ static DataModelFromTo s_from_to;
 static bool s_menu_layer_is_activated;
 #else
 static InverterLayer *s_inverter_layer_for_first_row;
+static Layer *s_inverter_layer_for_first_row_layer;
 #endif
 
 // MARK: Forward declaration
@@ -69,7 +72,7 @@ static void move_focus_to_menu_layer();
 static bool focus_is_on_selection_layer();
 static bool action_list_is_enabled_callback(size_t index);
 
-// MARK: Searching helpers
+// MARK: Helpers
 
 static size_t current_search_results_count() {
     size_t return_value = 0;
@@ -118,6 +121,35 @@ static void reset_search_results() {
 
 // MARK: Drawing
 
+static void panel_layer_proc(Layer *layer, GContext *ctx) {
+    GRect bounds = layer_get_bounds(layer);
+    
+    // Draw separator
+    graphics_context_set_stroke_color(ctx, curr_fg_color());
+    graphics_draw_line(ctx, GPoint(0, 1), GPoint(bounds.size.w, 1));
+    
+    // Draw background
+    graphics_context_set_fill_color(ctx, curr_bg_color());
+    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+    
+    // Draw stations
+    DataModelFromTo *from_to = layer_get_data(layer);
+    
+#ifdef PBL_COLOR
+    bool is_dark_theme = status_is_dark_theme();
+    GColor text_color = is_dark_theme?curr_fg_color():curr_bg_color();
+#else
+    GColor text_color = curr_fg_color();
+#endif
+    draw_from_to_layer(ctx,
+                       layer,
+                       *from_to,
+#ifdef PBL_COLOR
+                       is_dark_theme,
+#endif
+                       text_color);
+}
+
 static void separator_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     graphics_context_set_fill_color(ctx, curr_fg_color());
@@ -149,6 +181,44 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                                 bounds.size.w - CELL_MARGIN * 2 - FROM_TO_ICON_WIDTH,
                                 CELL_HEIGHT_2);
     draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
+}
+
+// MARK: Info Panel
+
+static bool panel_is_visible() {
+    return layer_get_window(s_panel_layer) != NULL;
+}
+
+static void panel_show() {
+    if (!panel_is_visible()) {
+        GRect menu_layer_frame = layer_get_frame(s_menu_layer_layer);
+        GRect panel_layer_frame = layer_get_frame(s_panel_layer);
+        
+        menu_layer_frame.size.h -= panel_layer_frame.size.h;
+        layer_set_frame(s_menu_layer_layer, menu_layer_frame);
+        
+        panel_layer_frame.origin.y = menu_layer_frame.origin.y + menu_layer_frame.size.h;
+        layer_set_frame(s_panel_layer, panel_layer_frame);
+        
+        Layer *window_layer = window_get_root_layer(s_window);
+        layer_add_child(window_layer, s_panel_layer);
+    }
+}
+
+static void panel_hide() {
+    if (panel_is_visible()) {
+        GRect menu_layer_frame = layer_get_frame(s_menu_layer_layer);
+        GRect panel_layer_frame = layer_get_frame(s_panel_layer);
+        
+        menu_layer_frame.size.h += panel_layer_frame.size.h;
+        layer_set_frame(s_menu_layer_layer, menu_layer_frame);
+        
+        layer_remove_from_parent(s_panel_layer);
+    }
+}
+
+static void panel_update() {
+    
 }
 
 // MARK: Action list callbacks
@@ -344,8 +414,7 @@ static bool focus_is_on_selection_layer() {
 #ifdef PBL_COLOR
     return !s_menu_layer_is_activated;
 #else
-    Layer *inverter_layer_layer = inverter_layer_get_layer(s_inverter_layer_for_first_row);
-    return layer_get_window(inverter_layer_layer) != NULL;
+    return layer_get_window(s_inverter_layer_for_first_row_layer) != NULL;
 #endif
 }
 
@@ -390,7 +459,7 @@ static char* selection_handle_get_text(int index, void *context) {
 
 static void selection_handle_will_change(int old_index, int *new_index, bool is_forward, void *context) {
     if (!is_forward) {
-        // Return to the last window
+        // Return to the main menu window
         if (old_index == 0) {
             window_stack_pop(true);
         }
@@ -486,9 +555,9 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #ifdef PBL_BW
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     GRect row_frame = layer_get_frame(cell_layer);
-    if (menu_index_compare(cell_index, &selected_index) == 0 &&
-        layer_get_window(inverter_layer_get_layer(s_inverter_layer_for_first_row))) {
-        layer_set_frame(inverter_layer_get_layer(s_inverter_layer_for_first_row), row_frame);
+    if (focus_is_on_selection_layer() && // Need to hide the highlighted row
+        menu_index_compare(cell_index, &selected_index) == 0) { // It's the highlighted row
+        layer_set_frame(s_inverter_layer_for_first_row_layer, row_frame);
     }
 #endif
 
@@ -577,7 +646,8 @@ static void window_load(Window *window) {
                                    window_bounds.size.w,
                                    window_bounds.size.h - status_bar_height - SELECTION_LAYER_HEIGHT - SERAPATOR_LAYER_HEIGHT);
     s_menu_layer = menu_layer_create(menu_layer_frame);
-    layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
+    s_menu_layer_layer = menu_layer_get_layer(s_menu_layer);
+    layer_add_child(window_layer, s_menu_layer_layer);
     
     // Setup menu layer
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
@@ -592,6 +662,14 @@ static void window_load(Window *window) {
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
+    
+    // Add panel layer
+    s_panel_layer = layer_create_with_data(GRect(window_bounds.origin.x,
+                                                 window_bounds.origin.y + window_bounds.size.h - CELL_HEIGHT,
+                                                 window_bounds.size.w,
+                                                 CELL_HEIGHT),
+                                           sizeof(DataModelFromTo));
+    layer_set_update_proc(s_panel_layer, panel_layer_proc);
     
     // Add selection layer
     s_selection_layer = selection_layer_create(GRect(0, status_bar_height, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);
@@ -618,6 +696,7 @@ static void window_load(Window *window) {
 #ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(window_bounds);
     s_inverter_layer_for_first_row = inverter_layer_create(window_bounds);
+    s_inverter_layer_for_first_row_layer = inverter_layer_get_layer(s_inverter_layer_for_first_row);
 #endif
     
     // Setup theme

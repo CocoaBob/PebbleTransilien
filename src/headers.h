@@ -28,7 +28,6 @@
 
 #include "message/app_message.h"
 
-#include "windows/edit_favorite_window.h"
 #include "windows/main_menu_window.h"
 #include "windows/next_trains_window.h"
 #include "windows/search_station_window.h"

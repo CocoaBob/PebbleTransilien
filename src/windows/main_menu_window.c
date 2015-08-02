@@ -62,70 +62,6 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
 
 // MARK: Drawing
 
-static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
-                                 GColor text_color,
-#ifdef PBL_COLOR
-                                 bool is_highlighed,
-#endif
-                                 StationIndex idx_from, StationIndex idx_to) {
-    graphics_context_set_text_color(ctx, text_color);
-    GRect bounds = layer_get_bounds(cell_layer);
-    bool is_from_to = (idx_to != STATION_NON);
-    
-    // Draw left icon
-    GRect frame_icon = GRect(CELL_MARGIN,
-                             (CELL_HEIGHT - FROM_TO_ICON_HEIGHT) / 2,
-                             FROM_TO_ICON_WIDTH,
-                             is_from_to?FROM_TO_ICON_HEIGHT:FROM_TO_ICON_WIDTH);
-#ifdef PBL_COLOR
-    if (is_from_to) {
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
-    } else {
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-    }
-#else
-    if (is_from_to) {
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
-    } else {
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-    }
-#endif
-    
-    // Draw lines
-    char *str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-    stations_get_name(idx_from, str_from, STATION_NAME_MAX_LENGTH);
-
-    GRect frame_line_1 = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
-                               TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
-                               bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN * 3,
-                               CELL_HEIGHT_2);
-    if (is_from_to) {
-        draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
-        
-        GRect frame_line_2 = frame_line_1;
-        frame_line_2.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
-        
-        char *str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-        stations_get_name(idx_to, str_to, STATION_NAME_MAX_LENGTH);
-
-        draw_text(ctx, str_to, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
-        
-        free(str_to);
-    } else {
-        frame_line_1.size.h = bounds.size.h;
-        GSize text_size = graphics_text_layout_get_content_size(str_from,
-                                                                fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
-                                                                frame_line_1,
-                                                                GTextOverflowModeTrailingEllipsis,
-                                                                GTextAlignmentLeft);
-        frame_line_1.size.h = text_size.h;
-        
-        draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
-    }
-    
-    free(str_from);
-}
-
 // MARK: Action list callbacks
 
 static GColor action_list_get_bar_color(void) {
@@ -230,12 +166,12 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     uint16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
-        draw_menu_layer_cell(ctx, cell_layer,
-                             text_color,
+        draw_from_to_layer(ctx, cell_layer,
+                           favorite,
 #ifdef PBL_COLOR
-                             is_highlighed,
+                           is_highlighed,
 #endif
-                             favorite.from, favorite.to);
+                           text_color);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
             menu_cell_basic_draw(ctx, cell_layer, "Nearby...", _("Based on location"), NULL);
