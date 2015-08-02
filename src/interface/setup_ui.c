@@ -35,7 +35,8 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
     graphics_draw_line(ctx, GPoint(140, 6), GPoint(140, 9));
     
     BatteryChargeState state = battery_state_service_peek();
-    int width = (int)(float)(((float)state.charge_percent / 100.0F) * 10.0F);
+//    int width = (int)(float)(((float)state.charge_percent / 100.0F) * 10.0F);
+    int width = state.charge_percent / 10; // Avoid using float which will include the floating point library
     graphics_context_set_fill_color(ctx, fg_color);
     graphics_fill_rect(ctx, GRect(128, 6, width, 4), 0, GCornerNone);
 #endif
