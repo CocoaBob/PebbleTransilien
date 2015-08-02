@@ -131,7 +131,7 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     
     // Draw border
     graphics_context_set_stroke_color(ctx, curr_fg_color());
-    graphics_draw_round_rect(ctx, GRect(1, 1, bounds.size.w - 2, bounds.size.h - 1), 3);
+    graphics_draw_round_rect(ctx, GRect(1, 1, bounds.size.w - 2, bounds.size.h - 2), 5);
     
     // Draw stations
     DataModelFromTo *from_to = layer_get_data(layer);
@@ -231,6 +231,14 @@ static void panel_update(DataModelFromTo i_from_to) {
     } else {
         layer_mark_dirty(s_panel_layer);
         panel_show();
+    }
+}
+
+static void panel_update_with_menu_layer_selection() {
+    if (s_from_to.from == STATION_NON && s_from_to.to == STATION_NON) {
+        MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+        StationIndex station_index = current_search_result_at_index(selected_index.row);
+        panel_update((DataModelFromTo){station_index, STATION_NON});
     }
 }
 
@@ -479,7 +487,7 @@ static void move_focus_to_menu_layer() {
 #endif
     
     // Display the selected station
-    panel_update(s_from_to);
+    panel_update_with_menu_layer_selection();
 }
 
 // MARK: Selection layer callbacks
@@ -636,10 +644,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
 }
 
 static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
-    if (s_from_to.from == STATION_NON && s_from_to.to == STATION_NON) {
-        StationIndex station_index = current_search_result_at_index(new_index.row);
-        panel_update((DataModelFromTo){station_index, STATION_NON});
-    }
+    panel_update_with_menu_layer_selection();
 }
 
 static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
@@ -709,7 +714,6 @@ static void window_load(Window *window) {
                                                  CELL_HEIGHT),
                                            sizeof(DataModelFromTo));
     layer_set_update_proc(s_panel_layer, panel_layer_proc);
-    panel_update(s_from_to);
     
     // Add selection layer
     s_selection_layer = selection_layer_create(GRect(0, status_bar_height, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);
@@ -782,6 +786,7 @@ static void window_disappear(Window *window) {
 // MARK: Entry point
 
 void push_search_train_window(StationIndex from, StationIndex to, bool animated) {
+    // Show window
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
@@ -798,6 +803,8 @@ void push_search_train_window(StationIndex from, StationIndex to, bool animated)
     reset_search_results();
     s_from_to.from = from;
     s_from_to.to = to;
+    panel_update(s_from_to);
     
+    // Focus the selection layer
     move_focus_to_selection_layer();
 }
