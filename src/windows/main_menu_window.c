@@ -85,9 +85,9 @@ static char* action_list_get_title_callback(size_t index) {
         case MAIN_MENU_ACTIONS_MOVE_UP:
             return "Move up";
         case MAIN_MENU_ACTIONS_EDIT:
-            return "Edit";
+            return "Edit Favorite";
         case MAIN_MENU_ACTIONS_DELETE:
-            return "Delete";
+            return "Delete Favorite";
         default:
             return "";
     }

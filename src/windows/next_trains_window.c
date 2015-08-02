@@ -177,7 +177,7 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case NEXT_TRAINS_ACTIONS_FAV:
-            return "Favorite";
+            return "Set Favorite";
         default:
             return "";
     }

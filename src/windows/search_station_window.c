@@ -117,6 +117,7 @@ static void reset_search_results() {
             s_search_results[i].search_results[result] = STATION_NON;
         }
     }
+    menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, 0), MenuRowAlignTop, false);
 }
 
 // MARK: Drawing
@@ -124,23 +125,21 @@ static void reset_search_results() {
 static void panel_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     
-    // Draw separator
-    graphics_context_set_stroke_color(ctx, curr_fg_color());
-    graphics_draw_line(ctx, GPoint(0, 1), GPoint(bounds.size.w, 1));
-    
     // Draw background
     graphics_context_set_fill_color(ctx, curr_bg_color());
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     
+    // Draw border
+    graphics_context_set_stroke_color(ctx, curr_fg_color());
+    graphics_draw_round_rect(ctx, GRect(1, 1, bounds.size.w - 2, bounds.size.h - 1), 3);
+    
     // Draw stations
     DataModelFromTo *from_to = layer_get_data(layer);
-    
 #ifdef PBL_COLOR
     bool is_dark_theme = status_is_dark_theme();
-    GColor text_color = is_dark_theme?curr_fg_color():curr_bg_color();
-#else
-    GColor text_color = curr_fg_color();
 #endif
+    GColor text_color = curr_fg_color();
+    
     draw_from_to_layer(ctx,
                        layer,
                        *from_to,
@@ -217,8 +216,22 @@ static void panel_hide() {
     }
 }
 
-static void panel_update() {
+static void panel_update(DataModelFromTo i_from_to) {
+    DataModelFromTo *from_to = layer_get_data(s_panel_layer);
+    if (i_from_to.from == STATION_NON && i_from_to.to != STATION_NON) {
+        from_to->from = i_from_to.to;
+        from_to->to = i_from_to.from;
+    } else {
+        from_to->from = i_from_to.from;
+        from_to->to = i_from_to.to;
+    }
     
+    if (i_from_to.from == STATION_NON && i_from_to.to == STATION_NON) {
+        panel_hide();
+    } else {
+        layer_mark_dirty(s_panel_layer);
+        panel_show();
+    }
 }
 
 // MARK: Action list callbacks
@@ -270,9 +283,9 @@ static char* action_list_get_title_callback(size_t index) {
             }
         }
         case SEARCH_STATION_ACTIONS_TIMETABLE:
-            return "Timetable";
+            return "Check Timetable";
         case SEARCH_STATION_ACTIONS_FAV:
-            return "Favorite";
+            return "Set Favorite";
         case SEARCH_STATION_ACTIONS_INVERT:
             return "Invert";
         default:
@@ -336,23 +349,31 @@ static bool action_list_is_enabled_callback(size_t index) {
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index) {
-    StationIndex selected_station_index = current_search_result();
     switch (index) {
         case SEARCH_STATION_ACTIONS_FROM:
         {
-            s_from_to.from = selected_station_index;
+            if (focus_is_on_selection_layer()) {
+                s_from_to.from = STATION_NON;
+            } else {
+                s_from_to.from = current_search_result();
+            }
             reset_search_results();
             move_focus_to_selection_layer();
             window_stack_remove(action_list_window, true);
-            
+            panel_update(s_from_to);
             break;
         }
         case SEARCH_STATION_ACTIONS_TO:
         {
-            s_from_to.to = selected_station_index;
+            if (focus_is_on_selection_layer()) {
+                s_from_to.to = STATION_NON;
+            } else {
+                s_from_to.to = current_search_result();
+            }
             reset_search_results();
             move_focus_to_selection_layer();
             window_stack_remove(action_list_window, true);
+            panel_update(s_from_to);
             break;
         }
         case SEARCH_STATION_ACTIONS_TIMETABLE:
@@ -375,7 +396,14 @@ static void action_list_select_callback(Window *action_list_window, size_t index
             break;
         }
         case SEARCH_STATION_ACTIONS_INVERT:
+        {
+            StationIndex from = s_from_to.from;
+            s_from_to.from = s_from_to.to;
+            s_from_to.to = from;
+            panel_update(s_from_to);
+            window_stack_remove(action_list_window, true);
             break;
+        }
         default:
             break;
     }
@@ -449,6 +477,9 @@ static void move_focus_to_menu_layer() {
 #else
     set_menu_layer_activated(s_menu_layer, true, s_inverter_layer_for_first_row);
 #endif
+    
+    // Display the selected station
+    panel_update(s_from_to);
 }
 
 // MARK: Selection layer callbacks
@@ -538,7 +569,7 @@ static void selection_handle_dec(int index, uint8_t clicks, void *context) {
 
 // MARK: Menu layer callbacks
 
-static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
+static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
     size_t return_value = current_search_results_count();
     if (return_value == 0) {
         return 1;
@@ -547,11 +578,11 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
     }
 }
 
-static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     return CELL_HEIGHT_2;
 }
 
-static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
+static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
 #ifdef PBL_BW
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     GRect row_frame = layer_get_frame(cell_layer);
@@ -593,7 +624,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     }
 }
 
-static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     action_list_present_with_callbacks((ActionListCallbacks) {
         .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
         .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
@@ -604,16 +635,23 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     });
 }
 
-static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
+    if (s_from_to.from == STATION_NON && s_from_to.to == STATION_NON) {
+        StationIndex station_index = current_search_result_at_index(new_index.row);
+        panel_update((DataModelFromTo){station_index, STATION_NON});
+    }
+}
+
+static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     return SEPARATOR_HEIGHT;
 }
 
-static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
+static void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
 #ifdef PBL_PLATFORM_BASALT
-static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
+static void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
     GRect frame = layer_get_frame(bg_layer);
     graphics_context_set_fill_color(ctx, curr_bg_color());
     graphics_fill_rect(ctx, frame, 0, GCornerNone);
@@ -651,15 +689,16 @@ static void window_load(Window *window) {
     
     // Setup menu layer
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
-        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
-        .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
-        .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)select_callback,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
+        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
+        .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
+        .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback,
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
-        .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
+        .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
 #endif
     });
     
@@ -670,6 +709,7 @@ static void window_load(Window *window) {
                                                  CELL_HEIGHT),
                                            sizeof(DataModelFromTo));
     layer_set_update_proc(s_panel_layer, panel_layer_proc);
+    panel_update(s_from_to);
     
     // Add selection layer
     s_selection_layer = selection_layer_create(GRect(0, status_bar_height, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);

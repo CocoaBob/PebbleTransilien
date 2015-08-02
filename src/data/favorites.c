@@ -82,7 +82,7 @@ bool fav_add(StationIndex from, StationIndex to) {
     // Copy values
     Favorite *new_fav = &s_favorites[fav_count - 1];
     new_fav->from = from;
-    new_fav->to = to;
+    new_fav->to = (to == from)?STATION_NON:to;
     
     // Save data
     storage_set_favorites_count(fav_count);

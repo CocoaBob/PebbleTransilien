@@ -110,9 +110,9 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case TRAIN_DETAINS_ACTIONS_TIMETABLE:
-            return "Timetable";
+            return "Check Timetable";
         case TRAIN_DETAINS_ACTIONS_FAV:
-            return "Favorite";
+            return "Set Favorite";
         default:
             return "";
     }
@@ -122,7 +122,11 @@ static bool action_list_is_enabled_callback(size_t index) {
     if (index == TRAIN_DETAINS_ACTIONS_FAV) {
         MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
         StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
-        return !fav_exists((Favorite){selected_station_index, STATION_NON});
+        if (s_from_station == selected_station_index) {
+            return !fav_exists((Favorite){selected_station_index, STATION_NON});
+        } else {
+            return !fav_exists((Favorite){s_from_station, selected_station_index});
+        }
     }
     return true;
 }
@@ -136,7 +140,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
             push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON}, true);
             break;
         case TRAIN_DETAINS_ACTIONS_FAV:
-            // TODO:
             fav_add(s_from_station, selected_station_index);
             window_stack_remove(action_list_window, true);
             break;
