@@ -18,6 +18,8 @@
 
 #define SERAPATOR_LAYER_HEIGHT 1
 
+#define PANEL_LAYER_CORNER_RADIUS 8
+
 enum {
     SEARCH_STATION_ACTIONS_FROM = 0,
     SEARCH_STATION_ACTIONS_TO,
@@ -26,6 +28,11 @@ enum {
     SEARCH_STATION_ACTIONS_INVERT,
     SEARCH_STATION_ACTIONS_COUNT
 };
+
+typedef struct PanelData {
+    bool is_active;
+    DataModelFromTo from_to;
+} PanelData;
 
 // MARK: Variables
 
@@ -43,6 +50,8 @@ static Layer *s_status_bar_overlay_layer;
 
 #ifdef PBL_BW
 static InverterLayer *s_inverter_layer;
+static InverterLayer *s_inverter_layer_for_panel_layer; // To highlight the panel layer
+static Layer *s_inverter_layer_layer_for_panel_layer;
 #endif
 
 // Searching
@@ -59,10 +68,10 @@ static DataModelFromTo s_from_to;
 
 // To deactivate the menu layer
 #ifdef PBL_COLOR
-static bool s_menu_layer_is_activated;
+static bool s_menu_layer_is_active;
 #else
 static InverterLayer *s_inverter_layer_for_first_row;
-static Layer *s_inverter_layer_for_first_row_layer;
+static Layer *s_inverter_layer_layer_for_first_row;
 #endif
 
 // MARK: Forward declaration
@@ -71,6 +80,7 @@ static void move_focus_to_selection_layer();
 static void move_focus_to_menu_layer();
 static bool focus_is_on_selection_layer();
 static bool action_list_is_enabled_callback(size_t index);
+static void move_focus_to_panel();
 
 // MARK: Helpers
 
@@ -124,27 +134,53 @@ static void reset_search_results() {
 
 static void panel_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
+    PanelData *layer_data = layer_get_data(s_panel_layer);
     
     // Draw background
     graphics_context_set_fill_color(ctx, curr_bg_color());
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     
+    // Highlight
+    GRect border_frame = GRect(1, 1, bounds.size.w - 2, bounds.size.h - 2);
+    
+#ifdef PBL_COLOR
+    if (layer_data->is_active) {
+        graphics_context_set_fill_color(ctx, GColorCobaltBlue);
+        graphics_fill_rect(ctx, border_frame, PANEL_LAYER_CORNER_RADIUS, GCornersAll);
+    } else {
+        graphics_context_set_fill_color(ctx, GColorDarkGray);
+        graphics_fill_rect(ctx, border_frame, PANEL_LAYER_CORNER_RADIUS, GCornersAll);
+    }
+#else
+    if (layer_data->is_active) {
+        if (!layer_get_window(s_inverter_layer_layer_for_panel_layer)) {
+            layer_set_frame(s_inverter_layer_layer_for_panel_layer, border_frame);
+            layer_add_child(s_panel_layer, s_inverter_layer_layer_for_panel_layer);
+        }
+    } else {
+        if (layer_get_window(s_inverter_layer_layer_for_panel_layer)) {
+            layer_remove_from_parent(s_inverter_layer_layer_for_panel_layer);
+        }
+    }
+#endif
+    
     // Draw border
     graphics_context_set_stroke_color(ctx, curr_fg_color());
-    graphics_draw_round_rect(ctx, GRect(1, 1, bounds.size.w - 2, bounds.size.h - 2), 5);
+    graphics_draw_round_rect(ctx, border_frame, PANEL_LAYER_CORNER_RADIUS);
     
     // Draw stations
-    DataModelFromTo *from_to = layer_get_data(layer);
+    DataModelFromTo *from_to = &layer_data->from_to;
 #ifdef PBL_COLOR
-    bool is_dark_theme = status_is_dark_theme();
+    GColor text_color = GColorWhite;
+#else
+    GColor text_color = GColorBlack;
 #endif
-    GColor text_color = curr_fg_color();
     
     draw_from_to_layer(ctx,
                        layer,
                        *from_to,
 #ifdef PBL_COLOR
-                       is_dark_theme,
+                       true,
 #endif
                        text_color);
 }
@@ -217,7 +253,8 @@ static void panel_hide() {
 }
 
 static void panel_update(DataModelFromTo i_from_to) {
-    DataModelFromTo *from_to = layer_get_data(s_panel_layer);
+    PanelData *layer_data = layer_get_data(s_panel_layer);
+    DataModelFromTo *from_to = &layer_data->from_to;
     if (i_from_to.from == STATION_NON && i_from_to.to != STATION_NON) {
         from_to->from = i_from_to.to;
         from_to->to = i_from_to.from;
@@ -361,9 +398,9 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         case SEARCH_STATION_ACTIONS_FROM:
         {
             if (focus_is_on_selection_layer()) {
-                s_from_to.from = STATION_NON;
+                s_from_to.from = STATION_NON; // Clear
             } else {
-                s_from_to.from = current_search_result();
+                s_from_to.from = current_search_result(); // Set
             }
             reset_search_results();
             move_focus_to_selection_layer();
@@ -374,12 +411,13 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         case SEARCH_STATION_ACTIONS_TO:
         {
             if (focus_is_on_selection_layer()) {
-                s_from_to.to = STATION_NON;
+                s_from_to.to = STATION_NON; // Clear
+                move_focus_to_selection_layer();
             } else {
-                s_from_to.to = current_search_result();
+                s_from_to.to = current_search_result(); // Set
+                move_focus_to_panel();
             }
             reset_search_results();
-            move_focus_to_selection_layer();
             window_stack_remove(action_list_window, true);
             panel_update(s_from_to);
             break;
@@ -418,9 +456,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     }
 }
 
-// MARK: Click Config Provider
-
-static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
+static void show_action_list() {
     action_list_present_with_callbacks((ActionListCallbacks) {
         .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
         .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
@@ -431,64 +467,127 @@ static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
     });
 }
 
-static void click_config_provider_for_selection_layer(void *context) {
-    s_last_ccp(context);
-    window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler, NULL);
+// MARK: Click Config Provider
+
+// Selection layer
+static void long_select_handler_for_selection_layer(ClickRecognizerRef recognizer, void *context) {
+    if (current_search_results_count() > 0) {
+        move_focus_to_menu_layer();
+    } else if (panel_is_visible()) {
+        move_focus_to_panel();
+    }
 }
 
-static void button_back_handler(ClickRecognizerRef recognizer, void *context) {
+static void click_config_provider_for_selection_layer(void *context) {
+    s_last_ccp(context);
+    window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler_for_selection_layer, NULL);
+}
+
+// Menu layer
+static void button_back_handler_for_menu_layer(ClickRecognizerRef recognizer, void *context) {
     move_focus_to_selection_layer();
 }
 
 static void click_config_provider_for_menu_layer(void *context) {
     s_last_ccp(context);
-    window_single_click_subscribe(BUTTON_ID_BACK, button_back_handler);
+    window_single_click_subscribe(BUTTON_ID_BACK, button_back_handler_for_menu_layer);
+}
+
+// Panel layer
+static void button_back_handler_for_panel_layer(ClickRecognizerRef recognizer, void *context) {
+    if (current_search_results_count() > 0) {
+        move_focus_to_menu_layer();
+    } else {
+        move_focus_to_selection_layer();
+    }
+}
+
+static void button_select_handler_for_panel_layer(ClickRecognizerRef recognizer, void *context) {
+    show_action_list();
+}
+
+static void click_config_provider_for_panel_layer(void *context) {
+    window_single_click_subscribe(BUTTON_ID_BACK, button_back_handler_for_panel_layer);
+    window_single_click_subscribe(BUTTON_ID_UP, button_back_handler_for_panel_layer);
+    window_single_click_subscribe(BUTTON_ID_DOWN, button_select_handler_for_panel_layer);
+    window_single_click_subscribe(BUTTON_ID_SELECT, button_select_handler_for_panel_layer);
 }
 
 // MARK: Move focus
 
 static bool focus_is_on_selection_layer() {
 #ifdef PBL_COLOR
-    return !s_menu_layer_is_activated;
+    return !s_menu_layer_is_active;
 #else
-    return layer_get_window(s_inverter_layer_for_first_row_layer) != NULL;
+    return layer_get_window(s_inverter_layer_layer_for_first_row) != NULL;
 #endif
 }
 
+static void search_selection_layer_set_active(bool is_active) {
+    selection_layer_set_active(s_selection_layer, is_active);
+    
+    if (is_active) {
+        // Display departure & destination
+        panel_update(s_from_to);
+    }
+}
+
+static void menu_layer_set_active(bool is_active) {
+#ifdef PBL_COLOR
+    s_menu_layer_is_active = is_active;
+    set_menu_layer_activated(s_menu_layer, is_active);
+#else
+    set_menu_layer_activated(s_menu_layer, is_active, s_inverter_layer_for_first_row);
+#endif
+    
+    if (is_active) {
+        // Display selected station if departure & destination are STATION_NON
+        panel_update_with_menu_layer_selection();
+    }
+}
+
+
+static void panel_layer_set_active(bool is_active) {
+    PanelData *layer_data = layer_get_data(s_panel_layer);
+    layer_data->is_active = is_active;
+    layer_mark_dirty(s_panel_layer);
+}
+
 static void move_focus_to_selection_layer() {
-    selection_layer_set_active(s_selection_layer, true);
+    search_selection_layer_set_active(true);
+    
+    menu_layer_set_active(false);
+    
+    panel_layer_set_active(false);
     
     // Setup Click Config Providers
     selection_layer_set_click_config_onto_window(s_selection_layer, s_window);
     s_last_ccp = window_get_click_config_provider(s_window);
     window_set_click_config_provider_with_context(s_window, click_config_provider_for_selection_layer, s_selection_layer);
-    
-    // Deactivate the menu layer
-#ifdef PBL_COLOR
-    s_menu_layer_is_activated = false;
-    set_menu_layer_activated(s_menu_layer, false);
-#else
-    set_menu_layer_activated(s_menu_layer, false, s_inverter_layer_for_first_row);
-#endif
 }
 
 static void move_focus_to_menu_layer() {
-    selection_layer_set_active(s_selection_layer, false);
+    search_selection_layer_set_active(false);
+    
+    menu_layer_set_active(true);
+    
+    panel_layer_set_active(false);
     
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(s_menu_layer, s_window);
     s_last_ccp = window_get_click_config_provider(s_window);
     window_set_click_config_provider_with_context(s_window, click_config_provider_for_menu_layer, s_menu_layer);
+}
+
+static void move_focus_to_panel() {
+    search_selection_layer_set_active(false);
     
-#ifdef PBL_COLOR
-    s_menu_layer_is_activated = true;
-    set_menu_layer_activated(s_menu_layer, true);
-#else
-    set_menu_layer_activated(s_menu_layer, true, s_inverter_layer_for_first_row);
-#endif
+    menu_layer_set_active(false);
     
-    // Display the selected station
-    panel_update_with_menu_layer_selection();
+    panel_layer_set_active(true);
+    
+    // Setup Click Config Providers
+    window_set_click_config_provider_with_context(s_window, click_config_provider_for_panel_layer, NULL);
 }
 
 // MARK: Selection layer callbacks
@@ -511,9 +610,14 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
         }
     } else if (is_forward) {
         // If no result for the last index, and the value of current index (old_index) is empty
-        // Forbid to forward, because we have nothing to select in the list
         if (current_search_results_count() == 0 && !value_is_valid(s_search_string[old_index])) {
-            *new_index = old_index;
+            if (panel_is_visible()) {
+                // Move focus to panel, to confirm the favorite
+                move_focus_to_panel();
+            } else {
+                // Forbid to forward, because we have nothing to select in the list
+                *new_index = old_index;
+            }
         }
         // If it's the last index
         else if (old_index == SELECTION_LAYER_CELL_COUNT - 1 ||
@@ -597,13 +701,13 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     GRect row_frame = layer_get_frame(cell_layer);
     if (focus_is_on_selection_layer() && // Need to hide the highlighted row
         menu_index_compare(cell_index, &selected_index) == 0) { // It's the highlighted row
-        layer_set_frame(s_inverter_layer_for_first_row_layer, row_frame);
+        layer_set_frame(s_inverter_layer_layer_for_first_row, row_frame);
     }
 #endif
 
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    bool is_selected = s_menu_layer_is_activated?(menu_index_compare(&selected_index, cell_index) == 0):false;
+    bool is_selected = s_menu_layer_is_active?(menu_index_compare(&selected_index, cell_index) == 0):false;
     bool is_dark_theme = status_is_dark_theme();
     bool is_highlighed = is_dark_theme || is_selected;
     GColor text_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
@@ -634,14 +738,15 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 }
 
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    action_list_present_with_callbacks((ActionListCallbacks) {
-        .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
-        .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
-        .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
-        .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
-        .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
-        .select_click = (ActionListSelectCallback)action_list_select_callback
-    });
+    show_action_list();
+}
+
+static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+    if (panel_is_visible()) {
+        move_focus_to_panel();
+    } else {
+        show_action_list();
+    }
 }
 
 static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
@@ -699,6 +804,7 @@ static void window_load(Window *window) {
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
+        .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback,
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback
@@ -713,7 +819,7 @@ static void window_load(Window *window) {
                                                  window_bounds.origin.y + window_bounds.size.h - CELL_HEIGHT,
                                                  window_bounds.size.w,
                                                  CELL_HEIGHT),
-                                           sizeof(DataModelFromTo));
+                                           sizeof(PanelData));
     layer_set_update_proc(s_panel_layer, panel_layer_proc);
     
     // Add selection layer
@@ -737,11 +843,13 @@ static void window_load(Window *window) {
     });
     layer_add_child(window_layer, s_selection_layer);
     
-    // Add inverter layer for Aplite
+    // Prepare inverter layers for Aplite
 #ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(window_bounds);
     s_inverter_layer_for_first_row = inverter_layer_create(window_bounds);
-    s_inverter_layer_for_first_row_layer = inverter_layer_get_layer(s_inverter_layer_for_first_row);
+    s_inverter_layer_layer_for_first_row = inverter_layer_get_layer(s_inverter_layer_for_first_row);
+    s_inverter_layer_for_panel_layer = inverter_layer_create(window_bounds);
+    s_inverter_layer_layer_for_panel_layer = inverter_layer_get_layer(s_inverter_layer_for_panel_layer);
 #endif
     
     // Setup theme
@@ -769,6 +877,7 @@ static void window_unload(Window *window) {
 #ifdef PBL_BW
     inverter_layer_destroy(s_inverter_layer);
     inverter_layer_destroy(s_inverter_layer_for_first_row);
+    inverter_layer_destroy(s_inverter_layer_for_panel_layer);
 #endif
 }
 
