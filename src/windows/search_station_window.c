@@ -18,8 +18,6 @@
 
 #define SERAPATOR_LAYER_HEIGHT 1
 
-#define PANEL_LAYER_CORNER_RADIUS 8
-
 enum {
     SEARCH_STATION_ACTIONS_FROM = 0,
     SEARCH_STATION_ACTIONS_TO,
@@ -136,25 +134,26 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     PanelData *layer_data = layer_get_data(s_panel_layer);
     
-    // Draw background
-    graphics_context_set_fill_color(ctx, curr_bg_color());
-    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-    
-    // Highlight
-    GRect border_frame = GRect(1, 1, bounds.size.w - 2, bounds.size.h - 2);
-    
+    // Background or Highlight
 #ifdef PBL_COLOR
     if (layer_data->is_active) {
         graphics_context_set_fill_color(ctx, GColorCobaltBlue);
-        graphics_fill_rect(ctx, border_frame, PANEL_LAYER_CORNER_RADIUS, GCornersAll);
+        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+        graphics_context_set_stroke_color(ctx, GColorWhite);
+        graphics_draw_rect(ctx, GRect(bounds.origin.x, bounds.origin.y + 1, bounds.size.w, bounds.size.h - 1));
     } else {
         graphics_context_set_fill_color(ctx, GColorDarkGray);
-        graphics_fill_rect(ctx, border_frame, PANEL_LAYER_CORNER_RADIUS, GCornersAll);
+        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     }
+    // Separator
+    graphics_context_set_stroke_color(ctx, curr_fg_color());
+    graphics_draw_line(ctx, GPoint(0, 0), GPoint(bounds.size.w, 0));
 #else
     if (layer_data->is_active) {
+        graphics_context_set_stroke_color(ctx, GColorBlack);
+        graphics_draw_rect(ctx, GRect(bounds.origin.x, bounds.origin.y + 1, bounds.size.w, bounds.size.h - 1));
         if (!layer_get_window(s_inverter_layer_layer_for_panel_layer)) {
-            layer_set_frame(s_inverter_layer_layer_for_panel_layer, border_frame);
+            layer_set_frame(s_inverter_layer_layer_for_panel_layer, bounds);
             layer_add_child(s_panel_layer, s_inverter_layer_layer_for_panel_layer);
         }
     } else {
@@ -163,10 +162,6 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
         }
     }
 #endif
-    
-    // Draw border
-    graphics_context_set_stroke_color(ctx, curr_fg_color());
-    graphics_draw_round_rect(ctx, border_frame, PANEL_LAYER_CORNER_RADIUS);
     
     // Draw stations
     DataModelFromTo *from_to = &layer_data->from_to;
