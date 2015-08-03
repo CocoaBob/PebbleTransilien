@@ -71,9 +71,6 @@ function sendAppMessageForNextTrains(responseText) {
         
         var itemData = [];
         
-        // Train number
-        var trainNumber = nextTrainDict["trainNumber"];
-        itemData = itemData.concat(str2bin(trainNumber));
         // Train mission code
         var trainMissionCode = nextTrainDict["trainMissionCode"];
         itemData = itemData.concat(str2bin(trainMissionCode));
@@ -92,13 +89,16 @@ function sendAppMessageForNextTrains(responseText) {
         var trainLane = nextTrainDict["trainLane"];
         var trainDock = nextTrainDict["trainDock"];
         var trainPlatform = (trainLane != null)?trainLane:((trainDock != null)?trainDock:"");
-        itemData = itemData.concat(str2bin(trainPlatform));
+        itemData = itemData.concat(str2bin(trainPlatform.substr(0,2)));
         // Train terminus
         var trainTerminus = nextTrainDict["trainTerminus"];
         trainTerminus = stationCode2Index(trainTerminus);
         trainTerminus = int162bin(trainTerminus)
         trainTerminus = makeCString(trainTerminus);
         itemData = itemData.concat(trainTerminus);
+        // Train number
+        var trainNumber = nextTrainDict["trainNumber"];
+        itemData = itemData.concat(str2bin(trainNumber));
         
         message[+payloadKey + +index] = itemData;
     }
@@ -125,7 +125,11 @@ function requestNextTrains(from, to) {
 }
 
 function sendAppMessageForTrainDetails(responseText) {
-    var dataArray = JSON.parse(responseText)[0]["data"];
+    var parseResult = JSON.parse(responseText)[0];
+    var dataArray = parseResult["data"];
+    if (dataArray == null) {
+        // TODO: Failed
+    }
     var payloadLength = dataArray.length;
     var message = {
         "MESSAGE_KEY_RESPONSE_TYPE": 1,
@@ -139,15 +143,17 @@ function sendAppMessageForTrainDetails(responseText) {
         
         // Time
         var time = nextTrainDict["time"];
-        time = parseTrainHour(time);
-        if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
-            time = time.getTime() / 1000;
-        } else {
-            time = time.getTime() / 1000 - time.getTimezoneOffset() * 60;
+        if (time.length > 4) {
+            time = parseTrainHour(time);
+            if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
+                time = time.getTime() / 1000;
+            } else {
+                time = time.getTime() / 1000 - time.getTimezoneOffset() * 60;
+            }
+            time = int322bin(time);
+            time = makeCString(time);
+            itemData = itemData.concat(time);
         }
-        time = int322bin(time);
-        time = makeCString(time);
-        itemData = itemData.concat(time);
         
         // Station
         var station = nextTrainDict["codeGare"];
@@ -188,7 +194,6 @@ Pebble.addEventListener("ready",
 // Called when incoming message from the Pebble is received
 Pebble.addEventListener("appmessage",
                         function(e) {
-//                        console.log("Received \"appmessage\", payload:\n" + JSON.stringify(e.payload));
                         if (!e.payload) return null;
                         if (e.payload.MESSAGE_KEY_REQUEST_TYPE == 0) { // Next trains
                             var code_from = e.payload.MESSAGE_KEY_REQUEST_CODE_FROM;

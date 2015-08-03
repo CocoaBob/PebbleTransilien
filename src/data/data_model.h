@@ -19,14 +19,14 @@ typedef struct DataModelFromTo {
 
 typedef DataModelFromTo Favorite;
 
-#define TRAIN_NUMBER_LENGTH 6
+#define TRAIN_NUMBER_LENGTH 24
 
 typedef struct DataModelNextTrain {
-    char number[TRAIN_NUMBER_LENGTH];   // Train number, e.g. "133871"
     char code[5];                       // Train mission code, null-terminated string, e.g. "POBI"
     time_t hour;                        // Train hour, 8 Bytes unsigned integer, seconds since January 1st 1970, e.g. "1437738167"
     char platform[3];                   // Train dock or Train lane, null-terminated string, e.g. "C"
-    StationIndex terminus;                    // Train terminus station index, 2 Bytes unsigned integer, e.g. 354 (PSL: Paris Saint-Lazare)
+    StationIndex terminus;              // Train terminus station index, 2 Bytes unsigned integer, e.g. 354 (PSL: Paris Saint-Lazare)
+    char number[TRAIN_NUMBER_LENGTH];   // Train number, e.g. "133871" or "RATP-ZEMA-150803"
 } DataModelNextTrain;
 
 typedef struct DataModelTrainDetail {

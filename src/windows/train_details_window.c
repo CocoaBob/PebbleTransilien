@@ -169,15 +169,16 @@ static void request_train_details() {
     
     // Prepare parameters
     DictionaryIterator parameters;
+    size_t train_number_length = strlen(s_train_number);
     
     size_t tuple_count = 2;
-    uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), TRAIN_NUMBER_LENGTH);
+    uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), train_number_length);
     uint8_t *dict_buffer = malloc(dict_size);
     dict_write_begin(&parameters, dict_buffer, dict_size);
     
     dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_TRAIN_DETAILS);
-    dict_write_data(&parameters, MESSAGE_KEY_REQUEST_TRAIN_NUMBER, (uint8_t *)s_train_number, TRAIN_NUMBER_LENGTH);
-    
+    dict_write_data(&parameters, MESSAGE_KEY_REQUEST_TRAIN_NUMBER, (uint8_t *)s_train_number, train_number_length);
+
     dict_write_end(&parameters);
     
     // Send message
@@ -418,7 +419,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_train_details_window(char train_number[7], StationIndex from_station, bool animated) {
+void push_train_details_window(char* train_number, StationIndex from_station, bool animated) {
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {

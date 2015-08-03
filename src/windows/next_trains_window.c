@@ -134,23 +134,6 @@ static bool reverse_from_to() {
     }
 }
 
-static size_t max_data_length(size_t data_index) {
-    switch (data_index) {
-        case NEXT_TRAIN_KEY_NUMBER:
-            return TRAIN_NUMBER_LENGTH;
-        case NEXT_TRAIN_KEY_CODE:
-            return 5;
-        case NEXT_TRAIN_KEY_HOUR:
-            return 4;
-        case NEXT_TRAIN_KEY_PLATFORM:
-            return 3;
-        case NEXT_TRAIN_KEY_TERMINUS:
-            return 2;
-        default:
-            return 0;
-    }
-}
-
 // MARK: Action list callbacks
 
 static GColor action_list_get_bar_color(void) {
@@ -242,11 +225,8 @@ static void message_succeeded_callback(DictionaryIterator *received) {
             size_t offset = str_length + 1;
             for (size_t data_index = 0; data_index < NEXT_TRAIN_KEY_COUNT && size_left > 0; ++data_index) {
                 switch (data_index) {
-                    case NEXT_TRAIN_KEY_NUMBER:
-                        strncpy(s_next_trains_list[index].number, (char *)data, max_data_length(data_index));
-                        break;
                     case NEXT_TRAIN_KEY_CODE:
-                        strncpy(s_next_trains_list[index].code, (char *)data, max_data_length(data_index));
+                        strncpy(s_next_trains_list[index].code, (char *)data, 5);
                         break;
                     case NEXT_TRAIN_KEY_HOUR:
                         if (size_left >= 4) {
@@ -254,12 +234,19 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                         }
                         break;
                     case NEXT_TRAIN_KEY_PLATFORM:
-                        strncpy(s_next_trains_list[index].platform, (char *)data, max_data_length(data_index));
+                        strncpy(s_next_trains_list[index].platform, (char *)data, 3);
                         break;
                     case NEXT_TRAIN_KEY_TERMINUS:
                         if (size_left >= 2) {
                             s_next_trains_list[index].terminus = (data[0] << 8) + data[1];
                         }
+                        break;
+                    case NEXT_TRAIN_KEY_NUMBER:
+                    {
+                        size_t number_length = (size_left >= TRAIN_NUMBER_LENGTH)?TRAIN_NUMBER_LENGTH-1:size_left;
+                        strncpy(s_next_trains_list[index].number, (char *)data, number_length);
+                        s_next_trains_list[index].number[number_length] = '\0';
+                    }
                         break;
                     default:
                         break;
