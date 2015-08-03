@@ -10,7 +10,7 @@
 #include "headers.h"
 
 enum {
-    MAIN_MENU_SECTION_FAV = 0,
+    MAIN_MENU_SECTION_FAV,
     MAIN_MENU_SECTION_SEARCH,
     MAIN_MENU_SECTION_SETTING,
     MAIN_MENU_SECTION_ABOUT,
@@ -18,25 +18,25 @@ enum {
 };
 
 enum {
-    MAIN_MENU_SECTION_SEARCH_ROW_NEARBY = 0,
+//    MAIN_MENU_SECTION_SEARCH_ROW_NEARBY = 0,
     MAIN_MENU_SECTION_SEARCH_ROW_NAME,
     MAIN_MENU_SECTION_SEARCH_ROW_COUNT
 };
 
 enum {
-    MAIN_MENU_SECTION_SETTING_ROW_THEME = 0,
+    MAIN_MENU_SECTION_SETTING_ROW_THEME,
     MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE,
     MAIN_MENU_SECTION_SETTING_ROW_COUNT
 };
 
 enum {
-    MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR = 0,
+    MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR,
     MAIN_MENU_SECTION_ABOUT_ROW_VERSION,
     MAIN_MENU_SECTION_ABOUT_ROW_COUNT
 };
 
 enum {
-    MAIN_MENU_ACTIONS_MOVE_UP = 0,
+    MAIN_MENU_ACTIONS_MOVE_UP,
     MAIN_MENU_ACTIONS_EDIT,
     MAIN_MENU_ACTIONS_DELETE,
     MAIN_MENU_ACTIONS_COUNT
@@ -182,9 +182,9 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #endif
                            text_color);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
-        if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
+        /*if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
             menu_cell_basic_draw(ctx, cell_layer, "Nearby...", _("Based on location"), NULL);
-        } else if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
+        } else */if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
             menu_cell_basic_draw(ctx, cell_layer, "Alphabetic...", _("By choosing letters"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_SETTING) {
@@ -233,6 +233,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
             push_search_train_window(STATION_NON, STATION_NON, true);
+            window_stack_remove(s_window, false);
         } else {
             // TODO: Nearby stations
         }

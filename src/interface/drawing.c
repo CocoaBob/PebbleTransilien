@@ -22,7 +22,7 @@ void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title
     GRect bounds = layer_get_bounds(cell_layer);
     GRect frame = GRect(2,
                         TEXT_Y_OFFSET,
-                        bounds.size.w - CELL_MARGIN * 2,
+                        bounds.size.w - CELL_MARGIN_2,
                         bounds.size.h);
     
     graphics_context_set_text_color(ctx, color);
@@ -58,7 +58,7 @@ void draw_centered_title(GContext* ctx, const Layer *cell_layer, const char *tit
     GRect bounds = layer_get_bounds(cell_layer);
     GRect frame = GRect(CELL_MARGIN,
                         (bounds.size.h - 20) / 2 + TEXT_Y_OFFSET,
-                        bounds.size.w - CELL_MARGIN * 2,
+                        bounds.size.w - CELL_MARGIN_2,
                         18);
     graphics_context_set_text_color(ctx, color);
     draw_text(ctx, title, font_id?font_id:FONT_KEY_GOTHIC_18, frame, GTextAlignmentCenter);
@@ -102,7 +102,7 @@ void draw_from_to(GContext* ctx,
     
     GRect frame_line_1 = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
                                TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
-                               bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN * 3,
+                               bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3,
                                CELL_HEIGHT_2);
     if (is_from_to) {
         draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
@@ -154,7 +154,7 @@ void draw_station(GContext *ctx, Layer *cell_layer,
 #endif
     
     // Time
-    GRect frame_time = GRect(bounds.size.w,
+    GRect frame_time = GRect(0,
                              TEXT_Y_OFFSET,
                              bounds.size.w,
                              CELL_HEIGHT_2);
@@ -165,7 +165,7 @@ void draw_station(GContext *ctx, Layer *cell_layer,
                                                                 frame_time,
                                                                 GTextOverflowModeTrailingEllipsis,
                                                                 GTextAlignmentRight);
-        frame_time.origin.x -= CELL_MARGIN - time_size.w;
+        frame_time.origin.x = bounds.size.w - CELL_MARGIN - time_size.w;
         frame_time.size.w = time_size.w;
         draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
     }
@@ -173,7 +173,7 @@ void draw_station(GContext *ctx, Layer *cell_layer,
     // Station
     GRect frame_station = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
                                 TEXT_Y_OFFSET,
-                                frame_time.origin.x - CELL_MARGIN * 3 - FROM_TO_ICON_WIDTH,
+                                frame_time.origin.x - CELL_MARGIN_3 - FROM_TO_ICON_WIDTH,
                                 CELL_HEIGHT_2);
     draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
 }

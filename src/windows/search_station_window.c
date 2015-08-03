@@ -561,7 +561,8 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
     if (!is_forward) {
         // Return to the main menu window
         if (old_index == 0) {
-            window_stack_pop(true);
+            window_stack_remove(s_window, true);
+            push_main_menu_window(false);
         }
         // Clear all indexes behind
         else {

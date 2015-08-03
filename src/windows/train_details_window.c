@@ -73,16 +73,21 @@ static char* action_list_get_title_callback(size_t index) {
 }
 
 static bool action_list_is_enabled_callback(size_t index) {
-    if (index == TRAIN_DETAINS_ACTIONS_FAV) {
-        MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-        StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
-        if (s_from_station == selected_station_index) {
-            return !fav_exists((Favorite){selected_station_index, STATION_NON});
-        } else {
-            return !fav_exists((Favorite){s_from_station, selected_station_index});
+    switch (index) {
+        case TRAIN_DETAINS_ACTIONS_FAV:
+        {
+            MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+            StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
+            if (s_from_station == selected_station_index) {
+                return !fav_exists((Favorite){selected_station_index, STATION_NON});
+            } else {
+                return !fav_exists((Favorite){s_from_station, selected_station_index});
+            }
         }
+        case TRAIN_DETAINS_ACTIONS_TIMETABLE:
+        default:
+            return true;
     }
-    return true;
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index) {

@@ -22,7 +22,7 @@ enum {
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
-static ClickConfigProvider s_ccp_of_menu_layer;
+static ClickConfigProvider s_last_ccp;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
@@ -85,7 +85,7 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
     // Terminus
     GRect frame_terminus = GRect(CELL_MARGIN,
                                  CELL_HEIGHT_2 + TEXT_Y_OFFSET + 1,
-                                 bounds.size.w - CELL_MARGIN * 2,
+                                 bounds.size.w - CELL_MARGIN_2,
                                  CELL_HEIGHT_2);
     draw_text(ctx, str_terminus, FONT_KEY_GOTHIC_18, frame_terminus, GTextAlignmentLeft);
     
@@ -198,7 +198,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 
 // MARK: Click Config Provider
 
-static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
+static void long_select_handler_for_menu_layer(ClickRecognizerRef recognizer, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     if (selected_index.section == NEXT_TRAINS_SECTION_INFO) {
         action_list_present_with_callbacks((ActionListCallbacks) {
@@ -213,8 +213,8 @@ static void long_select_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void click_config_provider(void *context) {
-    s_ccp_of_menu_layer(context);
-    window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler, NULL);
+    s_last_ccp(context);
+    window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler_for_menu_layer, NULL);
 }
 
 // MARK: Message Request callbacks
@@ -527,7 +527,7 @@ static void window_load(Window *window) {
     
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
-    s_ccp_of_menu_layer = window_get_click_config_provider(window);
+    s_last_ccp = window_get_click_config_provider(window);
     window_set_click_config_provider_with_context(window, click_config_provider, s_menu_layer);
     
     // Add inverter layer for Aplite
