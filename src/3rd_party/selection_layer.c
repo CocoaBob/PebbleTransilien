@@ -21,14 +21,13 @@
 #define SLIDE_DURATION_MS 107
 #define SLIDE_SETTLE_DURATION_MS 179
 
-#define ANIMATION_IS_ENABLED (!defined(PBL_PLATFORM_APLITE) || defined(ENABLE_ANIMATION_FOR_APLITE))
-
 // Function prototypes
 #if ANIMATION_IS_ENABLED
 static Animation* prv_create_bump_settle_animation(Layer *layer);
 static Animation* prv_create_slide_settle_animation(Layer *layer);
 #endif /* ANIMATION_IS_ENABLED */
 
+#if ANIMATION_IS_ENABLED
 static int prv_get_pixels_for_bump_settle(int anim_percent_complete) {
     if (anim_percent_complete) {
         return SETTLE_HEIGHT_DIFF - ((SETTLE_HEIGHT_DIFF * anim_percent_complete) / 100);
@@ -36,6 +35,7 @@ static int prv_get_pixels_for_bump_settle(int anim_percent_complete) {
         return 0;
     }
 }
+#endif /* ANIMATION_IS_ENABLED */
 
 static int prv_get_font_top_padding(GFont font) {
     if (font == fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD)) {
@@ -72,14 +72,18 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
         }
         
         int y_offset = 0;
+#if ANIMATION_IS_ENABLED
         if (data->selected_cell_idx == i && data->bump_is_upwards) {
             y_offset = -prv_get_pixels_for_bump_settle(data->bump_settle_anim_progress);
         }
+#endif /* ANIMATION_IS_ENABLED */
         
         int height = layer_get_bounds(layer).size.h;
+#if ANIMATION_IS_ENABLED
         if (data->selected_cell_idx == i) {
             height += prv_get_pixels_for_bump_settle(data->bump_settle_anim_progress);
         }
+#endif /* ANIMATION_IS_ENABLED */
         
         const GRect rect = GRect(current_x_offset, y_offset, data->cell_widths[i], height);
         
@@ -231,21 +235,26 @@ static void prv_draw_text(Layer *layer, GContext *ctx) {
             char *text = data->callbacks.get_cell_text(i, data->context);
             if (text) {
                 int height = layer_get_bounds(layer).size.h;
+#if ANIMATION_IS_ENABLED
                 if (data->selected_cell_idx == i) {
                     height += prv_get_pixels_for_bump_settle(data->bump_settle_anim_progress);
                 }
+#endif /* ANIMATION_IS_ENABLED */
                 int y_offset = prv_get_y_offset_which_vertically_centers_font(data->font, height);
-                
+#if ANIMATION_IS_ENABLED
                 if (data->selected_cell_idx == i && data->bump_is_upwards) {
                     y_offset -= prv_get_pixels_for_bump_settle(data->bump_settle_anim_progress);
                 }
+#endif /* ANIMATION_IS_ENABLED */
                 
                 if (data->selected_cell_idx == i) {
+#if ANIMATION_IS_ENABLED
                     int delta = (data->bump_text_anim_progress * prv_get_font_top_padding(data->font)) / 100;
                     if (data->bump_is_upwards) {
                         delta *= -1;
                     }
                     y_offset += delta;
+#endif /* ANIMATION_IS_ENABLED */
                 }
                 
                 GRect rect = GRect(current_x_offset, y_offset, data->cell_widths[i], height);

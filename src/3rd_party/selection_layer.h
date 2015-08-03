@@ -4,6 +4,8 @@
 
 //#define ENABLE_ANIMATION_FOR_APLITE
 
+#define ANIMATION_IS_ENABLED (!defined(PBL_PLATFORM_APLITE) || defined(ENABLE_ANIMATION_FOR_APLITE))
+
 #define MAX_SELECTION_LAYER_CELLS 10
 
 typedef char* (*SelectionLayerGetCellText)(int index, void *context);
@@ -42,21 +44,23 @@ typedef struct SelectionLayerData {
 
   SelectionLayerCallbacks callbacks;
   void *context;
-
+    
   // Animation stuff
-  Animation *value_change_animation;
   bool bump_is_upwards;
+  bool slide_is_forward;
+#if ANIMATION_IS_ENABLED
+  Animation *value_change_animation;
   int bump_text_anim_progress;
   AnimationImplementation bump_text_impl;
   int bump_settle_anim_progress;
   AnimationImplementation bump_settle_anim_impl;
 
   Animation *next_cell_animation;
-  bool slide_is_forward;
   int slide_amin_progress;
   AnimationImplementation slide_amin_impl;
   int slide_settle_anim_progress;
   AnimationImplementation slide_settle_anim_impl;
+#endif /* ANIMATION_IS_ENABLED */
 } SelectionLayerData;
 
 Layer* selection_layer_create(GRect frame, int num_cells);
