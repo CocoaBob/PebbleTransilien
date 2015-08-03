@@ -47,7 +47,6 @@ static MenuLayer *s_menu_layer;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
-static Layer *s_status_bar_overlay_layer;
 #endif
 
 #ifdef PBL_BW
@@ -300,7 +299,7 @@ static void window_load(Window *window) {
     
     // Add status bar
 #ifdef PBL_PLATFORM_BASALT
-    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer, &s_status_bar_overlay_layer);
+    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
 #endif
     
     // Add menu layer
@@ -362,7 +361,6 @@ static void window_unload(Window *window) {
     unload_favorites();
 #ifdef PBL_PLATFORM_BASALT
     layer_destroy(s_status_bar_background_layer);
-    layer_destroy(s_status_bar_overlay_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif
     

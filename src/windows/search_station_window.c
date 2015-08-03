@@ -43,7 +43,6 @@ static ClickConfigProvider s_last_ccp;
 #ifdef PBL_PLATFORM_BASALT
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
-static Layer *s_status_bar_overlay_layer;
 #endif
 
 #ifdef PBL_BW
@@ -692,6 +691,7 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
 #ifdef PBL_BW
+    // Set the frame of s_inverter_layer_layer_for_first_row
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     GRect row_frame = layer_get_frame(cell_layer);
     if (focus_is_on_selection_layer() && // Need to hide the highlighted row
@@ -776,7 +776,7 @@ static void window_load(Window *window) {
     int16_t status_bar_height = 0;
 #ifdef PBL_PLATFORM_BASALT
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
-    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer, &s_status_bar_overlay_layer);
+    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
 #endif
     
     // Add separator between selection layer and menu layer
@@ -865,7 +865,6 @@ static void window_unload(Window *window) {
     
 #ifdef PBL_PLATFORM_BASALT
     layer_destroy(s_status_bar_background_layer);
-    layer_destroy(s_status_bar_overlay_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif
     
