@@ -27,7 +27,7 @@
 #if ANIMATION_IS_ENABLED
 static Animation* prv_create_bump_settle_animation(Layer *layer);
 static Animation* prv_create_slide_settle_animation(Layer *layer);
-#endif
+#endif /* ANIMATION_IS_ENABLED */
 
 static int prv_get_pixels_for_bump_settle(int anim_percent_complete) {
     if (anim_percent_complete) {
@@ -86,12 +86,20 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
 #ifdef PBL_SDK_3
         GColor bg_color = data->inactive_background_color;
         
-        if (data->selected_cell_idx == i && !data->slide_amin_progress) {
+        if (data->selected_cell_idx == i
+#if ANIMATION_IS_ENABLED
+            && !data->slide_amin_progress
+#endif /* ANIMATION_IS_ENABLED */
+            ) {
             bg_color = data->active_background_color;
         }
         graphics_context_set_fill_color(ctx, bg_color);
         graphics_fill_rect(ctx, rect, 1, GCornerNone);
-        if (data->selected_cell_idx == i && !data->slide_amin_progress) {
+        if (data->selected_cell_idx == i
+#if ANIMATION_IS_ENABLED
+            && !data->slide_amin_progress
+#endif /* ANIMATION_IS_ENABLED */
+            ) {
             graphics_context_set_stroke_color(ctx, GColorWhite);
             graphics_draw_rect(ctx, rect);
         }
@@ -99,7 +107,11 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
         graphics_context_set_stroke_color(ctx, GColorBlack);
         graphics_draw_rect(ctx, rect);
         
-        if (data->selected_cell_idx == i && !data->slide_amin_progress){
+        if (data->selected_cell_idx == i
+#if ANIMATION_IS_ENABLED
+            && !data->slide_amin_progress
+#endif /* ANIMATION_IS_ENABLED */
+            ){
             layer_set_frame(inverter_layer_get_layer(data->inverter), rect);
         }
 #endif
@@ -108,6 +120,7 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
     }
 }
 
+#if ANIMATION_IS_ENABLED
 static void prv_draw_slider_slide(Layer *layer, GContext *ctx) {
     SelectionLayerData *data = layer_get_data(layer);
     
@@ -124,6 +137,7 @@ static void prv_draw_slider_slide(Layer *layer, GContext *ctx) {
         starting_x_offset += data->cell_widths[i] + data->cell_padding;
     }
     
+#if ANIMATION_IS_ENABLED
     int next_cell_width = data->cell_widths[data->selected_cell_idx + 1];
     if (!data->slide_is_forward) {
         next_cell_width = data->cell_widths[data->selected_cell_idx - 1];
@@ -134,15 +148,22 @@ static void prv_draw_slider_slide(Layer *layer, GContext *ctx) {
     if (!data->slide_is_forward) {
         current_slide_distance = -current_slide_distance;
     }
-    
     int current_x_offset = starting_x_offset + current_slide_distance;
+#else /* ANIMATION_IS_ENABLED */
+    int current_x_offset = starting_x_offset;
+#endif /* ANIMATION_IS_ENABLED */
+    
     int cur_cell_width = data->cell_widths[data->selected_cell_idx];
+#if ANIMATION_IS_ENABLED
     int total_cell_width_change = next_cell_width - cur_cell_width + data->cell_padding;
     int current_cell_width_change = (total_cell_width_change * (int) data->slide_amin_progress) / 100;
     int current_cell_width = cur_cell_width + current_cell_width_change;
     if (!data->slide_is_forward) {
         current_x_offset -= current_cell_width_change;
     }
+#else /* ANIMATION_IS_ENABLED */
+    int current_cell_width = cur_cell_width;
+#endif /* ANIMATION_IS_ENABLED */
     
     GRect rect = GRect(current_x_offset, 0, current_cell_width, layer_get_bounds(layer).size.h);
     
@@ -197,6 +218,7 @@ static void prv_draw_slider_settle(Layer *layer, GContext *ctx) {
     layer_set_frame(inverter_layer_get_layer(data->inverter), rect);
 #endif
 }
+#endif /* ANIMATION_IS_ENABLED */
 
 static void prv_draw_text(Layer *layer, GContext *ctx) {
 #ifndef PBL_COLOR
@@ -239,20 +261,22 @@ static void prv_draw_text(Layer *layer, GContext *ctx) {
 }
 
 static void prv_draw_selection_layer(Layer *layer, GContext *ctx) {
-    SelectionLayerData *data = layer_get_data(layer);
     prv_draw_cell_backgrounds(layer, ctx);
     
 #ifndef PBL_COLOR
     prv_draw_text(layer, ctx);
 #endif
     
+#if ANIMATION_IS_ENABLED
+    SelectionLayerData *data = layer_get_data(layer);
     if (data->slide_amin_progress) {
         prv_draw_slider_slide(layer, ctx);
     }
     if (data->slide_settle_anim_progress) {
         prv_draw_slider_settle(layer, ctx);
     }
-    
+#endif /* ANIMATION_IS_ENABLED */
+
 #ifdef PBL_COLOR
     prv_draw_text(layer, ctx);
 #endif
@@ -506,10 +530,10 @@ void prv_up_click_handler(ClickRecognizerRef recognizer, void *context) {
             data->bump_is_upwards = true;
 #if ANIMATION_IS_ENABLED
             prv_run_value_change_animation(layer);
-#else
+#else /* ANIMATION_IS_ENABLED */
             prv_did_change_text(data, 1, data->bump_is_upwards);
             layer_mark_dirty(layer);
-#endif
+#endif /* ANIMATION_IS_ENABLED */
         }
     }
 }
@@ -527,10 +551,10 @@ void prv_down_click_handler(ClickRecognizerRef recognizer, void *context) {
             data->bump_is_upwards = false;
 #if ANIMATION_IS_ENABLED
             prv_run_value_change_animation(layer);
-#else
+#else /* ANIMATION_IS_ENABLED */
             prv_did_change_text(data, 1, data->bump_is_upwards);
             layer_mark_dirty(layer);
-#endif
+#endif /* ANIMATION_IS_ENABLED */
         }
     }
 }
@@ -548,7 +572,9 @@ void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
     SelectionLayerData *data = layer_get_data(layer);
     
     if (data->is_active) {
+#if ANIMATION_IS_ENABLED
         animation_unschedule(data->next_cell_animation);
+#endif /* ANIMATION_IS_ENABLED */
         data->slide_is_forward = true;
         prv_update_index_before_animation(data);
         
@@ -558,10 +584,10 @@ void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
         } else {
 #if ANIMATION_IS_ENABLED
             prv_run_slide_animation(layer);
-#else
+#else /* ANIMATION_IS_ENABLED */
             layer_mark_dirty(layer);
             prv_did_change_selection(data);
-#endif
+#endif /* ANIMATION_IS_ENABLED */
         }
     }
 }
@@ -571,16 +597,18 @@ void prv_back_click_handler(ClickRecognizerRef recognizer, void *context) {
     SelectionLayerData *data = layer_get_data(layer);
     
     if (data->is_active) {
+#if ANIMATION_IS_ENABLED
         animation_unschedule(data->next_cell_animation);
+#endif /* ANIMATION_IS_ENABLED */
         data->slide_is_forward = false;
         prv_update_index_before_animation(data);
         
 #if ANIMATION_IS_ENABLED
         prv_run_slide_animation(layer);
-#else
+#else /* ANIMATION_IS_ENABLED */
         layer_mark_dirty(layer);
         prv_did_change_selection(data);
-#endif
+#endif /* ANIMATION_IS_ENABLED */
     }
 }
 
@@ -653,7 +681,9 @@ static void selection_layer_deinit(Layer* layer) {
 void selection_layer_destroy(Layer* layer) {
     SelectionLayerData *data = layer_get_data(layer);
     
+#if ANIMATION_IS_ENABLED
     animation_unschedule_all();
+#endif /* ANIMATION_IS_ENABLED */
     if (data) {
         selection_layer_deinit(layer);
     }
