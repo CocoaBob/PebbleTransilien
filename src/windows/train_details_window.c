@@ -260,8 +260,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #endif
     
     if (s_is_updating) {
-        graphics_context_set_text_color(ctx, text_color);
-        draw_centered_title(ctx, cell_layer, "Loading...");
+        draw_centered_title(ctx, cell_layer, "Loading...", NULL, text_color);
     } else if (s_train_details_list_count > 0) {
         DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
         
@@ -285,8 +284,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         free(str_time);
         free(str_station);
     } else {
-        graphics_context_set_text_color(ctx, text_color);
-        draw_centered_title(ctx, cell_layer, "No train.");
+        draw_centered_title(ctx, cell_layer, "No train.", NULL, text_color);
     }
 }
 
@@ -302,6 +300,11 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
 }
 
 #ifdef PBL_PLATFORM_BASALT
+
+static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+    return 1;
+}
+
 static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
@@ -348,6 +351,7 @@ static void window_load(Window *window) {
         .select_click = (MenuLayerSelectCallback)select_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif

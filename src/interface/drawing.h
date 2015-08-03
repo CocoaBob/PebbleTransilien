@@ -20,7 +20,7 @@ void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color);
 
 void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect);
 
-void draw_centered_title(GContext* ctx, const Layer *cell_layer, const char *title);
+void draw_centered_title(GContext* ctx, const Layer *cell_layer, const char *title, const char *font_id, GColor color);
 
 void draw_from_to(GContext* ctx,
                         const Layer *layer,

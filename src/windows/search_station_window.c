@@ -179,12 +179,6 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
                        text_color);
 }
 
-static void separator_layer_proc(Layer *layer, GContext *ctx) {
-    GRect bounds = layer_get_bounds(layer);
-    graphics_context_set_fill_color(ctx, curr_fg_color());
-    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-}
-
 // MARK: Info Panel
 
 static bool panel_is_visible() {
@@ -701,8 +695,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         // Clean
         free(str_station);
     } else {
-        graphics_context_set_text_color(ctx, text_color);
-        draw_centered_title(ctx, cell_layer, (s_search_results_index >= 0)?"Not found.":"UP/DOWN to input...");
+        draw_centered_title(ctx, cell_layer, (s_search_results_index >= 0)?"Not found.":"Press UP/DOWN", NULL, text_color);
     }
 }
 
@@ -723,6 +716,11 @@ static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, 
 }
 
 #ifdef PBL_PLATFORM_BASALT
+
+static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+    return 1;
+}
+
 static void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
@@ -738,7 +736,7 @@ static void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_l
 
 static void window_load(Window *window) {
     // Window
-    Layer *window_layer = window_get_root_layer(window);
+    Layer *window_layer = window_get_root_layer(s_window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
     
@@ -750,9 +748,10 @@ static void window_load(Window *window) {
 #endif
     
     // Add separator between selection layer and menu layer
-    Layer *separator_layer = layer_create(GRect(0, status_bar_height + SELECTION_LAYER_HEIGHT, window_bounds.size.w, SERAPATOR_LAYER_HEIGHT));
-    layer_set_update_proc(separator_layer, separator_layer_proc);
-    layer_add_child(window_layer, separator_layer);
+    // To save memory, we just change the window background's color
+#ifdef PBL_PLATFORM_BASALT
+    window_set_background_color(s_window, curr_fg_color());
+#endif
     
     // Add menu layer
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
@@ -773,6 +772,7 @@ static void window_load(Window *window) {
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
 #endif

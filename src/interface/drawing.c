@@ -54,13 +54,14 @@ void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect) {
 
 // MARK: Draw cells
 
-void draw_centered_title(GContext* ctx, const Layer *cell_layer, const char *title) {
+void draw_centered_title(GContext* ctx, const Layer *cell_layer, const char *title, const char *font_id, GColor color) {
     GRect bounds = layer_get_bounds(cell_layer);
     GRect frame = GRect(CELL_MARGIN,
                         (bounds.size.h - 20) / 2 + TEXT_Y_OFFSET,
                         bounds.size.w - CELL_MARGIN * 2,
                         18);
-    draw_text(ctx, title, FONT_KEY_GOTHIC_18_BOLD, frame, GTextAlignmentCenter);
+    graphics_context_set_text_color(ctx, color);
+    draw_text(ctx, title, font_id?font_id:FONT_KEY_GOTHIC_18, frame, GTextAlignmentCenter);
 }
 
 // MARK: Draw From To Layer, layer height should be 44

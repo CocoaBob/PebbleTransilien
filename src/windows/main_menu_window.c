@@ -281,6 +281,11 @@ static void select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_i
 }
 
 #ifdef PBL_PLATFORM_BASALT
+
+static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+    return 1;
+}
+
 static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
@@ -328,6 +333,7 @@ static void window_load(Window *window) {
         .select_long_click = (MenuLayerSelectCallback)select_long_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
