@@ -233,7 +233,10 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
             push_search_train_window(STATION_NON, STATION_NON, true);
+#ifdef PBL_PLATFORM_APLITE
+            // Remove main menu window to reduce memory for Aplite.
             window_stack_remove(s_window, false);
+#endif
         } else {
             // TODO: Nearby stations
         }

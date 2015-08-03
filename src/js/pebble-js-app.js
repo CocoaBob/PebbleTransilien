@@ -42,10 +42,10 @@ function parseTrainHour(str) {
                         0,      // Second
                         0);     // Millisecond
     }
-    var now = new Date();
     
     m = str.match(/^(\d{2}):(\d{2})$/);
     if (m) {
+        var now = new Date();
         return new Date(now.getUTCFullYear(),  // Year
                         now.getUTCMonth(),      // Month
                         now.getUTCDate(),      // Day
@@ -55,7 +55,7 @@ function parseTrainHour(str) {
                         0);                     // Millisecond
     }
     
-    return now;
+    return new Date(0);
 }
 
 function sendAppMessageForNextTrains(responseText) {
@@ -143,17 +143,18 @@ function sendAppMessageForTrainDetails(responseText) {
         
         // Time
         var time = nextTrainDict["time"];
-        if (time.length > 4) {
-            time = parseTrainHour(time);
-            if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
-                time = time.getTime() / 1000;
-            } else {
-                time = time.getTime() / 1000 - time.getTimezoneOffset() * 60;
-            }
-            time = int322bin(time);
-            time = makeCString(time);
-            itemData = itemData.concat(time);
+        time = parseTrainHour(time);
+        if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
+            time = time.getTime() / 1000;
+        } else {
+            time = time.getTime() / 1000 - time.getTimezoneOffset() * 60;
         }
+        time = int322bin(time);
+        // Time must be 5 bytes
+        while (time.length < 5) {
+            time.push(0);
+        }
+        itemData = itemData.concat(time);
         
         // Station
         var station = nextTrainDict["codeGare"];

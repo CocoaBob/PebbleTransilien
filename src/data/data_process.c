@@ -10,6 +10,12 @@
 #include "headers.h"
 
 void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relative_to_now) {
+    // 0 means no time value in the response
+    if (timestamp == 0) {
+        o_str = '\0';
+        return;
+    }
+    
     time_t o_time = timestamp;
     size_t offset = 0;
     if (is_relative_to_now) {
