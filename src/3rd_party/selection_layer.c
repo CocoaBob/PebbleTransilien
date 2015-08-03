@@ -21,9 +21,13 @@
 #define SLIDE_DURATION_MS 107
 #define SLIDE_SETTLE_DURATION_MS 179
 
+#define ANIMATION_IS_ENABLED (!defined(PBL_PLATFORM_APLITE) || defined(ENABLE_ANIMATION_FOR_APLITE))
+
 // Function prototypes
+#if ANIMATION_IS_ENABLED
 static Animation* prv_create_bump_settle_animation(Layer *layer);
 static Animation* prv_create_slide_settle_animation(Layer *layer);
+#endif
 
 static int prv_get_pixels_for_bump_settle(int anim_percent_complete) {
     if (anim_percent_complete) {
@@ -255,6 +259,23 @@ static void prv_draw_selection_layer(Layer *layer, GContext *ctx) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+
+static void prv_did_change_text(SelectionLayerData *data, uint8_t num_clicks, bool is_up) {
+    if (is_up) {
+        data->callbacks.increment(data->selected_cell_idx, num_clicks, data->context);
+    } else {
+        data->callbacks.decrement(data->selected_cell_idx, num_clicks, data->context);
+    }
+}
+
+static void prv_did_change_selection(SelectionLayerData *data) {
+    data->callbacks.did_change(data->selected_cell_idx, data->slide_is_forward, data->context);
+}
+
+#if ANIMATION_IS_ENABLED
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 //! Increment / Decrement Animation
 
 //! This animation causes a the active cell to "bump" when the user presses the up button.
@@ -283,11 +304,7 @@ static void prv_bump_text_stopped(Animation *animation, bool finished, void *con
     
     data->bump_text_anim_progress = 0;
     
-    if (data->bump_is_upwards == true) {
-        data->callbacks.increment(data->selected_cell_idx, 1, data->context);
-    } else {
-        data->callbacks.decrement(data->selected_cell_idx, 1, data->context);
-    }
+    prv_did_change_text(data, 1, data->bump_is_upwards);
     
     animation_destroy(animation);
     
@@ -394,7 +411,7 @@ static void prv_slide_stopped(Animation *animation, bool finished, void *context
     
     data->slide_amin_progress = 0;
     
-    data->callbacks.did_change(data->selected_cell_idx, data->slide_is_forward, data->context);
+    prv_did_change_selection(data);
     
     animation_destroy(animation);
     
@@ -471,6 +488,8 @@ static void prv_run_slide_animation(Layer *layer) {
 #endif
 }
 
+#endif /* ANIMATION_IS_ENABLED */
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //! Click handlers
 
@@ -481,11 +500,16 @@ void prv_up_click_handler(ClickRecognizerRef recognizer, void *context) {
     if (data->is_active) {
         if (click_recognizer_is_repeating(recognizer)) {
             // Don't animate if the button is being held down. Just update the text
-            data->callbacks.increment(data->selected_cell_idx, click_number_of_clicks_counted(recognizer), data->context);
+            prv_did_change_text(data, click_number_of_clicks_counted(recognizer), true);
             layer_mark_dirty(layer);
         } else {
             data->bump_is_upwards = true;
+#if ANIMATION_IS_ENABLED
             prv_run_value_change_animation(layer);
+#else
+            prv_did_change_text(data, 1, data->bump_is_upwards);
+            layer_mark_dirty(layer);
+#endif
         }
     }
 }
@@ -497,11 +521,16 @@ void prv_down_click_handler(ClickRecognizerRef recognizer, void *context) {
     if (data->is_active) {
         if (click_recognizer_is_repeating(recognizer)) {
             // Don't animate if the button is being held down. Just update the text
-            data->callbacks.decrement(data->selected_cell_idx, click_number_of_clicks_counted(recognizer), data->context);
+            prv_did_change_text(data, click_number_of_clicks_counted(recognizer), false);
             layer_mark_dirty(layer);
         } else {
             data->bump_is_upwards = false;
+#if ANIMATION_IS_ENABLED
             prv_run_value_change_animation(layer);
+#else
+            prv_did_change_text(data, 1, data->bump_is_upwards);
+            layer_mark_dirty(layer);
+#endif
         }
     }
 }
@@ -522,11 +551,17 @@ void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
         animation_unschedule(data->next_cell_animation);
         data->slide_is_forward = true;
         prv_update_index_before_animation(data);
+        
         if (click_recognizer_is_repeating(recognizer)) {
             layer_mark_dirty(layer);
-            data->callbacks.did_change(data->selected_cell_idx, data->slide_is_forward, data->context);
+            prv_did_change_selection(data);
         } else {
+#if ANIMATION_IS_ENABLED
             prv_run_slide_animation(layer);
+#else
+            layer_mark_dirty(layer);
+            prv_did_change_selection(data);
+#endif
         }
     }
 }
@@ -539,7 +574,13 @@ void prv_back_click_handler(ClickRecognizerRef recognizer, void *context) {
         animation_unschedule(data->next_cell_animation);
         data->slide_is_forward = false;
         prv_update_index_before_animation(data);
+        
+#if ANIMATION_IS_ENABLED
         prv_run_slide_animation(layer);
+#else
+        layer_mark_dirty(layer);
+        prv_did_change_selection(data);
+#endif
     }
 }
 

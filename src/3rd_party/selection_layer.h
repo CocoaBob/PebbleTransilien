@@ -2,6 +2,8 @@
 
 #include <pebble.h>
 
+//#define ENABLE_ANIMATION_FOR_APLITE
+
 #define MAX_SELECTION_LAYER_CELLS 10
 
 typedef char* (*SelectionLayerGetCellText)(int index, void *context);

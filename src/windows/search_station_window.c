@@ -654,7 +654,7 @@ static void selection_handle_inc(int index, uint8_t clicks, void *context) {
     if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
     } else {
-        ++s_search_string[index];
+        s_search_string[index] += clicks;
         if (s_search_string[index] > SELECTION_LAYER_VALUE_MAX) {
             s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
         }
@@ -673,7 +673,7 @@ static void selection_handle_dec(int index, uint8_t clicks, void *context) {
     if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
     } else {
-        --s_search_string[index];
+        s_search_string[index] -= clicks;
         if (s_search_string[index] < SELECTION_LAYER_VALUE_MIN) {
             s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
         }
@@ -835,11 +835,11 @@ static void window_load(Window *window) {
     selection_layer_set_inactive_bg_color(s_selection_layer, GColorDarkGray);
 #endif
     selection_layer_set_callbacks(s_selection_layer, NULL, (SelectionLayerCallbacks) {
-        .get_cell_text = selection_handle_get_text,
-        .will_change = selection_handle_will_change,
-        .did_change = selection_handle_did_change,
-        .increment = selection_handle_inc,
-        .decrement = selection_handle_dec,
+        .get_cell_text = (SelectionLayerGetCellText)selection_handle_get_text,
+        .will_change = (SelectionLayerWillChangeCallback)selection_handle_will_change,
+        .did_change = (SelectionLayerDidChangeCallback)selection_handle_did_change,
+        .increment = (SelectionLayerIncrementCallback)selection_handle_inc,
+        .decrement = (SelectionLayerDecrementCallback)selection_handle_dec,
     });
     layer_add_child(window_layer, s_selection_layer);
     
