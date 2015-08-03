@@ -57,10 +57,6 @@ static InverterLayer *s_inverter_layer;
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context);
 
-// MARK: Constants
-
-// MARK: Drawing
-
 // MARK: Action list callbacks
 
 static GColor action_list_get_bar_color(void) {
@@ -179,7 +175,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     uint16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
-        draw_from_to_layer(ctx, cell_layer,
+        draw_from_to(ctx, cell_layer,
                            favorite,
 #ifdef PBL_COLOR
                            is_highlighed,
@@ -207,6 +203,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, void *context) {
+#ifdef PBL_COLOR
     if (section_index == MAIN_MENU_SECTION_FAV) {
         draw_menu_header(ctx, cell_layer, _("Favorites"), curr_fg_color());
     } else if (section_index == MAIN_MENU_SECTION_SEARCH) {
@@ -216,6 +213,17 @@ static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_
     } else if (section_index == MAIN_MENU_SECTION_ABOUT) {
         draw_menu_header(ctx, cell_layer, _("About"), curr_fg_color());
     }
+#else
+    if (section_index == MAIN_MENU_SECTION_FAV) {
+        menu_cell_basic_header_draw(ctx, cell_layer, _("Favorites"));
+    } else if (section_index == MAIN_MENU_SECTION_SEARCH) {
+        menu_cell_basic_header_draw(ctx, cell_layer, _("Search"));
+    } else if (section_index == MAIN_MENU_SECTION_SETTING) {
+        menu_cell_basic_header_draw(ctx, cell_layer, _("Settings"));
+    } else if (section_index == MAIN_MENU_SECTION_ABOUT) {
+        menu_cell_basic_header_draw(ctx, cell_layer, _("About"));
+    }
+#endif
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
@@ -272,15 +280,11 @@ static void select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_i
     }
 }
 
-static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
-    return SEPARATOR_HEIGHT;
-}
-
+#ifdef PBL_PLATFORM_BASALT
 static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
-#ifdef PBL_PLATFORM_BASALT
 static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
     GRect frame = layer_get_frame(bg_layer);
     graphics_context_set_fill_color(ctx, curr_bg_color());
@@ -321,11 +325,10 @@ static void window_load(Window *window) {
         .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
         .draw_header = (MenuLayerDrawHeaderCallback)draw_header_callback,
         .select_click = (MenuLayerSelectCallback)select_callback,
-        .select_long_click = (MenuLayerSelectCallback)select_long_callback,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
+        .select_long_click = (MenuLayerSelectCallback)select_long_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });

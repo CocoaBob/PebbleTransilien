@@ -410,7 +410,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #endif
     
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
-        draw_from_to_layer(ctx,
+        draw_from_to(ctx,
                            cell_layer,
                            s_from_to,
 #ifdef PBL_COLOR
@@ -420,7 +420,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (s_is_updating && s_next_trains_list_count == 0) {
             graphics_context_set_text_color(ctx, text_color);
-            draw_cell_title(ctx, cell_layer, "Loading...");
+            draw_centered_title(ctx, cell_layer, "Loading...");
         } else if (s_next_trains_list_count > 0) {
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             
@@ -448,7 +448,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
             free(str_terminus);
         } else {
             graphics_context_set_text_color(ctx, text_color);
-            draw_cell_title(ctx, cell_layer, "No train.");
+            draw_centered_title(ctx, cell_layer, "No train.");
         }
     }
 }
@@ -464,15 +464,11 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     }
 }
 
-static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
-    return SEPARATOR_HEIGHT;
-}
-
+#ifdef PBL_PLATFORM_BASALT
 static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
-#ifdef PBL_PLATFORM_BASALT
 static void selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
     if (new_index->section == NEXT_TRAINS_SECTION_TRAINS && s_next_trains_list_count == 0) {
         *new_index = old_index;
@@ -516,11 +512,10 @@ static void window_load(Window *window) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)select_callback,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
+        .select_click = (MenuLayerSelectCallback)select_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback,
         .selection_will_change = (MenuLayerSelectionWillChangeCallback)selection_will_change_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif

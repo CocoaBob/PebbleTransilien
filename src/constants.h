@@ -15,7 +15,6 @@
 #define CELL_HEIGHT_2 22
 #define CELL_ICON_SIZE 19
 
-#define SEPARATOR_HEIGHT 1
 #define TEXT_Y_OFFSET -2
 
 #define HEADER_HEIGHT 15

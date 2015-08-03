@@ -17,6 +17,7 @@ void draw_text(GContext *ctx, const char * text, const char * font_key, GRect fr
 
 // MARK: Draw header and separators
 
+#ifdef PBL_COLOR
 void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color) {
     GRect bounds = layer_get_bounds(cell_layer);
     GRect frame = GRect(2,
@@ -27,13 +28,16 @@ void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title
     graphics_context_set_text_color(ctx, color);
     draw_text(ctx, title, FONT_KEY_GOTHIC_14_BOLD, frame, GTextAlignmentLeft);
 }
+#endif
 
+#ifdef PBL_PLATFORM_BASALT
 void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color) {
     graphics_context_set_stroke_color(ctx, color);
     for (int16_t dx = 0; dx < layer_get_bounds(cell_layer).size.w; dx+=2) {
         graphics_draw_pixel(ctx, GPoint(dx, 0));
     }
 }
+#endif
 
 // MARK: Draw images
 
@@ -50,7 +54,7 @@ void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect) {
 
 // MARK: Draw cells
 
-void draw_cell_title(GContext* ctx, const Layer *cell_layer, const char *title) {
+void draw_centered_title(GContext* ctx, const Layer *cell_layer, const char *title) {
     GRect bounds = layer_get_bounds(cell_layer);
     GRect frame = GRect(CELL_MARGIN,
                         (bounds.size.h - 20) / 2 + TEXT_Y_OFFSET,
@@ -59,9 +63,9 @@ void draw_cell_title(GContext* ctx, const Layer *cell_layer, const char *title) 
     draw_text(ctx, title, FONT_KEY_GOTHIC_18_BOLD, frame, GTextAlignmentCenter);
 }
 
-// MARK: Draw From To Layer, layer height must be CELL_HEIGHT = 44
+// MARK: Draw From To Layer, layer height should be 44
 
-void draw_from_to_layer(GContext* ctx,
+void draw_from_to(GContext* ctx,
                         const Layer *layer,
                         DataModelFromTo from_to,
 #ifdef PBL_COLOR
@@ -124,4 +128,51 @@ void draw_from_to_layer(GContext* ctx,
     }
     
     free(str_from);
+}
+
+// MARK: Draw Station layer, layer hight should be 22
+
+void draw_station(GContext *ctx, Layer *cell_layer,
+                  GColor text_color,
+#ifdef PBL_COLOR
+                  bool is_highlighed,
+#endif
+                  const char * str_time,
+                  const char * str_station) {
+    graphics_context_set_text_color(ctx, text_color);
+    GRect bounds = layer_get_bounds(cell_layer);
+    
+    GRect frame_icon = GRect(CELL_MARGIN,
+                             (CELL_HEIGHT_2 - FROM_TO_ICON_WIDTH) / 2,
+                             FROM_TO_ICON_WIDTH,
+                             FROM_TO_ICON_WIDTH);
+#ifdef PBL_COLOR
+    draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+#else
+    draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+#endif
+    
+    // Time
+    GRect frame_time = GRect(bounds.size.w,
+                             TEXT_Y_OFFSET,
+                             bounds.size.w,
+                             CELL_HEIGHT_2);
+    
+    if (str_time) {
+        GSize time_size = graphics_text_layout_get_content_size(str_time,
+                                                                fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
+                                                                frame_time,
+                                                                GTextOverflowModeTrailingEllipsis,
+                                                                GTextAlignmentRight);
+        frame_time.origin.x -= CELL_MARGIN - time_size.w;
+        frame_time.size.w = time_size.w;
+        draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
+    }
+    
+    // Station
+    GRect frame_station = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
+                                TEXT_Y_OFFSET,
+                                frame_time.origin.x - CELL_MARGIN * 3 - FROM_TO_ICON_WIDTH,
+                                CELL_HEIGHT_2);
+    draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
 }

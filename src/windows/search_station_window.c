@@ -170,7 +170,7 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     GColor text_color = GColorBlack;
 #endif
     
-    draw_from_to_layer(ctx,
+    draw_from_to(ctx,
                        layer,
                        *from_to,
 #ifdef PBL_COLOR
@@ -183,33 +183,6 @@ static void separator_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     graphics_context_set_fill_color(ctx, curr_fg_color());
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-}
-
-static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
-                                 GColor text_color,
-#ifdef PBL_COLOR
-                                 bool is_highlighed,
-#endif
-                                 const char * str_station) {
-    graphics_context_set_text_color(ctx, text_color);
-    GRect bounds = layer_get_bounds(cell_layer);
-    
-    GRect frame_icon = GRect(CELL_MARGIN,
-                             (CELL_HEIGHT_2 - FROM_TO_ICON_WIDTH) / 2,
-                             FROM_TO_ICON_WIDTH,
-                             FROM_TO_ICON_WIDTH);
-#ifdef PBL_COLOR
-    draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-#else
-    draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-#endif
-    
-    // Station
-    GRect frame_station = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
-                                TEXT_Y_OFFSET,
-                                bounds.size.w - CELL_MARGIN * 2 - FROM_TO_ICON_WIDTH,
-                                CELL_HEIGHT_2);
-    draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
 }
 
 // MARK: Info Panel
@@ -717,18 +690,19 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
         stations_get_name(station_index, str_station, STATION_NAME_MAX_LENGTH);
         
-        draw_menu_layer_cell(ctx, cell_layer,
-                             text_color,
+        draw_station(ctx, cell_layer,
+                     text_color,
 #ifdef PBL_COLOR
-                             is_highlighed,
+                     is_highlighed,
 #endif
-                             str_station);
+                     NULL,
+                     str_station);
         
         // Clean
         free(str_station);
     } else {
         graphics_context_set_text_color(ctx, text_color);
-        draw_cell_title(ctx, cell_layer, (s_search_results_index >= 0)?"Not found.":"UP/DOWN to input...");
+        draw_centered_title(ctx, cell_layer, (s_search_results_index >= 0)?"Not found.":"UP/DOWN to input...");
     }
 }
 
@@ -748,15 +722,11 @@ static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, 
     panel_update_with_menu_layer_selection();
 }
 
-static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
-    return SEPARATOR_HEIGHT;
-}
-
+#ifdef PBL_PLATFORM_BASALT
 static void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
-#ifdef PBL_PLATFORM_BASALT
 static void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
     GRect frame = layer_get_frame(bg_layer);
     graphics_context_set_fill_color(ctx, curr_bg_color());
@@ -800,11 +770,10 @@ static void window_load(Window *window) {
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback,
-        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
 #endif
     });

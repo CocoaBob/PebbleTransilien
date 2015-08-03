@@ -43,51 +43,6 @@ static bool s_show_relative_time;
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context);
 
-// MARK: Drawing
-
-static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
-                                 GColor text_color,
-#ifdef PBL_COLOR
-                                 bool is_highlighed,
-#endif
-                                 const char * str_time,
-                                 const char * str_station) {
-    graphics_context_set_text_color(ctx, text_color);
-    GRect bounds = layer_get_bounds(cell_layer);
-    
-    GRect frame_icon = GRect(CELL_MARGIN,
-                             (CELL_HEIGHT_2 - FROM_TO_ICON_WIDTH) / 2,
-                             FROM_TO_ICON_WIDTH,
-                             FROM_TO_ICON_WIDTH);
-#ifdef PBL_COLOR
-    draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-#else
-    draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-#endif
-    
-    // Time
-    GRect frame_time = GRect(0,
-                             TEXT_Y_OFFSET,
-                             bounds.size.w,
-                             CELL_HEIGHT_2);
-    
-    GSize time_size = graphics_text_layout_get_content_size(str_time,
-                                                            fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
-                                                            frame_time,
-                                                            GTextOverflowModeTrailingEllipsis,
-                                                            GTextAlignmentRight);
-    frame_time.origin.x = bounds.size.w - CELL_MARGIN - time_size.w;
-    frame_time.size.w = time_size.w;
-    draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
-    
-    // Station
-    GRect frame_station = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
-                                TEXT_Y_OFFSET,
-                                bounds.size.w - CELL_MARGIN * 4 - time_size.w - FROM_TO_ICON_WIDTH,
-                                CELL_HEIGHT_2);
-    draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
-}
-
 // MARK: Action list callbacks
 
 static GColor action_list_get_bar_color(void) {
@@ -306,7 +261,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     
     if (s_is_updating) {
         graphics_context_set_text_color(ctx, text_color);
-        draw_cell_title(ctx, cell_layer, "Loading...");
+        draw_centered_title(ctx, cell_layer, "Loading...");
     } else if (s_train_details_list_count > 0) {
         DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
         
@@ -318,20 +273,20 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
         stations_get_name(train_detail.station, str_station, STATION_NAME_MAX_LENGTH);
 
-        draw_menu_layer_cell(ctx, cell_layer,
-                             text_color,
+        draw_station(ctx, cell_layer,
+                     text_color,
 #ifdef PBL_COLOR
-                             is_highlighed,
+                     is_highlighed,
 #endif
-                             str_time,
-                             str_station);
+                     str_time,
+                     str_station);
         
         // Clean
         free(str_time);
         free(str_station);
     } else {
         graphics_context_set_text_color(ctx, text_color);
-        draw_cell_title(ctx, cell_layer, "No train.");
+        draw_centered_title(ctx, cell_layer, "No train.");
     }
 }
 
@@ -346,15 +301,11 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     });
 }
 
-static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
-    return SEPARATOR_HEIGHT;
-}
-
+#ifdef PBL_PLATFORM_BASALT
 static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
-#ifdef PBL_PLATFORM_BASALT
 static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
     GRect frame = layer_get_frame(bg_layer);
     graphics_context_set_fill_color(ctx, curr_bg_color());
@@ -394,11 +345,10 @@ static void window_load(Window *window) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)select_callback,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback
+        .select_click = (MenuLayerSelectCallback)select_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
 #endif
     });
