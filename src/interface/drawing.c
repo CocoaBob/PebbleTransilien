@@ -159,7 +159,7 @@ void draw_station(GContext *ctx, Layer *cell_layer,
                              bounds.size.w,
                              CELL_HEIGHT_2);
     
-    if (str_time) {
+    if (str_time && str_time[0] != '\0') {
         GSize time_size = graphics_text_layout_get_content_size(str_time,
                                                                 fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
                                                                 frame_time,
@@ -168,6 +168,8 @@ void draw_station(GContext *ctx, Layer *cell_layer,
         frame_time.origin.x = bounds.size.w - CELL_MARGIN - time_size.w;
         frame_time.size.w = time_size.w;
         draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
+    } else {
+        frame_time.origin.x = bounds.size.w;
     }
     
     // Station
