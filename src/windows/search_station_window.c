@@ -621,7 +621,7 @@ static void selection_handle_inc(int index, uint8_t clicks, void *context) {
     if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
     } else {
-        s_search_string[index] += clicks;
+        s_search_string[index] += 1;
         if (s_search_string[index] > SELECTION_LAYER_VALUE_MAX) {
             s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
         }
@@ -640,7 +640,7 @@ static void selection_handle_dec(int index, uint8_t clicks, void *context) {
     if (!value_is_valid(s_search_string[index])) {
         s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
     } else {
-        s_search_string[index] -= clicks;
+        s_search_string[index] -= 1;
         if (s_search_string[index] < SELECTION_LAYER_VALUE_MIN) {
             s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
         }
