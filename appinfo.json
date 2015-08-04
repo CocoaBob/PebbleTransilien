@@ -15,9 +15,6 @@
   "longName": "Transilien",
   "projectType": "native",
   "resources": {
-    "media": []
-  },
-  "resources": {
     "media": [
       {
         "menuIcon": true,
