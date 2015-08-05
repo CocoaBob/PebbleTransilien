@@ -16,18 +16,6 @@ static void in_received_handler(DictionaryIterator *received, void *context) {
     if (s_callbacks.message_succeeded_callback != NULL) {
         s_callbacks.message_succeeded_callback(received);
     }
-    
-//	Tuple *tuple;
-//	
-//	tuple = dict_find(received, STATUS_KEY);
-//	if(tuple) {
-//		APP_LOG(APP_LOG_LEVEL_DEBUG, "Received Status: %d", (int)tuple->value->uint32); 
-//	}
-//	
-//	tuple = dict_find(received, MESSAGE_KEY);
-//	if(tuple) {
-//		APP_LOG(APP_LOG_LEVEL_DEBUG, "Received Message: %s", tuple->value->cstring);
-//	}
 }
 
 // Called when an incoming message from PebbleKitJS is dropped

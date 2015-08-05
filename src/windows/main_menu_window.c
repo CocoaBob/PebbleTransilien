@@ -55,7 +55,7 @@ static InverterLayer *s_inverter_layer;
 
 // MARK: Forward declaration
 
-static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context);
+static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context);
 
 // MARK: Action list callbacks
 
@@ -131,11 +131,11 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 
 // MARK: Menu layer callbacks
 
-static uint16_t get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
+static uint16_t menu_layer_get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
     return MAIN_MENU_SECTION_COUNT;
 }
 
-static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
+static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
     switch(section_index) {
         case MAIN_MENU_SECTION_FAV:
             return fav_get_count();
@@ -150,18 +150,18 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
     }
 }
 
-static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     return CELL_HEIGHT;
 }
 
-static int16_t get_header_height_callback(struct MenuLayer *menu_layer, uint16_t section_index, void *context) {
+static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_layer, uint16_t section_index, void *context) {
     if (section_index == MAIN_MENU_SECTION_FAV) {
         return fav_get_count()?HEADER_HEIGHT:0;
     }
     return HEADER_HEIGHT;
 }
 
-static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
+static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
     bool is_dark_theme = status_is_dark_theme();
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
@@ -202,7 +202,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     }
 }
 
-static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, void *context) {
+static void menu_layer_draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, void *context) {
 #ifdef PBL_COLOR
     if (section_index == MAIN_MENU_SECTION_FAV) {
         draw_menu_header(ctx, cell_layer, _("Favorites"), curr_fg_color());
@@ -226,7 +226,7 @@ static void draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_
 #endif
 }
 
-static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         Favorite favorite = fav_at_index(cell_index->row);
         push_next_trains_window(favorite, true);
@@ -269,7 +269,7 @@ static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index,
     }
 }
 
-static void select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         action_list_present_with_callbacks((ActionListCallbacks) {
             .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
@@ -280,21 +280,21 @@ static void select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_i
             .select_click = (ActionListSelectCallback)action_list_select_callback
         });
     } else {
-        select_callback(s_menu_layer, cell_index, context);
+        menu_layer_select_callback(s_menu_layer, cell_index, context);
     }
 }
 
 #ifdef PBL_PLATFORM_BASALT
 
-static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     return 1;
 }
 
-static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
+static void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
-static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
+static void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
     GRect frame = layer_get_frame(bg_layer);
     graphics_context_set_fill_color(ctx, curr_bg_color());
     graphics_fill_rect(ctx, frame, 0, GCornerNone);
@@ -327,19 +327,19 @@ static void window_load(Window *window) {
     s_menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
-        .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)get_num_sections_callback,
-        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
-        .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
-        .get_header_height = (MenuLayerGetHeaderHeightCallback)get_header_height_callback,
-        .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
-        .draw_header = (MenuLayerDrawHeaderCallback)draw_header_callback,
-        .select_click = (MenuLayerSelectCallback)select_callback,
-        .select_long_click = (MenuLayerSelectCallback)select_long_callback
+        .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)menu_layer_get_num_sections_callback,
+        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
+        .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
+        .get_header_height = (MenuLayerGetHeaderHeightCallback)menu_layer_get_header_height_callback,
+        .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
+        .draw_header = (MenuLayerDrawHeaderCallback)menu_layer_draw_header_callback,
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
+        .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback,
-        .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
+        .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
 #endif
     });
     

@@ -41,7 +41,7 @@ static bool s_show_relative_time;
 
 // Forward declaration
 
-static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context);
+static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context);
 
 // MARK: Action list callbacks
 
@@ -217,7 +217,7 @@ static void update_time_format_timer_callback(void *context) {
 static void button_up_handler(ClickRecognizerRef recognizer, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     if (selected_index.row == 0) {
-        uint16_t num_rows = get_num_rows_callback(s_menu_layer, 0, NULL);
+        uint16_t num_rows = menu_layer_get_num_rows_callback(s_menu_layer, 0, NULL);
         menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, num_rows - 1), MenuRowAlignBottom, true);
     } else {
         menu_layer_set_selected_next(s_menu_layer, true, MenuRowAlignCenter, true);
@@ -226,7 +226,7 @@ static void button_up_handler(ClickRecognizerRef recognizer, void *context) {
 
 static void button_down_handler(ClickRecognizerRef recognizer, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    uint16_t num_rows = get_num_rows_callback(s_menu_layer, 0, NULL);
+    uint16_t num_rows = menu_layer_get_num_rows_callback(s_menu_layer, 0, NULL);
     if (selected_index.row == num_rows - 1) {
         menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, 0), MenuRowAlignTop, true);
     } else {
@@ -242,7 +242,7 @@ static void click_config_provider(void *context) {
 
 // MARK: Menu layer callbacks
 
-static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
+static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
     if (s_is_updating) {
         return 1;
     } else {
@@ -250,11 +250,11 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
     }
 }
 
-static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     return CELL_HEIGHT_2;
 }
 
-static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
+static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
@@ -294,28 +294,30 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     }
 }
 
-static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    action_list_present_with_callbacks((ActionListCallbacks) {
-        .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
-        .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
-        .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
-        .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
-        .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
-        .select_click = (ActionListSelectCallback)action_list_select_callback
-    });
+static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+    if (!s_is_updating && s_train_details_list_count > 0) {
+        action_list_present_with_callbacks((ActionListCallbacks) {
+            .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+            .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
+            .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
+            .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+            .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
+            .select_click = (ActionListSelectCallback)action_list_select_callback
+        });
+    }
 }
 
 #ifdef PBL_PLATFORM_BASALT
 
-static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     return 1;
 }
 
-static void draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
+static void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
     draw_separator(ctx, cell_layer, curr_fg_color());
 }
 
-static void draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
+static void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
     GRect frame = layer_get_frame(bg_layer);
     graphics_context_set_fill_color(ctx, curr_bg_color());
     graphics_fill_rect(ctx, frame, 0, GCornerNone);
@@ -351,15 +353,15 @@ static void window_load(Window *window) {
     menu_layer_pad_bottom_enable(s_menu_layer, false);
 #endif
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
-        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
-        .get_cell_height = (MenuLayerGetCellHeightCallback)get_cell_height_callback,
-        .draw_row = (MenuLayerDrawRowCallback)draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)select_callback
+        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
+        .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
+        .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)draw_separator_callback,
-        .draw_background = (MenuLayerDrawBackgroundCallback)draw_background_callback
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
+        .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
 #endif
     });
     

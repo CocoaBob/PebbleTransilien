@@ -706,7 +706,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 }
 
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    show_action_list();
+    if (current_search_results_count() > 0) {
+        show_action_list();
+    }
 }
 
 static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
@@ -723,7 +725,7 @@ static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, 
 
 #ifdef PBL_PLATFORM_BASALT
 
-static int16_t get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     return 1;
 }
 
@@ -778,7 +780,7 @@ static void window_load(Window *window) {
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback
 #ifdef PBL_PLATFORM_BASALT
         ,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback,
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
 #endif
