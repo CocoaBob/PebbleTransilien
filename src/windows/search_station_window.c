@@ -16,8 +16,6 @@
 #define SELECTION_LAYER_VALUE_MIN 'A'
 #define SELECTION_LAYER_VALUE_MAX 'Z'
 
-#define SERAPATOR_LAYER_HEIGHT 1
-
 enum {
     SEARCH_STATION_ACTIONS_FROM = 0,
     SEARCH_STATION_ACTIONS_TO,
@@ -25,6 +23,12 @@ enum {
     SEARCH_STATION_ACTIONS_FAV,
     SEARCH_STATION_ACTIONS_INVERT,
     SEARCH_STATION_ACTIONS_COUNT
+};
+
+enum {
+    SEARCH_STATION_SELECTION_LAYER = 0,
+    SEARCH_STATION_MENU_LAYER,
+    SEARCH_STATION_PANEL_LAYER
 };
 
 typedef struct PanelData {
@@ -64,18 +68,16 @@ static int s_search_results_index;
 static DataModelFromTo s_from_to;
 
 // To deactivate the menu layer
-#ifdef PBL_COLOR
-static bool s_menu_layer_is_active;
-#else
-static InverterLayer *s_inverter_layer_for_first_row;
-static Layer *s_inverter_layer_layer_for_first_row;
+static uint8_t s_actived_layer_index;
+#ifdef PBL_BW
+static InverterLayer *s_inverter_layer_for_selected_row;
+static Layer *s_inverter_layer_layer_for_selected_row;
 #endif
 
 // MARK: Forward declaration
 
 static void move_focus_to_selection_layer();
 static void move_focus_to_menu_layer();
-static bool focus_is_on_selection_layer();
 static bool action_list_is_enabled_callback(size_t index);
 static void move_focus_to_panel();
 
@@ -90,13 +92,11 @@ static size_t current_search_results_count() {
 }
 
 static StationIndex current_search_result_at_index(size_t index) {
-    size_t return_value = s_search_results[s_search_results_index].search_results[index];
-    return return_value;
+    return s_search_results[s_search_results_index].search_results[index];
 }
 
 static StationIndex current_search_result() {
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    return s_search_results[s_search_results_index].search_results[selected_index.row];
+    return current_search_result_at_index(menu_layer_get_selected_index(s_menu_layer).row);
 }
 
 static bool value_is_valid(char value) {
@@ -109,7 +109,7 @@ static void verify_from_to(DataModelFromTo *i_o_from_to) {
         i_o_from_to->to = STATION_NON;
     }
     if (i_o_from_to->from == STATION_NON) {
-        if (!focus_is_on_selection_layer()) {
+        if (s_actived_layer_index == SEARCH_STATION_MENU_LAYER) {
             i_o_from_to->from = current_search_result();
         }
     }
@@ -144,18 +144,20 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
         graphics_context_set_fill_color(ctx, GColorDarkGray);
         graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     }
+    
     // Separator
     graphics_context_set_stroke_color(ctx, curr_fg_color());
     graphics_draw_line(ctx, GPoint(0, 0), GPoint(bounds.size.w, 0));
 #else
     if (layer_data->is_active) {
-        graphics_context_set_stroke_color(ctx, GColorBlack);
-        graphics_draw_rect(ctx, GRect(bounds.origin.x, bounds.origin.y + 1, bounds.size.w, bounds.size.h - 1));
         if (!layer_get_window(s_inverter_layer_layer_for_panel_layer)) {
             layer_set_frame(s_inverter_layer_layer_for_panel_layer, bounds);
             layer_add_child(s_panel_layer, s_inverter_layer_layer_for_panel_layer);
         }
     } else {
+        graphics_context_set_stroke_color(ctx, GColorBlack);
+        graphics_draw_rect(ctx, bounds);
+        graphics_draw_round_rect(ctx, bounds, 4);
         if (layer_get_window(s_inverter_layer_layer_for_panel_layer)) {
             layer_remove_from_parent(s_inverter_layer_layer_for_panel_layer);
         }
@@ -233,10 +235,13 @@ static void panel_update(DataModelFromTo i_from_to) {
 }
 
 static void panel_update_with_menu_layer_selection() {
-    if (s_from_to.from == STATION_NON && s_from_to.to == STATION_NON) {
-        MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-        StationIndex station_index = current_search_result_at_index(selected_index.row);
-        panel_update((DataModelFromTo){station_index, STATION_NON});
+    if (s_actived_layer_index == SEARCH_STATION_MENU_LAYER) {
+        StationIndex station_index = current_search_result();
+        if (s_from_to.from == STATION_NON && s_from_to.to == STATION_NON) {
+            panel_update((DataModelFromTo){station_index, STATION_NON});
+        } else if (s_from_to.from != STATION_NON) {
+            panel_update((DataModelFromTo){s_from_to.from, station_index});
+        }
     }
 }
 
@@ -274,7 +279,7 @@ static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case SEARCH_STATION_ACTIONS_FROM:
         {
-            if (focus_is_on_selection_layer()) {
+            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
                 return "Clear Departure";
             } else {
                 return "Set Departure";
@@ -282,7 +287,7 @@ static char* action_list_get_title_callback(size_t index) {
         }
         case SEARCH_STATION_ACTIONS_TO:
         {
-            if (focus_is_on_selection_layer()) {
+            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
                 return "Clear Destination";
             } else {
                 return "Set Destination";
@@ -303,7 +308,7 @@ static bool action_list_is_enabled_callback(size_t index) {
     switch (index) {
         case SEARCH_STATION_ACTIONS_FROM:
         {
-            if (focus_is_on_selection_layer()) {
+            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
                 return (s_from_to.from != STATION_NON); // If departure station has been set
             } else {
                 return true; // Always available to set depature
@@ -311,7 +316,7 @@ static bool action_list_is_enabled_callback(size_t index) {
         }
         case SEARCH_STATION_ACTIONS_TO:
         {
-            if (focus_is_on_selection_layer()) {
+            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
                 return (s_from_to.to != STATION_NON); // If destination station has been set
             } else {
                 return (s_from_to.from != STATION_NON && // If depature is set, then we can set the destination
@@ -320,7 +325,7 @@ static bool action_list_is_enabled_callback(size_t index) {
         }
         case SEARCH_STATION_ACTIONS_TIMETABLE:
         {
-            if (focus_is_on_selection_layer()) {
+            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
                 return (s_from_to.from != STATION_NON || s_from_to.to != STATION_NON); // If there's at least one station
             } else {
                 return true; // Always available to check the current selected station's timetable
@@ -330,7 +335,7 @@ static bool action_list_is_enabled_callback(size_t index) {
         {
             DataModelFromTo from_to = s_from_to;
             verify_from_to(&from_to);
-            if (focus_is_on_selection_layer()) {
+            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
                 if (from_to.from == STATION_NON && from_to.to == STATION_NON) {
                     return false; // If the favorite isn't valid, we don't save it
                 } else {
@@ -358,7 +363,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     switch (index) {
         case SEARCH_STATION_ACTIONS_FROM:
         {
-            if (focus_is_on_selection_layer()) {
+            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
                 s_from_to.from = STATION_NON; // Clear
             } else {
                 s_from_to.from = current_search_result(); // Set
@@ -371,7 +376,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         }
         case SEARCH_STATION_ACTIONS_TO:
         {
-            if (focus_is_on_selection_layer()) {
+            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
                 s_from_to.to = STATION_NON; // Clear
                 move_focus_to_selection_layer();
             } else {
@@ -476,14 +481,6 @@ static void click_config_provider_for_panel_layer(void *context) {
 
 // MARK: Move focus
 
-static bool focus_is_on_selection_layer() {
-#ifdef PBL_COLOR
-    return !s_menu_layer_is_active;
-#else
-    return layer_get_window(s_inverter_layer_layer_for_first_row) != NULL;
-#endif
-}
-
 static void search_selection_layer_set_active(bool is_active) {
     selection_layer_set_active(s_selection_layer, is_active);
     
@@ -495,16 +492,21 @@ static void search_selection_layer_set_active(bool is_active) {
 
 static void menu_layer_set_active(bool is_active) {
 #ifdef PBL_COLOR
-    s_menu_layer_is_active = is_active;
     set_menu_layer_activated(s_menu_layer, is_active);
 #else
-    set_menu_layer_activated(s_menu_layer, is_active, s_inverter_layer_for_first_row);
+    set_menu_layer_activated(s_menu_layer, is_active, s_inverter_layer_for_selected_row);
 #endif
     
     if (is_active) {
         // Display selected station if departure & destination are STATION_NON
         panel_update_with_menu_layer_selection();
     }
+#ifdef PBL_BW
+    else {
+        // Select the first row to make it easier to set inverter layer's position
+        menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, 0), MenuRowAlignTop, false);
+    }
+#endif
 }
 
 
@@ -515,6 +517,8 @@ static void panel_layer_set_active(bool is_active) {
 }
 
 static void move_focus_to_selection_layer() {
+    s_actived_layer_index = SEARCH_STATION_SELECTION_LAYER;
+    
     search_selection_layer_set_active(true);
     
     menu_layer_set_active(false);
@@ -528,6 +532,8 @@ static void move_focus_to_selection_layer() {
 }
 
 static void move_focus_to_menu_layer() {
+    s_actived_layer_index = SEARCH_STATION_MENU_LAYER;
+    
     search_selection_layer_set_active(false);
     
     menu_layer_set_active(true);
@@ -541,6 +547,8 @@ static void move_focus_to_menu_layer() {
 }
 
 static void move_focus_to_panel() {
+    s_actived_layer_index = SEARCH_STATION_PANEL_LAYER;
+    
     search_selection_layer_set_active(false);
     
     menu_layer_set_active(false);
@@ -663,19 +671,18 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
-#ifdef PBL_BW
-    // Set the frame of s_inverter_layer_layer_for_first_row
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+#ifdef PBL_BW
+    // Set the frame of s_inverter_layer_layer_for_selected_row
     GRect row_frame = layer_get_frame(cell_layer);
-    if (focus_is_on_selection_layer() && // Need to hide the highlighted row
+    if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER && // Need to hide the highlighted row
         menu_index_compare(cell_index, &selected_index) == 0) { // It's the highlighted row
-        layer_set_frame(s_inverter_layer_layer_for_first_row, row_frame);
+        layer_set_frame(s_inverter_layer_layer_for_selected_row, row_frame);
     }
 #endif
 
 #ifdef PBL_COLOR
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    bool is_selected = s_menu_layer_is_active?(menu_index_compare(&selected_index, cell_index) == 0):false;
+    bool is_selected = (s_actived_layer_index == SEARCH_STATION_MENU_LAYER)?(menu_index_compare(&selected_index, cell_index) == 0):false;
     bool is_dark_theme = status_is_dark_theme();
     bool is_highlighed = is_dark_theme || is_selected;
     GColor text_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
@@ -762,10 +769,16 @@ static void window_load(Window *window) {
 #endif
     
     // Add menu layer
+#ifdef PBL_PLATFORM_BASALT
+    uint8_t separator_height = 1;
+#else
+    uint8_t separator_height = 0;
+#endif
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
-                                   window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT + SERAPATOR_LAYER_HEIGHT,
+                                   window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT + separator_height,
                                    window_bounds.size.w,
-                                   window_bounds.size.h - status_bar_height - SELECTION_LAYER_HEIGHT - SERAPATOR_LAYER_HEIGHT);
+                                   window_bounds.size.h - status_bar_height - SELECTION_LAYER_HEIGHT - separator_height);
+    
     s_menu_layer = menu_layer_create(menu_layer_frame);
     s_menu_layer_layer = menu_layer_get_layer(s_menu_layer);
     layer_add_child(window_layer, s_menu_layer_layer);
@@ -818,8 +831,8 @@ static void window_load(Window *window) {
     // Prepare inverter layers for Aplite
 #ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(window_bounds);
-    s_inverter_layer_for_first_row = inverter_layer_create(window_bounds);
-    s_inverter_layer_layer_for_first_row = inverter_layer_get_layer(s_inverter_layer_for_first_row);
+    s_inverter_layer_for_selected_row = inverter_layer_create(window_bounds);
+    s_inverter_layer_layer_for_selected_row = inverter_layer_get_layer(s_inverter_layer_for_selected_row);
     s_inverter_layer_for_panel_layer = inverter_layer_create(window_bounds);
     s_inverter_layer_layer_for_panel_layer = inverter_layer_get_layer(s_inverter_layer_for_panel_layer);
 #endif
@@ -847,7 +860,7 @@ static void window_unload(Window *window) {
     
 #ifdef PBL_BW
     inverter_layer_destroy(s_inverter_layer);
-    inverter_layer_destroy(s_inverter_layer_for_first_row);
+    inverter_layer_destroy(s_inverter_layer_for_selected_row);
     inverter_layer_destroy(s_inverter_layer_for_panel_layer);
 #endif
 }
