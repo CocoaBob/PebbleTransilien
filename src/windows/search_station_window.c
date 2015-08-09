@@ -17,11 +17,9 @@
 #define SELECTION_LAYER_VALUE_MAX 'Z'
 
 enum {
-    SEARCH_STATION_ACTIONS_FROM = 0,
-    SEARCH_STATION_ACTIONS_TO,
+    SEARCH_STATION_ACTIONS_DESTINATION,
     SEARCH_STATION_ACTIONS_TIMETABLE,
     SEARCH_STATION_ACTIONS_FAV,
-    SEARCH_STATION_ACTIONS_INVERT,
     SEARCH_STATION_ACTIONS_COUNT
 };
 
@@ -78,7 +76,6 @@ static Layer *s_inverter_layer_layer_for_selected_row;
 
 static void move_focus_to_selection_layer();
 static void move_focus_to_menu_layer();
-static bool action_list_is_enabled_callback(size_t index);
 static void move_focus_to_panel();
 
 // MARK: Helpers
@@ -103,15 +100,12 @@ static bool value_is_valid(char value) {
     return (value >= SELECTION_LAYER_VALUE_MIN && value <= SELECTION_LAYER_VALUE_MAX);
 }
 
-static void verify_from_to(DataModelFromTo *i_o_from_to) {
-    if (i_o_from_to->from == STATION_NON && i_o_from_to->to != STATION_NON) {
-        i_o_from_to->from = s_from_to.to;
-        i_o_from_to->to = STATION_NON;
-    }
+static void confirm_from_to(DataModelFromTo *i_o_from_to) {
     if (i_o_from_to->from == STATION_NON) {
-        if (s_actived_layer_index == SEARCH_STATION_MENU_LAYER) {
-            i_o_from_to->from = current_search_result();
-        }
+        i_o_from_to->from = current_search_result();
+        i_o_from_to->to = STATION_NON;
+    } else {
+        i_o_from_to->to = current_search_result();
     }
 }
 
@@ -165,7 +159,6 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
 #endif
     
     // Draw stations
-    DataModelFromTo *from_to = &layer_data->from_to;
 #ifdef PBL_COLOR
     GColor text_color = GColorWhite;
 #else
@@ -173,12 +166,12 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
 #endif
     
     draw_from_to(ctx,
-                       layer,
-                       *from_to,
+                 layer,
+                 layer_data->from_to,
 #ifdef PBL_COLOR
-                       true,
+                 true,
 #endif
-                       text_color);
+                 text_color);
 }
 
 // MARK: Info Panel
@@ -218,30 +211,22 @@ static void panel_hide() {
 static void panel_update(DataModelFromTo i_from_to) {
     PanelData *layer_data = layer_get_data(s_panel_layer);
     DataModelFromTo *from_to = &layer_data->from_to;
-    if (i_from_to.from == STATION_NON && i_from_to.to != STATION_NON) {
-        from_to->from = i_from_to.to;
-        from_to->to = i_from_to.from;
-    } else {
-        from_to->from = i_from_to.from;
-        from_to->to = i_from_to.to;
-    }
+    from_to->from = i_from_to.from;
+    from_to->to = i_from_to.to;
     
-    if (i_from_to.from == STATION_NON && i_from_to.to == STATION_NON) {
-        panel_hide();
-    } else {
+    if (i_from_to.from != STATION_NON || i_from_to.to != STATION_NON) {
         layer_mark_dirty(s_panel_layer);
         panel_show();
+    } else {
+        panel_hide();
     }
 }
 
 static void panel_update_with_menu_layer_selection() {
-    if (s_actived_layer_index == SEARCH_STATION_MENU_LAYER) {
-        StationIndex station_index = current_search_result();
-        if (s_from_to.from == STATION_NON && s_from_to.to == STATION_NON) {
-            panel_update((DataModelFromTo){station_index, STATION_NON});
-        } else if (s_from_to.from != STATION_NON) {
-            panel_update((DataModelFromTo){s_from_to.from, station_index});
-        }
+    if (s_from_to.from == STATION_NON) {
+        panel_update((DataModelFromTo){current_search_result(), STATION_NON});
+    } else {
+        panel_update((DataModelFromTo){s_from_to.from, current_search_result()});
     }
 }
 
@@ -260,45 +245,17 @@ static size_t action_list_get_num_rows_callback(void) {
 }
 
 static size_t action_list_get_default_selection_callback(void) {
-    // If timetable is avaiable to check, select timetable by default
-    if (action_list_is_enabled_callback(SEARCH_STATION_ACTIONS_TIMETABLE)) {
-        return SEARCH_STATION_ACTIONS_TIMETABLE;
-    } else {
-        // Otherwise select anyone which is available
-        for (int i = 0; i < SEARCH_STATION_ACTIONS_COUNT; ++i) {
-            if (action_list_is_enabled_callback(i)) {
-                return i;
-            }
-        }
-        // Or just the 1st one
-        return 0;
-    }
+    return SEARCH_STATION_ACTIONS_TIMETABLE;
 }
 
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
-        case SEARCH_STATION_ACTIONS_FROM:
-        {
-            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
-                return "Clear Departure";
-            } else {
-                return "Set Departure";
-            }
-        }
-        case SEARCH_STATION_ACTIONS_TO:
-        {
-            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
-                return "Clear Destination";
-            } else {
-                return "Set Destination";
-            }
-        }
+        case SEARCH_STATION_ACTIONS_DESTINATION:
+            return "Add Destination";
         case SEARCH_STATION_ACTIONS_TIMETABLE:
             return "Check Timetable";
         case SEARCH_STATION_ACTIONS_FAV:
             return "Set Favorite";
-        case SEARCH_STATION_ACTIONS_INVERT:
-            return "Invert";
         default:
             return "";
     }
@@ -306,114 +263,41 @@ static char* action_list_get_title_callback(size_t index) {
 
 static bool action_list_is_enabled_callback(size_t index) {
     switch (index) {
-        case SEARCH_STATION_ACTIONS_FROM:
-        {
-            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
-                return (s_from_to.from != STATION_NON); // If departure station has been set
-            } else {
-                return true; // Always available to set depature
-            }
-        }
-        case SEARCH_STATION_ACTIONS_TO:
-        {
-            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
-                return (s_from_to.to != STATION_NON); // If destination station has been set
-            } else {
-                return (s_from_to.from != STATION_NON && // If depature is set, then we can set the destination
-                        s_from_to.from != current_search_result()); // If the current selected station isn't the same
-            }
-        }
-        case SEARCH_STATION_ACTIONS_TIMETABLE:
-        {
-            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
-                return (s_from_to.from != STATION_NON || s_from_to.to != STATION_NON); // If there's at least one station
-            } else {
-                return true; // Always available to check the current selected station's timetable
-            }
-        }
         case SEARCH_STATION_ACTIONS_FAV:
         {
             DataModelFromTo from_to = s_from_to;
-            verify_from_to(&from_to);
-            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
-                if (from_to.from == STATION_NON && from_to.to == STATION_NON) {
-                    return false; // If the favorite isn't valid, we don't save it
-                } else {
-                    return !fav_exists(from_to); // If the favorite exists, we don't save it again
-                }
-            } else {
-                if (from_to.from == STATION_NON && from_to.to == STATION_NON) {
-                    return (current_search_result() != STATION_NON); // When from_to is invalid, save the current selected one
-                } else {
-                    return true; // When from_to is valid, save from_to
-                }
-            }
-        }
-        case SEARCH_STATION_ACTIONS_INVERT:
-        {
-            return (s_from_to.from != STATION_NON || s_from_to.to != STATION_NON);
+            confirm_from_to(&from_to);
+            return !fav_exists(from_to);
         }
         default:
             return true;
-        break;
     }
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index) {
+    confirm_from_to(&s_from_to);
     switch (index) {
-        case SEARCH_STATION_ACTIONS_FROM:
+        case SEARCH_STATION_ACTIONS_DESTINATION:
         {
-            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
-                s_from_to.from = STATION_NON; // Clear
-            } else {
-                s_from_to.from = current_search_result(); // Set
+            if (s_from_to.to != STATION_NON) {
+                s_from_to.from = s_from_to.to;
+                s_from_to.to = STATION_NON;
             }
-            reset_search_results();
+            panel_update(s_from_to);
             move_focus_to_selection_layer();
-            window_stack_remove(action_list_window, true);
-            panel_update(s_from_to);
-            break;
-        }
-        case SEARCH_STATION_ACTIONS_TO:
-        {
-            if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) {
-                s_from_to.to = STATION_NON; // Clear
-                move_focus_to_selection_layer();
-            } else {
-                s_from_to.to = current_search_result(); // Set
-                move_focus_to_panel();
-            }
             reset_search_results();
             window_stack_remove(action_list_window, true);
-            panel_update(s_from_to);
             break;
         }
         case SEARCH_STATION_ACTIONS_TIMETABLE:
         {
-            DataModelFromTo from_to = s_from_to;
-            verify_from_to(&from_to);
             window_stack_remove(action_list_window, false);
-            if (from_to.from != STATION_NON) {
-                push_next_trains_window(from_to, true);
-            } else if (from_to.to != STATION_NON) {
-                push_next_trains_window((DataModelFromTo){from_to.to,STATION_NON}, true);
-            }
+            push_next_trains_window(s_from_to, true);
             break;
         }
         case SEARCH_STATION_ACTIONS_FAV:
         {
-            DataModelFromTo from_to = s_from_to;
-            verify_from_to(&from_to);
-            fav_add(from_to.from, from_to.to);
-            window_stack_remove(action_list_window, true);
-            break;
-        }
-        case SEARCH_STATION_ACTIONS_INVERT:
-        {
-            StationIndex from = s_from_to.from;
-            s_from_to.from = s_from_to.to;
-            s_from_to.to = from;
-            panel_update(s_from_to);
+            fav_add(s_from_to.from, s_from_to.to);
             window_stack_remove(action_list_window, true);
             break;
         }
@@ -434,20 +318,6 @@ static void show_action_list() {
 }
 
 // MARK: Click Config Provider
-
-// Selection layer
-static void long_select_handler_for_selection_layer(ClickRecognizerRef recognizer, void *context) {
-    if (current_search_results_count() > 0) {
-        move_focus_to_menu_layer();
-    } else if (panel_is_visible()) {
-        move_focus_to_panel();
-    }
-}
-
-static void click_config_provider_for_selection_layer(void *context) {
-    s_last_ccp(context);
-    window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler_for_selection_layer, NULL);
-}
 
 // Menu layer
 static void button_back_handler_for_menu_layer(ClickRecognizerRef recognizer, void *context) {
@@ -527,8 +397,6 @@ static void move_focus_to_selection_layer() {
     
     // Setup Click Config Providers
     selection_layer_set_click_config_onto_window(s_selection_layer, s_window);
-    s_last_ccp = window_get_click_config_provider(s_window);
-    window_set_click_config_provider_with_context(s_window, click_config_provider_for_selection_layer, s_selection_layer);
 }
 
 static void move_focus_to_menu_layer() {
@@ -727,7 +595,9 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
 }
 
 static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
-    panel_update_with_menu_layer_selection();
+    if (s_actived_layer_index == SEARCH_STATION_MENU_LAYER) {
+        panel_update_with_menu_layer_selection();
+    }
 }
 
 #ifdef PBL_PLATFORM_BASALT
