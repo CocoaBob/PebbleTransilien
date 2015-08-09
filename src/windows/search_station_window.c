@@ -191,8 +191,12 @@ static void panel_show() {
         panel_layer_frame.origin.y = menu_layer_frame.origin.y + menu_layer_frame.size.h;
         layer_set_frame(s_panel_layer, panel_layer_frame);
         
+#ifdef PBL_COLOR
         Layer *window_layer = window_get_root_layer(s_window);
         layer_add_child(window_layer, s_panel_layer);
+#else
+        layer_insert_below_sibling(s_panel_layer, inverter_layer_get_layer(s_inverter_layer));
+#endif
     }
 }
 
