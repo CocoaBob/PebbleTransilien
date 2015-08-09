@@ -91,7 +91,7 @@ static char* action_list_get_title_callback(size_t index) {
 static bool action_list_is_enabled_callback(size_t index) {
     switch (index) {
         case MAIN_MENU_ACTIONS_MOVE_UP:
-            return (fav_get_count() > 1);
+            return (fav_get_count() > 1 && menu_layer_get_selected_index(s_menu_layer).row > 0);
         case MAIN_MENU_ACTIONS_EDIT:
             return true;
         case MAIN_MENU_ACTIONS_DELETE:

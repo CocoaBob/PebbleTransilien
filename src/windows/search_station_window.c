@@ -275,10 +275,12 @@ static bool action_list_is_enabled_callback(size_t index) {
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index) {
-    confirm_from_to(&s_from_to);
+    DataModelFromTo from_to = s_from_to;
+    confirm_from_to(&from_to);
     switch (index) {
         case SEARCH_STATION_ACTIONS_DESTINATION:
         {
+            s_from_to = from_to;
             if (s_from_to.to != STATION_NON) {
                 s_from_to.from = s_from_to.to;
                 s_from_to.to = STATION_NON;
@@ -292,12 +294,12 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         case SEARCH_STATION_ACTIONS_TIMETABLE:
         {
             window_stack_remove(action_list_window, false);
-            push_next_trains_window(s_from_to, true);
+            push_next_trains_window(from_to, true);
             break;
         }
         case SEARCH_STATION_ACTIONS_FAV:
         {
-            fav_add(s_from_to.from, s_from_to.to);
+            fav_add(from_to.from, from_to.to);
             window_stack_remove(action_list_window, true);
             break;
         }
