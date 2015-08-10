@@ -236,13 +236,11 @@ static void panel_update_with_menu_layer_selection() {
 
 // MARK: Action list callbacks
 
-static GColor action_list_get_bar_color(void) {
 #ifdef PBL_COLOR
+static GColor action_list_get_bar_color(void) {
     return GColorCobaltBlue;
-#else
-    return GColorWhite;
-#endif
 }
+#endif
 
 static size_t action_list_get_num_rows_callback(void) {
     return SEARCH_STATION_ACTIONS_COUNT;
@@ -314,7 +312,9 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 
 static void show_action_list() {
     action_list_present_with_callbacks((ActionListCallbacks) {
+#ifdef PBL_COLOR
         .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+#endif
         .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
         .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
         .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
@@ -491,7 +491,7 @@ static void selection_handle_did_change(int index, bool is_forward, void *contex
     }
 }
 
-static void selection_handle_inc(int index, uint8_t clicks, void *context) {
+static void selection_change(int index, bool is_increase) {
     if (index != 0 &&
         // If the value at index-1 isn't valid, forbid to choose
         (!value_is_valid(s_search_string[index - 1]) ||
@@ -501,32 +501,23 @@ static void selection_handle_inc(int index, uint8_t clicks, void *context) {
         }
     
     if (!value_is_valid(s_search_string[index])) {
-        s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
+        s_search_string[index] = is_increase?SELECTION_LAYER_VALUE_MIN:SELECTION_LAYER_VALUE_MAX;
     } else {
-        s_search_string[index] += 1;
+        s_search_string[index] += is_increase?1:-1;
         if (s_search_string[index] > SELECTION_LAYER_VALUE_MAX) {
             s_search_string[index] = SELECTION_LAYER_VALUE_MIN;
+        } else if (s_search_string[index] < SELECTION_LAYER_VALUE_MIN) {
+            s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
         }
     }
 }
 
+static void selection_handle_inc(int index, uint8_t clicks, void *context) {
+    selection_change(index, true);
+}
+
 static void selection_handle_dec(int index, uint8_t clicks, void *context) {
-    if (index != 0 &&
-        // If the value at index-1 isn't valid, forbid to choose
-        (!value_is_valid(s_search_string[index - 1]) ||
-         // Or if the results for last index is 0, no need to continue
-         current_search_results_count() == 0)) {
-            return;
-        }
-    
-    if (!value_is_valid(s_search_string[index])) {
-        s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
-    } else {
-        s_search_string[index] -= 1;
-        if (s_search_string[index] < SELECTION_LAYER_VALUE_MIN) {
-            s_search_string[index] = SELECTION_LAYER_VALUE_MAX;
-        }
-    }
+    selection_change(index, false);
 }
 
 // MARK: Menu layer callbacks
