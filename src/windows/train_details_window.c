@@ -266,7 +266,13 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #endif
     
     if (s_is_updating) {
-        draw_centered_title(ctx, cell_layer, "Loading...", NULL, text_color);
+        draw_centered_title(ctx, cell_layer, "Loading...", NULL,
+#ifdef PBL_COLOR
+                            GColorLightGray
+#else
+                            text_color
+#endif
+                            );
     } else if (s_train_details_list_count > 0) {
         DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
         
@@ -290,7 +296,13 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         free(str_time);
         free(str_station);
     } else {
-        draw_centered_title(ctx, cell_layer, "No train.", NULL, text_color);
+        draw_centered_title(ctx, cell_layer, "No train.", NULL,
+#ifdef PBL_COLOR
+                            GColorLightGray
+#else
+                            text_color
+#endif
+                            );
     }
 }
 

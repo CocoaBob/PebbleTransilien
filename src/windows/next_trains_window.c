@@ -398,15 +398,21 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
         draw_from_to(ctx,
-                           cell_layer,
-                           s_from_to,
+                     cell_layer,
+                     s_from_to,
 #ifdef PBL_COLOR
-                           is_highlighed,
+                     is_highlighed,
 #endif
-                           text_color);
+                     text_color);
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (s_is_updating && s_next_trains_list_count == 0) {
-            draw_centered_title(ctx, cell_layer, "Loading...", NULL, text_color);
+            draw_centered_title(ctx, cell_layer, "Loading...", NULL,
+#ifdef PBL_COLOR
+                                GColorLightGray
+#else
+                                text_color
+#endif
+                                );
         } else if (s_next_trains_list_count > 0) {
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             
@@ -433,7 +439,13 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             free(str_hour);
             free(str_terminus);
         } else {
-            draw_centered_title(ctx, cell_layer, "No train.", NULL, text_color);
+            draw_centered_title(ctx, cell_layer, "No train.", NULL,
+#ifdef PBL_COLOR
+                                GColorLightGray
+#else
+                                text_color
+#endif
+                                );
         }
     }
 }
