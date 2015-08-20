@@ -368,7 +368,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 172.20.10.4";
+			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 192.168.50.166";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -437,7 +437,7 @@
 					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 				);
-				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.2";
+				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.3";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -451,7 +451,7 @@
 					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 				);
-				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.2";
+				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.3";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
