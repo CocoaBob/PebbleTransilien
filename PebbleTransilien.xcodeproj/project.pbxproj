@@ -342,7 +342,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --emulator basalt";
+			shellScript = "PEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --emulator basalt\nif ps aux | grep \"pebble logs --emulator basalt\" | grep -v \"grep\"\nthen\nosascript -e 'tell app \"Terminal\"' -e 'activate' -e 'end tell'\nelse\nosascript -e 'tell app \"Terminal\"' -e 'do script \"pebble logs --emulator basalt\"' -e 'activate' -e 'end tell'\nfi\nosascript -e \"tell app \\\"${PEBBLE_SDK_PATH}/Pebble/common/qemu/qemu-system-arm_Darwin_x86_64\\\"\" -e 'activate' -e 'end tell'";
 		};
 		4517F3361B4C04DD0078F1A0 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -355,7 +355,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --emulator aplite";
+			shellScript = "PEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --emulator aplite\nif ps aux | grep \"pebble logs --emulator aplite\" | grep -v \"grep\"\nthen\nosascript -e 'tell app \"Terminal\"' -e 'activate' -e 'end tell'\nelse\nosascript -e 'tell app \"Terminal\"' -e 'do script \"pebble logs --emulator aplite\"' -e 'activate' -e 'end tell'\nfi\nosascript -e \"tell app \\\"${PEBBLE_SDK_PATH}/Pebble/common/qemu/qemu-system-arm_Darwin_x86_64\\\"\" -e 'activate' -e 'end tell'";
 		};
 		4517F3411B4C04F90078F1A0 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -437,7 +437,6 @@
 					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 				);
-				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.3";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -451,7 +450,6 @@
 					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
 				);
-				PEBBLE_SDK_PATH = "$(HOME)/pebble-dev/PebbleSDK-3.3";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
