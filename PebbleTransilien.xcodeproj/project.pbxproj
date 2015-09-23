@@ -368,7 +368,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone 192.168.50.166";
+			shellScript = "PHONE_IP=192.168.1.2\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\ncd ${SRCROOT}\npebble build\npebble install --phone $PHONE_IP\nif ps aux | grep \"pebble logs --phone ${PHONE_IP}\" | grep -v \"grep\"\nthen\nosascript -e 'tell app \"Terminal\"' -e 'activate' -e 'end tell'\nelse\nosascript -e 'tell app \"Terminal\"' -e \"do script \\\"pebble logs --phone ${PHONE_IP}\\\"\" -e 'activate' -e 'end tell'\nfi";
 		};
 /* End PBXShellScriptBuildPhase section */
 
