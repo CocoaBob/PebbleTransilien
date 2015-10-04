@@ -348,8 +348,8 @@ function sendAppMessageForNextTrains(responseText) {
 
 function requestNextTrains(from, to) {
     // For off-line test
-    sendAppMessageForNextTrains(next_trains_example);
-    return;
+//    sendAppMessageForNextTrains(next_trains_example);
+//    return;
     
     var req = new XMLHttpRequest();
     req.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", false);
@@ -415,8 +415,8 @@ function sendAppMessageForTrainDetails(responseText) {
 
 function requestTrainDetails(trainNumber) {
     // For off-line test
-    sendAppMessageForTrainDetails(train_details_example);
-    return;
+//    sendAppMessageForTrainDetails(train_details_example);
+//    return;
     
     var req = new XMLHttpRequest();
     req.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", false);
