@@ -342,7 +342,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e \"set C to do script \\\"cd ${SRCROOT}\\\" in window 1\" -e 'do script \"pebble build\" in C' -e 'do script \"pebble build\" in C' -e 'do script \"pebble install --emulator basalt\" in C' -e 'do script \"pebble logs --emulator basalt\" in C' -e 'end tell'";
+			shellScript = "PEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e \"set C to do script \\\"cd ${SRCROOT}\\\" in window 1\" -e 'do script \"pebble clean\" in C' -e 'do script \"pebble build\" in C' -e 'do script \"pebble install --emulator basalt\" in C' -e 'do script \"pebble logs --emulator basalt\" in C' -e 'end tell'";
 		};
 		4517F3361B4C04DD0078F1A0 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -368,7 +368,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PHONE_IP=192.168.1.20\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e \"set C to do script \\\"cd ${SRCROOT}\\\" in window 1\" -e 'do script \"pebble build\" in C' -e 'do script \"pebble build\" in C' -e \"do script \\\"pebble install --phone $PHONE_IP\\\" in C\" -e \"do script \\\"pebble logs --phone ${PHONE_IP}\\\" in C\" -e 'end tell'";
+			shellScript = "PHONE_IP=192.168.1.20\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e \"set C to do script \\\"cd ${SRCROOT}\\\" in window 1\" -e 'do script \"pebble clean\" in C' -e 'do script \"pebble build\" in C' -e \"do script \\\"pebble install --phone $PHONE_IP\\\" in C\" -e \"do script \\\"pebble logs --phone ${PHONE_IP}\\\" in C\" -e 'end tell'";
 		};
 /* End PBXShellScriptBuildPhase section */
 

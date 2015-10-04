@@ -27,8 +27,10 @@ static Layer *s_status_bar_background_layer;
 static InverterLayer *s_inverter_layer;
 #endif
 
-#define UPDATE_TIME_FORMAT_INTERVAL 3000 // 2 seconds
+#define UPDATE_TIME_FORMAT_INTERVAL 3750 // 3.75 seconds
 static AppTimer *s_update_time_format_timer;
+#define IDLE_TIMEOUT 300000 // 5 minutes
+static AppTimer *s_idle_timer;
 
 static char* s_train_number;
 static StationIndex s_from_station;
@@ -43,6 +45,7 @@ static bool s_show_relative_time;
 
 static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context);
 static void restart_timers();
+static void idle_timer_start();
 
 // MARK: Action list callbacks
 
@@ -218,6 +221,22 @@ static void update_time_format_timer_callback(void *context) {
 static void restart_timers() {
     update_time_format_timer_stop();
     update_time_format_timer_start();
+}
+
+static void idle_timer_callback(void *context) {
+    window_stack_pop_all(false);
+    push_main_menu_window(false);
+}
+
+static void idle_timer_start() {
+    app_timer_register(IDLE_TIMEOUT, idle_timer_callback, NULL);
+}
+
+static void idle_timer_stop() {
+    if(s_idle_timer) {
+        app_timer_cancel(s_idle_timer);
+        s_idle_timer = NULL;
+    }
 }
 
 // MARK: Click Config Provider
@@ -430,6 +449,7 @@ static void window_appear(Window *window) {
     
     // Start timer
     update_time_format_timer_start();
+    idle_timer_start();
 }
 
 static void window_disappear(Window *window) {
@@ -437,6 +457,7 @@ static void window_disappear(Window *window) {
     
     // Stop timer
     update_time_format_timer_stop();
+    idle_timer_stop();
 }
 
 // MARK: Entry point

@@ -34,8 +34,10 @@ static InverterLayer *s_inverter_layer;
 
 #define RELOAD_DATA_TIMER_INTERVAL 15000 // 15 seconds
 static AppTimer *s_reload_data_timer;
-#define UPDATE_TIME_FORMAT_INTERVAL 3000 // 2 seconds
+#define UPDATE_TIME_FORMAT_INTERVAL 3750 // 3.75 seconds
 static AppTimer *s_update_time_format_timer;
+#define IDLE_TIMEOUT 300000 // 5 minutes
+static AppTimer *s_idle_timer;
 
 static DataModelFromTo s_from_to;
 static char *s_str_from;
@@ -50,6 +52,7 @@ static bool s_show_relative_time;
 // Forward declaration
 
 static void restart_timers();
+static void idle_timer_start();
 
 // MARK: Constants
 
@@ -375,6 +378,22 @@ static void restart_timers() {
     reload_data_timer_start();
 }
 
+static void idle_timer_callback(void *context) {
+    window_stack_pop_all(false);
+    push_main_menu_window(false);
+}
+
+static void idle_timer_start() {
+    s_idle_timer = app_timer_register(IDLE_TIMEOUT, idle_timer_callback, NULL);
+}
+
+static void idle_timer_stop() {
+    if(s_idle_timer) {
+        app_timer_cancel(s_idle_timer);
+        s_idle_timer = NULL;
+    }
+}
+
 // MARK: Menu layer callbacks
 
 static uint16_t menu_layer_get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
@@ -586,6 +605,7 @@ static void window_appear(Window *window) {
     // Start timer
     reload_data_timer_start();
     update_time_format_timer_start();
+    idle_timer_start();
 }
 
 static void window_disappear(Window *window) {
@@ -594,6 +614,7 @@ static void window_disappear(Window *window) {
     // Stop timer
     reload_data_timer_stop();
     update_time_format_timer_stop();
+    idle_timer_stop();
 }
 
 // MARK: Entry point
