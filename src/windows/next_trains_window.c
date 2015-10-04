@@ -47,6 +47,10 @@ static bool s_is_updating;
 
 static bool s_show_relative_time;
 
+// Forward declaration
+
+static void restart_timers();
+
 // MARK: Constants
 
 #define NEXT_TRAIN_CELL_ICON_Y 4    // CELL_MARGIN = 4
@@ -262,6 +266,8 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     
     // Update UI
     s_is_updating = false;
+    restart_timers();
+    s_show_relative_time = false;
     menu_layer_reload_data(s_menu_layer);
 }
 
@@ -359,6 +365,13 @@ static void reload_data_timer_stop() {
 
 static void reload_data_timer_callback(void *context) {
     request_next_stations();
+    reload_data_timer_start();
+}
+
+static void restart_timers() {
+    update_time_format_timer_stop();
+    update_time_format_timer_start();
+    reload_data_timer_stop();
     reload_data_timer_start();
 }
 
