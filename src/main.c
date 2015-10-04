@@ -11,12 +11,18 @@
 
 void handle_init(void) {
 //    persist_delete(102);
-//    persist_delete(103);    
+//    persist_delete(103);
     locale_init();
     status_init();
     stations_init();
     message_init();
-    push_main_menu_window(true);
+    if (fav_get_count() > 0 && status_is_fav_on_launch()) {
+        Favorite favorite = fav_at_index(0);
+        push_main_menu_window(false);
+        push_next_trains_window(favorite, true);
+    } else {
+        push_main_menu_window(true);
+    }
 }
 
 void handle_deinit(void) {

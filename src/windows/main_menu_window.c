@@ -26,6 +26,7 @@ enum {
 enum {
     MAIN_MENU_SECTION_SETTING_ROW_THEME,
     MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE,
+    MAIN_MENU_SECTION_SETTING_ROW_ON_LAUNCH,
     MAIN_MENU_SECTION_SETTING_ROW_COUNT
 };
 
@@ -163,6 +164,7 @@ static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_laye
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
     bool is_dark_theme = status_is_dark_theme();
+    bool is_fav_on_launch = status_is_fav_on_launch();
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
@@ -192,6 +194,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             menu_cell_basic_draw(ctx, cell_layer, _("Theme"), is_dark_theme?_("Dark theme"):_("Light theme"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             menu_cell_basic_draw(ctx, cell_layer, "Language", _("English"), NULL);
+        } else if (row == MAIN_MENU_SECTION_SETTING_ROW_ON_LAUNCH) {
+            menu_cell_basic_draw(ctx, cell_layer, _("On launch"), is_fav_on_launch?_("Show 1st favorit"):_("Show home"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_ABOUT) {
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
@@ -264,6 +268,8 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             }
             storage_set_locale(result);
             locale_init();
+        } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_ON_LAUNCH) {
+            storage_set_is_fav_on_launch(!status_is_fav_on_launch());
         }
         menu_layer_reload_data(s_menu_layer);
     }

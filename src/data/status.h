@@ -13,6 +13,7 @@ void status_deinit();
 
 bool status_is_dark_theme();
 char *status_curr_locale();
+bool status_is_fav_on_launch();
 
 GColor curr_fg_color();
 GColor curr_bg_color();

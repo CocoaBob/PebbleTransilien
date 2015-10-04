@@ -11,8 +11,9 @@
 
 #define SETTING_THEME 100
 #define SETTING_LOCALE 101
-#define SETTING_FAVORITES 102
-#define SETTING_FAVORITES_COUNT 103
+#define SETTING_IS_FAV_ON_LAUNCH 102
+#define SETTING_FAVORITES 200
+#define SETTING_FAVORITES_COUNT 201
 
 // true is dark theme, false is light theme
 bool storage_get_theme() {
@@ -37,6 +38,16 @@ bool storage_get_locale(char *locale) {
 
 void storage_set_locale(const char* locale) {
     persist_write_string(SETTING_LOCALE, locale);
+    
+    status_init();
+}
+
+bool storage_get_is_fav_on_launch() {
+    return persist_read_bool(SETTING_IS_FAV_ON_LAUNCH);
+}
+
+void storage_set_is_fav_on_launch(bool is_fav_on_launch) {
+    persist_write_bool(SETTING_IS_FAV_ON_LAUNCH, is_fav_on_launch);
     
     status_init();
 }
