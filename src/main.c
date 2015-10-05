@@ -16,16 +16,19 @@ void handle_init(void) {
     status_init();
     stations_init();
     message_init();
+    load_favorites();
+    
     if (fav_get_count() > 0 && status_is_fav_on_launch()) {
         Favorite favorite = fav_at_index(0);
         push_main_menu_window(false);
-        push_next_trains_window(favorite, true);
+        push_next_trains_window(favorite, false);
     } else {
-        push_main_menu_window(true);
+        push_main_menu_window(false);
     }
 }
 
 void handle_deinit(void) {
+    unload_favorites();
     status_deinit();
     stations_deinit();
     message_deinit();

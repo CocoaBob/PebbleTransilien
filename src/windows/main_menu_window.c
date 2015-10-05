@@ -313,9 +313,6 @@ static void window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
-    // Load favorites
-    load_favorites();
-    
     // Add status bar
 #ifdef PBL_PLATFORM_BASALT
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
@@ -377,7 +374,6 @@ static void window_appear(Window *window) {
 
 static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
-    unload_favorites();
 #ifdef PBL_PLATFORM_BASALT
     layer_destroy(s_status_bar_background_layer);
     status_bar_layer_destroy(s_status_bar);
