@@ -1,7 +1,7 @@
 [<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/banner.png" width="720"/>](https://apps.getpebble.com/en_US/application/561250ba1cdcfc612600008c)
 
 # Transilien
-Transilien for Pebble is an unofficial app for checking SNCF Transilien™ trains on your wrist. Transilien™ is the brand name of the suburban railway service of the SNCF-owned railway network operating within the Île-de-France.
+PebbleTransilien is an unofficial app for checking SNCF Transilien™ trains on your wrist. Transilien™ is the brand name of the suburban railway service of the SNCF-owned railway network operating within the Île-de-France.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/0.gif" width="144" height="168"/>
