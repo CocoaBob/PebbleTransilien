@@ -1,7 +1,7 @@
-# Transilien
-This is an unofficial Pebble app for SNCF Transilien, it will be published to Pebble appstore later when it's more polished.
+[<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/banner.png" width="720"/>](https://apps.getpebble.com/en_US/application/561250ba1cdcfc612600008c)
 
-The main features are searching stations and checking real-time schedules on your wrist.
+# Transilien
+Transilien for Pebble is an unofficial app for checking SNCF Transilien™ trains on your wrist. Transilien™ is the brand name of the suburban railway service of the SNCF-owned railway network operating within the Île-de-France.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/0.gif" width="144" height="168"/>
@@ -13,6 +13,12 @@ The main features are searching stations and checking real-time schedules on you
 <img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/3.gif" width="144" height="168"/>
 <img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/4.gif" width="144" height="168"/>
 <img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/5.png" width="144" height="168"/>
+</p>
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/6.png" width="144" height="168"/>
+<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/7.png" width="144" height="168"/>
+<img src="https://raw.githubusercontent.com/CocoaBob/PebbleTransilien/master/screenshots/8.png" width="144" height="168"/>
 </p>
 
 # Database specifications
@@ -30,8 +36,7 @@ ORDER BY CODE
 ```
 
 ## How is it organized?
-To facilitate the usages, data is organized into several binaries by using this Mac tool [TransilienStations
-](https://github.com/CocoaBob/TransilienStations). (Remember to pull CocoaPods dependencies before building in Xcode.)
+To facilitate the usages, data is organized into several binaries by using this Mac tool [TransilienStations](https://github.com/CocoaBob/TransilienStations). (Remember to pull CocoaPods dependencies before building in Xcode.)
 
 The binaries are:
 
