@@ -15,12 +15,12 @@ static ResHandle s_name_pos_handle;
 static ResHandle s_name_search_handle;
 
 // Low RAM solution
-#ifdef PBL_PLATFORM_APLITE
+#if defined(PBL_PLATFORM_APLITE)
 static ResHandle s_name_search_pos_handle;
 #endif
 
 // High performance solution
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 static size_t s_names_to_search_size;
 static char *s_names_to_search;
 #endif
@@ -30,7 +30,7 @@ void stations_init() {
     s_name_handle = resource_get_handle(RESOURCE_ID_STATION_NAME);
     s_name_pos_handle = resource_get_handle(RESOURCE_ID_STATION_NAME_POS);
     s_name_search_handle = resource_get_handle(RESOURCE_ID_STATION_NAME_SEARCH);
-#ifdef PBL_PLATFORM_APLITE
+#if defined(PBL_PLATFORM_APLITE)
     s_name_search_pos_handle = resource_get_handle(RESOURCE_ID_STATION_NAME_SEARCH_POS);
 #endif
 }
@@ -54,7 +54,7 @@ size_t stations_get_code(StationIndex index, char *buffer, const size_t buffer_s
 }
 
 // High performance solution
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 void stations_search_name_begin() {
     s_names_to_search_size = resource_size(s_name_search_handle);
     s_names_to_search = malloc(s_names_to_search_size);
@@ -85,7 +85,7 @@ void stations_search_name_end() {
 #endif
 
 // Low RAM solution
-#ifdef PBL_PLATFORM_APLITE
+#if defined(PBL_PLATFORM_APLITE)
 size_t stations_get_name_search_pos(StationIndex index) {
     uint8_t pos_bytes[STATION_NAME_POS_VALUE_LENGTH];
     resource_load_byte_range(s_name_search_pos_handle, STATION_NAME_POS_VALUE_LENGTH * index, pos_bytes, STATION_NAME_POS_VALUE_LENGTH);

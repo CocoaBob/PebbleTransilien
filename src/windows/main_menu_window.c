@@ -45,7 +45,7 @@ enum {
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
 #endif
@@ -237,7 +237,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
             push_search_train_window(STATION_NON, STATION_NON, true);
-#ifdef PBL_PLATFORM_APLITE
+#if defined(PBL_PLATFORM_APLITE)
             // Remove main menu window to reduce memory for Aplite.
             window_stack_remove(s_window, false);
 #endif
@@ -254,7 +254,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             setup_ui_theme(s_window, s_inverter_layer);
 #endif
             
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
             status_bar_set_colors(s_status_bar);
 #endif
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
@@ -290,7 +290,7 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
     }
 }
 
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 
 static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     return 1;
@@ -314,13 +314,13 @@ static void window_load(Window *window) {
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
 #endif
     
     // Add menu layer
     int16_t status_bar_height = 0;
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
 #endif
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
@@ -338,7 +338,7 @@ static void window_load(Window *window) {
         .draw_header = (MenuLayerDrawHeaderCallback)menu_layer_draw_header_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
@@ -374,7 +374,7 @@ static void window_appear(Window *window) {
 
 static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
     layer_destroy(s_status_bar_background_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif

@@ -39,7 +39,7 @@ void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relati
             offset = 1;
         }
     }
-#ifdef PBL_PLATFORM_APLITE
+#if defined(PBL_PLATFORM_APLITE)
     strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time));
 #else
     if (is_relative_to_now) {

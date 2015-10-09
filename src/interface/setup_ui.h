@@ -12,7 +12,7 @@
 
 // MARK: Status bar and its overlay
 
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 void status_bar_set_colors(StatusBarLayer *status_bar_layer);
 void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_layer, Layer **status_bar_background_layer);
 #endif

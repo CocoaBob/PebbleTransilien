@@ -11,7 +11,7 @@
 
 // MARK: Status bar and its overlay
 
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     

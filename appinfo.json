@@ -93,7 +93,8 @@
   "shortName": "Transilien",
   "targetPlatforms": [
     "aplite",
-    "basalt"
+    "basalt",
+    "chalk"
   ],
   "uuid": "30663f9d-bae8-4557-b8b9-c890b1094f24",
   "versionLabel": "1.0",

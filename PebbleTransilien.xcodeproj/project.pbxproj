@@ -81,6 +81,7 @@
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 		45A97AF31B6629A800E232F2 /* selection_layer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = selection_layer.c; sourceTree = "<group>"; };
 		45A97AF41B6629A800E232F2 /* selection_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = selection_layer.h; sourceTree = "<group>"; };
+		45AC6FBE1BC7C67000E7BC90 /* Chalk */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Chalk; sourceTree = BUILT_PRODUCTS_DIR; };
 		45B2B6871B5EE93F0065786D /* data_model.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = data_model.c; sourceTree = "<group>"; };
 		45B2B6881B5EE93F0065786D /* data_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = data_model.h; sourceTree = "<group>"; };
 		45EC75521B4C0FFA00524DDA /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,6 +123,7 @@
 				450852001B4FCF61008098D5 /* resources */,
 				450852021B4FCF92008098D5 /* src */,
 				45EC755D1B4C10C200524DDA /* Products */,
+				45AC6FBE1BC7C67000E7BC90 /* Chalk */,
 			);
 			sourceTree = "<group>";
 		};
@@ -276,6 +278,21 @@
 			productReference = 4517F3641B4C0A060078F1A0 /* Basalt */;
 			productType = "com.apple.product-type.tool";
 		};
+		45AC6FB91BC7C67000E7BC90 /* Chalk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 45AC6FBB1BC7C67000E7BC90 /* Build configuration list for PBXNativeTarget "Chalk" */;
+			buildPhases = (
+				45AC6FBA1BC7C67000E7BC90 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Chalk;
+			productName = App;
+			productReference = 45AC6FBE1BC7C67000E7BC90 /* Chalk */;
+			productType = "com.apple.product-type.tool";
+		};
 		45EC75511B4C0FFA00524DDA /* HiddenTarget */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 45EC75561B4C0FFA00524DDA /* Build configuration list for PBXNativeTarget "HiddenTarget" */;
@@ -324,6 +341,7 @@
 			targets = (
 				4517F3351B4C04DD0078F1A0 /* Aplite */,
 				4563F1D11B4BFC0B004709EA /* Basalt */,
+				45AC6FB91BC7C67000E7BC90 /* Chalk */,
 				4517F3401B4C04F90078F1A0 /* Device */,
 				45EC75511B4C0FFA00524DDA /* HiddenTarget */,
 			);
@@ -342,7 +360,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set C to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in C\" -e 'do script \"pebble clean\" in C' -e 'do script \"pebble build\" in C' -e 'do script \"pebble install --emulator basalt\" in C' -e 'do script \"pebble logs --emulator basalt\" in C' -e 'end tell'";
+			shellScript = "PEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e 'do script \"pebble install --emulator basalt\" in ctx' -e 'do script \"pebble logs --emulator basalt\" in ctx' -e 'end tell'";
 		};
 		4517F3361B4C04DD0078F1A0 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -355,7 +373,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set C to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in C\" -e 'do script \"pebble clean\" in C' -e 'do script \"pebble build\" in C' -e 'do script \"pebble install --emulator aplite\" in C' -e 'do script \"pebble logs --emulator aplite\" in C' -e 'end tell'";
+			shellScript = "PEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e 'do script \"pebble install --emulator aplite\" in ctx' -e 'do script \"pebble logs --emulator aplite\" in ctx' -e 'end tell'";
 		};
 		4517F3411B4C04F90078F1A0 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -368,7 +386,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PHONE_IP=192.168.1.20\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set C to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in C\" -e 'do script \"pebble clean\" in C' -e 'do script \"pebble build\" in C' -e \"do script \\\"pebble install --phone $PHONE_IP\\\" in C\" -e \"do script \\\"pebble logs --phone ${PHONE_IP}\\\" in C\" -e 'end tell'";
+			shellScript = "PHONE_IP=192.168.2.3\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e \"do script \\\"pebble install --phone $PHONE_IP\\\" in ctx\" -e \"do script \\\"pebble logs --phone ${PHONE_IP}\\\" in ctx\" -e 'end tell'";
+		};
+		45AC6FBA1BC7C67000E7BC90 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "PEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e 'do script \"pebble install --emulator chalk\" in ctx' -e 'do script \"pebble logs --emulator chalk\" in ctx' -e 'end tell'    ";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -469,6 +500,24 @@
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = PBL_COLOR;
 				MTL_ENABLE_DEBUG_INFO = NO;
+			};
+			name = Release;
+		};
+		45AC6FBC1BC7C67000E7BC90 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = PBL_COLOR;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		45AC6FBD1BC7C67000E7BC90 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = PBL_COLOR;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -594,6 +643,15 @@
 			buildConfigurations = (
 				4563F1D61B4BFC0B004709EA /* Debug */,
 				4563F1D71B4BFC0B004709EA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		45AC6FBB1BC7C67000E7BC90 /* Build configuration list for PBXNativeTarget "Chalk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				45AC6FBC1BC7C67000E7BC90 /* Debug */,
+				45AC6FBD1BC7C67000E7BC90 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

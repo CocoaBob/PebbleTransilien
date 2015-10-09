@@ -14,7 +14,7 @@
 #define STATION_NAME_POS_VALUE_LENGTH 2
 #define STATION_NON 999
 
-#ifdef PBL_PLATFORM_APLITE
+#if defined(PBL_PLATFORM_APLITE)
 #define STATION_SEARH_RESULT_MAX_COUNT 5
 #else
 #define STATION_SEARH_RESULT_MAX_COUNT 10
@@ -26,7 +26,7 @@ void stations_deinit();
 size_t stations_get_name(StationIndex index, char *buffer, const size_t buffer_size);
 size_t stations_get_code(StationIndex index, char *buffer, const size_t buffer_size);
 
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 void stations_search_name_begin();
 void stations_search_name_end();
 #endif

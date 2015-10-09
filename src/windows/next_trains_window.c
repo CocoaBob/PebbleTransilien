@@ -23,7 +23,7 @@ enum {
 static Window *s_window;
 static MenuLayer *s_menu_layer;
 static ClickConfigProvider s_last_ccp;
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
 #endif
@@ -495,7 +495,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     }
 }
 
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 
 static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     return 1;
@@ -526,13 +526,13 @@ static void window_load(Window *window) {
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
 #endif
     
     // Add menu layer
     int16_t status_bar_height = 0;
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
 #endif
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
@@ -549,7 +549,7 @@ static void window_load(Window *window) {
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
@@ -587,7 +587,7 @@ static void window_unload(Window *window) {
     window_destroy(s_window);
     s_window = NULL;
     
-#ifdef PBL_PLATFORM_BASALT
+#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
     layer_destroy(s_status_bar_background_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif
