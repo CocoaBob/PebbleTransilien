@@ -40,9 +40,6 @@
 
 /* Begin PBXFileReference section */
 		450852001B4FCF61008098D5 /* resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = resources; sourceTree = "<group>"; };
-		4517F3621B4C09DB0078F1A0 /* Aplite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Aplite; sourceTree = BUILT_PRODUCTS_DIR; };
-		4517F3631B4C09E10078F1A0 /* Device */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Device; sourceTree = BUILT_PRODUCTS_DIR; };
-		4517F3641B4C0A060078F1A0 /* Basalt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Basalt; sourceTree = BUILT_PRODUCTS_DIR; };
 		45286A5B1B63A50500A9113F /* data_process.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = data_process.c; sourceTree = "<group>"; };
 		45286A5C1B63A50500A9113F /* data_process.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = data_process.h; sourceTree = "<group>"; };
 		45286A5E1B63DCCF00A9113F /* search_station_window.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = search_station_window.c; sourceTree = "<group>"; };
@@ -53,6 +50,11 @@
 		45530B1A1B615EC50059867C /* train_details_window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = train_details_window.h; sourceTree = "<group>"; };
 		455934B81B6A193F00D76A9A /* action_list_window.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = action_list_window.c; sourceTree = "<group>"; };
 		455934B91B6A193F00D76A9A /* action_list_window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = action_list_window.h; sourceTree = "<group>"; };
+		4587C5FA1BC976BE00FEC09B /* Aplite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Aplite; sourceTree = BUILT_PRODUCTS_DIR; };
+		4587C5FB1BC976BE00FEC09B /* Basalt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Basalt; sourceTree = BUILT_PRODUCTS_DIR; };
+		4587C5FC1BC976BE00FEC09B /* Chalk */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Chalk; sourceTree = BUILT_PRODUCTS_DIR; };
+		4587C5FD1BC976BE00FEC09B /* Device */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Device; sourceTree = BUILT_PRODUCTS_DIR; };
+		4587C5FE1BC976BE00FEC09B /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
 		4592A25E1B5BB4DD0070351C /* constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = constants.h; sourceTree = "<group>"; };
 		4592A2601B5BB4DD0070351C /* favorites.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = favorites.c; sourceTree = "<group>"; };
 		4592A2611B5BB4DD0070351C /* favorites.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = favorites.h; sourceTree = "<group>"; };
@@ -81,10 +83,8 @@
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 		45A97AF31B6629A800E232F2 /* selection_layer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = selection_layer.c; sourceTree = "<group>"; };
 		45A97AF41B6629A800E232F2 /* selection_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = selection_layer.h; sourceTree = "<group>"; };
-		45AC6FBE1BC7C67000E7BC90 /* Chalk */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Chalk; sourceTree = BUILT_PRODUCTS_DIR; };
 		45B2B6871B5EE93F0065786D /* data_model.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = data_model.c; sourceTree = "<group>"; };
 		45B2B6881B5EE93F0065786D /* data_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = data_model.h; sourceTree = "<group>"; };
-		45EC75521B4C0FFA00524DDA /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,8 +122,7 @@
 				454FA5B41B4EFC6C00473A4B /* locale_framework */,
 				450852001B4FCF61008098D5 /* resources */,
 				450852021B4FCF92008098D5 /* src */,
-				45EC755D1B4C10C200524DDA /* Products */,
-				45AC6FBE1BC7C67000E7BC90 /* Chalk */,
+				4587C5FF1BC976E100FEC09B /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -134,6 +133,18 @@
 				454FA5B81B4EFC6C00473A4B /* locale_french.json */,
 			);
 			path = locale_framework;
+			sourceTree = "<group>";
+		};
+		4587C5FF1BC976E100FEC09B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4587C5FA1BC976BE00FEC09B /* Aplite */,
+				4587C5FB1BC976BE00FEC09B /* Basalt */,
+				4587C5FC1BC976BE00FEC09B /* Chalk */,
+				4587C5FD1BC976BE00FEC09B /* Device */,
+				4587C5FE1BC976BE00FEC09B /* HiddenTarget */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		4592A25F1B5BB4DD0070351C /* data */ = {
@@ -219,17 +230,6 @@
 			path = 3rd_party;
 			sourceTree = "<group>";
 		};
-		45EC755D1B4C10C200524DDA /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				4517F3621B4C09DB0078F1A0 /* Aplite */,
-				4517F3631B4C09E10078F1A0 /* Device */,
-				4517F3641B4C0A060078F1A0 /* Basalt */,
-				45EC75521B4C0FFA00524DDA /* HiddenTarget */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -245,7 +245,7 @@
 			);
 			name = Aplite;
 			productName = App;
-			productReference = 4517F3621B4C09DB0078F1A0 /* Aplite */;
+			productReference = 4587C5FA1BC976BE00FEC09B /* Aplite */;
 			productType = "com.apple.product-type.tool";
 		};
 		4517F3401B4C04F90078F1A0 /* Device */ = {
@@ -260,7 +260,7 @@
 			);
 			name = Device;
 			productName = App;
-			productReference = 4517F3631B4C09E10078F1A0 /* Device */;
+			productReference = 4587C5FD1BC976BE00FEC09B /* Device */;
 			productType = "com.apple.product-type.tool";
 		};
 		4563F1D11B4BFC0B004709EA /* Basalt */ = {
@@ -275,7 +275,7 @@
 			);
 			name = Basalt;
 			productName = App;
-			productReference = 4517F3641B4C0A060078F1A0 /* Basalt */;
+			productReference = 4587C5FB1BC976BE00FEC09B /* Basalt */;
 			productType = "com.apple.product-type.tool";
 		};
 		45AC6FB91BC7C67000E7BC90 /* Chalk */ = {
@@ -290,7 +290,7 @@
 			);
 			name = Chalk;
 			productName = App;
-			productReference = 45AC6FBE1BC7C67000E7BC90 /* Chalk */;
+			productReference = 4587C5FC1BC976BE00FEC09B /* Chalk */;
 			productType = "com.apple.product-type.tool";
 		};
 		45EC75511B4C0FFA00524DDA /* HiddenTarget */ = {
@@ -307,7 +307,7 @@
 			);
 			name = HiddenTarget;
 			productName = HiddenTarget;
-			productReference = 45EC75521B4C0FFA00524DDA /* HiddenTarget */;
+			productReference = 4587C5FE1BC976BE00FEC09B /* HiddenTarget */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -386,7 +386,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PHONE_IP=192.168.2.3\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e \"do script \\\"pebble install --phone $PHONE_IP\\\" in ctx\" -e \"do script \\\"pebble logs --phone ${PHONE_IP}\\\" in ctx\" -e 'end tell'";
+			shellScript = "PHONE_IP=192.168.1.20\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e \"do script \\\"pebble install --phone $PHONE_IP\\\" in ctx\" -e \"do script \\\"pebble logs --phone ${PHONE_IP}\\\" in ctx\" -e 'end tell'";
 		};
 		45AC6FBA1BC7C67000E7BC90 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;

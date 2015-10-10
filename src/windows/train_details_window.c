@@ -295,7 +295,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     if (s_is_updating) {
         draw_centered_title(ctx, cell_layer, "Loading...", NULL,
 #ifdef PBL_COLOR
-                            GColorLightGray
+                            GColorBlack
 #else
                             text_color
 #endif
@@ -325,7 +325,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     } else {
         draw_centered_title(ctx, cell_layer, "No train.", NULL,
 #ifdef PBL_COLOR
-                            GColorLightGray
+                            GColorBlack
 #else
                             text_color
 #endif

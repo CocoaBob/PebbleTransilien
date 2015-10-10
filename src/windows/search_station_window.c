@@ -577,7 +577,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     } else {
         draw_centered_title(ctx, cell_layer, (s_search_results_index >= 0)?"Not found.":"Press UP/DOWN", NULL,
 #ifdef PBL_COLOR
-                            GColorLightGray
+                            GColorBlack
 #else
                             text_color
 #endif
