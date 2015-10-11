@@ -114,7 +114,7 @@ var next_trains_example = '[\
 "trainDock": "A",\
 "trainHour": "22/07/2015 18:24",\
 "trainLane": null,\
-"trainMention": "Supprimé",\
+"trainMention": "Supprime",\
 "trainMissionCode": "POPU",\
 "trainNumber": "135984",\
 "trainTerminus": "PSL",\
@@ -134,7 +134,7 @@ var next_trains_example = '[\
 "trainDock": "",\
 "trainHour": "22/07/2015 18:31",\
 "trainLane": null,\
-"trainMention": "Retardé",\
+"trainMention": "Retarde",\
 "trainMissionCode": "POBA",\
 "trainNumber": "133758",\
 "trainTerminus": "PSL",\
@@ -144,7 +144,7 @@ var next_trains_example = '[\
 "trainDock": " ",\
 "trainHour": "22/07/2015 18:33",\
 "trainLane": null,\
-"trainMention": "Retardé",\
+"trainMention": "Retarde",\
 "trainMissionCode": "SEBO",\
 "trainNumber": "134657",\
 "trainTerminus": "SNB",\

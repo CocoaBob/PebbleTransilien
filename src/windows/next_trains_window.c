@@ -67,6 +67,7 @@ static void idle_timer_start();
 
 static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                                  GColor text_color,
+                                 bool is_selected,
 #ifdef PBL_COLOR
                                  bool is_highlighed,
 #endif
@@ -109,9 +110,9 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
     }
     
     // Mention
-    int16_t right_margin = CELL_MARGIN;
+    bool has_mention = false;
     if (str_mention != NULL && strlen(str_mention) > 0) {
-        right_margin = CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
+        has_mention = true;
         GRect frame_mention = GRect(bounds.size.w - CELL_SUB_ICON_SIZE - NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN,
                                     NEXT_TRAIN_CELL_SUB_ICON_Y,
                                     CELL_SUB_ICON_SIZE,
@@ -127,9 +128,40 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
     // Terminus
     GRect frame_terminus = GRect(CELL_MARGIN,
                                  CELL_HEIGHT_2 + TEXT_Y_OFFSET + 1,
-                                 bounds.size.w - right_margin,
+                                 bounds.size.w - CELL_MARGIN,
                                  CELL_HEIGHT_2);
-    draw_text(ctx, str_terminus, FONT_KEY_GOTHIC_18, frame_terminus, GTextAlignmentLeft);
+    if (has_mention) {
+        if (is_selected) {
+            GRect frame_mention = GRect(CELL_MARGIN,
+                                        CELL_HEIGHT_2 + TEXT_Y_OFFSET + 4,
+                                        bounds.size.w - CELL_MARGIN,
+                                        CELL_HEIGHT_2);
+            frame_mention.size.w -= CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
+            frame_terminus.size.w -= CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
+            GSize mention_size = graphics_text_layout_get_content_size(str_mention,
+                                                                       fonts_get_system_font(FONT_KEY_GOTHIC_14),
+                                                                       frame_mention,
+                                                                       GTextOverflowModeTrailingEllipsis,
+                                                                       GTextAlignmentRight);
+            frame_mention.size.w = mention_size.w;
+            if (mention_size.w > 0) {
+                frame_terminus.size.w -= CELL_MARGIN + mention_size.w;
+            }
+            frame_mention.origin.x = frame_terminus.origin.x + frame_terminus.size.w + CELL_MARGIN;
+            draw_text(ctx,
+                      str_mention,
+                      FONT_KEY_GOTHIC_14,
+                      frame_mention,
+                      GTextAlignmentRight);
+        } else {
+            frame_terminus.size.w -= CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
+        }
+    }
+    draw_text(ctx,
+              str_terminus,
+              FONT_KEY_GOTHIC_18,
+              frame_terminus,
+              GTextAlignmentLeft);
     
 }
 
@@ -270,14 +302,14 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                         break;
                     case NEXT_TRAIN_KEY_NUMBER:
                     {
-                        s_next_trains_list[index].number = calloc(str_length, sizeof(char));
-                        strncpy(s_next_trains_list[index].number, (char *)data, str_length);
+                        s_next_trains_list[index].number = calloc(str_length + 1, sizeof(char));
+                        strncpy(s_next_trains_list[index].number, (char *)data, str_length + 1);
                     }
                         break;
                     case NEXT_TRAIN_KEY_MENTION:
                     {
-                        s_next_trains_list[index].mention = calloc(str_length, sizeof(char));
-                        strncpy(s_next_trains_list[index].mention, (char *)data, str_length);
+                        s_next_trains_list[index].mention = calloc(str_length + 1, sizeof(char));
+                        strncpy(s_next_trains_list[index].mention, (char *)data, str_length + 1);
                     }
                         break;
                     default:
@@ -443,9 +475,9 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
-#ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+#ifdef PBL_COLOR
     bool is_dark_theme = status_is_dark_theme();
     bool is_highlighed = is_dark_theme || is_selected;
     GColor text_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
@@ -484,6 +516,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             draw_menu_layer_cell(ctx,
                                  cell_layer,
                                  text_color,
+                                 is_selected,
 #ifdef PBL_COLOR
                                  is_highlighed,
 #endif
