@@ -474,8 +474,9 @@ void push_train_details_window(char* train_number, StationIndex from_station, bo
     }
     
     NULL_FREE(s_train_number);
-    s_train_number = malloc(sizeof(char) * TRAIN_NUMBER_LENGTH);
-    strncpy(s_train_number, train_number, TRAIN_NUMBER_LENGTH);
+    size_t train_number_length = strlen(train_number) + 1;
+    s_train_number = calloc(train_number_length, sizeof(char));
+    strncpy(s_train_number, train_number, train_number_length);
     
     s_from_station = from_station;
     

@@ -56,10 +56,12 @@ static void idle_timer_start();
 
 // MARK: Constants
 
-#define NEXT_TRAIN_CELL_ICON_Y 4    // CELL_MARGIN = 4
-#define NEXT_TRAIN_CELL_CODE_X 4    // CELL_MARGIN = 4
+#define NEXT_TRAIN_CELL_ICON_Y 4                    // CELL_MARGIN = 4
+#define NEXT_TRAIN_CELL_SUB_ICON_Y 26               // CELL_MARGIN + CELL_ICON_SIZE + 3 = 4 + 19 + 3
+#define NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN 6     // CELL_MARGIN + (CELL_ICON_SIZE - CELL_SUB_ICON_SIZE) / 2 = 4 + (19 - 15) / 2 = 6
+#define NEXT_TRAIN_CELL_CODE_X 4                    // CELL_MARGIN = 4
 #define NEXT_TRAIN_CELL_CODE_W 56
-#define NEXT_TRAIN_CELL_TIME_X 64   // CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W + CELL_MARGIN = 4 + 56 + 4
+#define NEXT_TRAIN_CELL_TIME_X 64                   // CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W + CELL_MARGIN = 4 + 56 + 4
 
 // MARK: Drawing
 
@@ -71,7 +73,8 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                                  const char * str_code,
                                  const char * str_time,
                                  const char * str_terminus,
-                                 const char * str_platform) {
+                                 const char * str_platform,
+                                 const char * str_mention) {
     graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
     
@@ -89,13 +92,6 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                              CELL_HEIGHT_2);
     draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentRight);
     
-    // Terminus
-    GRect frame_terminus = GRect(CELL_MARGIN,
-                                 CELL_HEIGHT_2 + TEXT_Y_OFFSET + 1,
-                                 bounds.size.w - CELL_MARGIN_2,
-                                 CELL_HEIGHT_2);
-    draw_text(ctx, str_terminus, FONT_KEY_GOTHIC_18, frame_terminus, GTextAlignmentLeft);
-    
     // Platform
     GRect frame_platform = GRect(bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN,
                                  NEXT_TRAIN_CELL_ICON_Y,
@@ -111,6 +107,30 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
     } else {
         // TODO: No platform string
     }
+    
+    // Mention
+    int16_t right_margin = CELL_MARGIN;
+    if (str_mention != NULL && strlen(str_mention) > 0) {
+        right_margin = CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
+        GRect frame_mention = GRect(bounds.size.w - CELL_SUB_ICON_SIZE - NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN,
+                                    NEXT_TRAIN_CELL_SUB_ICON_Y,
+                                    CELL_SUB_ICON_SIZE,
+                                    CELL_SUB_ICON_SIZE);
+        
+#ifdef PBL_COLOR
+        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_MENTION_DARK:RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
+#else
+        draw_image_in_rect(ctx, RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
+#endif
+    }
+    
+    // Terminus
+    GRect frame_terminus = GRect(CELL_MARGIN,
+                                 CELL_HEIGHT_2 + TEXT_Y_OFFSET + 1,
+                                 bounds.size.w - right_margin,
+                                 CELL_HEIGHT_2);
+    draw_text(ctx, str_terminus, FONT_KEY_GOTHIC_18, frame_terminus, GTextAlignmentLeft);
+    
 }
 
 // MARK: Data
@@ -250,9 +270,14 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                         break;
                     case NEXT_TRAIN_KEY_NUMBER:
                     {
-                        size_t number_length = (size_left >= TRAIN_NUMBER_LENGTH)?TRAIN_NUMBER_LENGTH-1:size_left;
-                        strncpy(s_next_trains_list[index].number, (char *)data, number_length);
-                        s_next_trains_list[index].number[number_length] = '\0';
+                        s_next_trains_list[index].number = calloc(str_length, sizeof(char));
+                        strncpy(s_next_trains_list[index].number, (char *)data, str_length);
+                    }
+                        break;
+                    case NEXT_TRAIN_KEY_MENTION:
+                    {
+                        s_next_trains_list[index].mention = calloc(str_length, sizeof(char));
+                        strncpy(s_next_trains_list[index].mention, (char *)data, str_length);
                     }
                         break;
                     default:
@@ -465,7 +490,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                                  next_train.code,
                                  str_hour,
                                  str_terminus,
-                                 next_train.platform);
+                                 next_train.platform,
+                                 next_train.mention);
             
             // Clean
             free(str_hour);

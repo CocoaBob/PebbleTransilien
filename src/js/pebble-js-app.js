@@ -114,7 +114,7 @@ var next_trains_example = '[\
 "trainDock": "A",\
 "trainHour": "22/07/2015 18:24",\
 "trainLane": null,\
-"trainMention": null,\
+"trainMention": "Supprimé",\
 "trainMissionCode": "POPU",\
 "trainNumber": "135984",\
 "trainTerminus": "PSL",\
@@ -134,7 +134,7 @@ var next_trains_example = '[\
 "trainDock": "",\
 "trainHour": "22/07/2015 18:31",\
 "trainLane": null,\
-"trainMention": null,\
+"trainMention": "Retardé",\
 "trainMissionCode": "POBA",\
 "trainNumber": "133758",\
 "trainTerminus": "PSL",\
@@ -144,7 +144,7 @@ var next_trains_example = '[\
 "trainDock": " ",\
 "trainHour": "22/07/2015 18:33",\
 "trainLane": null,\
-"trainMention": null,\
+"trainMention": "Retardé",\
 "trainMissionCode": "SEBO",\
 "trainNumber": "134657",\
 "trainTerminus": "SNB",\
@@ -335,6 +335,10 @@ function sendAppMessageForNextTrains(responseText) {
         // Train number
         var trainNumber = nextTrainDict["trainNumber"];
         itemData = itemData.concat(str2bin(trainNumber));
+        // Train mention (canceled or delayed)
+        var trainMention = nextTrainDict["trainMention"];
+        trainMention = (trainMention != null)?trainMention:"";
+        itemData = itemData.concat(str2bin(trainMention));
         
         message[+payloadKey + +index] = itemData;
     }

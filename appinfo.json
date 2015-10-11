@@ -53,6 +53,16 @@
         "file": "images/img_frame_light.png"
       },
       {
+        "type": "png",
+        "name": "IMG_MENTION_DARK",
+        "file": "images/img_mention_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_MENTION_LIGHT",
+        "file": "images/img_mention_light.png"
+      },
+      {
         "type": "raw",
         "name": "STATION_CODE",
         "file": "data/station_code.bin"
