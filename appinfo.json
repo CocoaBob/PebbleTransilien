@@ -100,14 +100,13 @@
     ]
   },
   "sdkVersion": "3",
-  "shortName": "Paris Transilien",
+  "shortName": "Transilien",
   "targetPlatforms": [
     "aplite",
-    "basalt",
-    "chalk"
+    "basalt"
   ],
   "uuid": "30663f9d-bae8-4557-b8b9-c890b1094f24",
-  "versionLabel": "1.0",
+  "versionLabel": "1.1",
   "watchapp": {
     "watchface": false
   }

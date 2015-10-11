@@ -32,7 +32,9 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
     }
 }
 
-void message_init() {
+void message_init(MessageCallbacks callbacks) {
+    s_callbacks = callbacks;
+    
     // Register AppMessage handlers
     app_message_register_inbox_received(in_received_handler);
     app_message_register_inbox_dropped(in_dropped_handler);

@@ -296,6 +296,10 @@ function parseTrainHour(str) {
 
 function sendAppMessageForNextTrains(responseText) {
     var dataArray = JSON.parse(responseText)[0]["data"];
+    if (dataArray == null) {
+        // TODO: Failed
+        // Failed to request next trains! (2)
+    }
     var payloadLength = dataArray.length;
     var message = {
         "MESSAGE_KEY_RESPONSE_TYPE": 0,
@@ -364,7 +368,8 @@ function requestNextTrains(from, to) {
     if (req.readyState == 4 && req.status == 200) {
         sendAppMessageForNextTrains(req.responseText);
     } else {
-         // TODO: Failed
+        // TODO: Failed
+        // Failed to request next trains! (1)
     }
 }
 
@@ -373,6 +378,7 @@ function sendAppMessageForTrainDetails(responseText) {
     var dataArray = parseResult["data"];
     if (dataArray == null) {
         // TODO: Failed
+        // Failed to request train details! (2)
     }
     var payloadLength = dataArray.length;
     var message = {
@@ -432,12 +438,14 @@ function requestTrainDetails(trainNumber) {
         sendAppMessageForTrainDetails(req.responseText);
     } else {
         // TODO: Failed
+        // Failed to request train details! (1)
     }
 }
 
 // Called when JS is ready
 Pebble.addEventListener("ready",
                         function(e) {
+                        Pebble.sendAppMessage({});
                         });
 
 // Called when incoming message from the Pebble is received

@@ -9,30 +9,34 @@
 #include <pebble.h>
 #include "headers.h"
 
+static void pebble_js_is_ready_callback(DictionaryIterator *received) {
+    if (status_is_fav_on_launch() && fav_get_count() > 0) {
+        Favorite favorite = fav_at_index(0);
+        push_next_trains_window(favorite, true);
+    }
+}
+
 void handle_init(void) {
 //    persist_delete(102);
 //    persist_delete(103);
     locale_init();
     status_init();
     stations_init();
-    message_init();
     load_favorites();
     
-    if (fav_get_count() > 0 && status_is_fav_on_launch()) {
-        Favorite favorite = fav_at_index(0);
-        push_main_menu_window(false);
-        push_next_trains_window(favorite, false);
-    } else {
-        push_main_menu_window(false);
-    }
+    push_main_menu_window(false);
+    
+    message_init((MessageCallbacks){
+        .message_succeeded_callback = pebble_js_is_ready_callback
+    });
 }
 
 void handle_deinit(void) {
     unload_favorites();
     status_deinit();
     stations_deinit();
-    message_deinit();
     locale_deinit();
+    message_deinit();
 }
 
 int main(void) {
