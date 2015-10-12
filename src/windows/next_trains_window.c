@@ -290,41 +290,41 @@ static void message_succeeded_callback(DictionaryIterator *received) {
         if (tuple_payload->type == TUPLE_BYTE_ARRAY) {
             uint8_t *data = tuple_payload->value->data;
             uint16_t size_left = tuple_payload->length;
-            size_t str_length = strlen((char *)data);
-            size_t offset = str_length + 1;
+            size_t str_length = 0,offset = 0;
             for (size_t data_index = 0; data_index < NEXT_TRAIN_KEY_COUNT && size_left > 0; ++data_index) {
-                switch (data_index) {
-                    case NEXT_TRAIN_KEY_CODE:
-                        strncpy(s_next_trains_list[index].code, (char *)data, offset);
-                        break;
-                    case NEXT_TRAIN_KEY_HOUR:
-                        s_next_trains_list[index].hour = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3];
-                        break;
-                    case NEXT_TRAIN_KEY_PLATFORM:
-                        strncpy(s_next_trains_list[index].platform, (char *)data, offset);
-                        break;
-                    case NEXT_TRAIN_KEY_TERMINUS:
-                        s_next_trains_list[index].terminus = 0;
-                        for (size_t i = 0; i < str_length; ++i) {
-                            s_next_trains_list[index].terminus += data[i] << (8 * (str_length - i - 1));
-                        }
-                        break;
-                    case NEXT_TRAIN_KEY_NUMBER:
-                        s_next_trains_list[index].number = calloc(offset, sizeof(char));
-                        strncpy(s_next_trains_list[index].number, (char *)data, offset);
-                        break;
-                    case NEXT_TRAIN_KEY_MENTION:
-                        s_next_trains_list[index].mention = calloc(offset, sizeof(char));
-                        strncpy(s_next_trains_list[index].mention, (char *)data, offset);
-                        break;
-                    default:
-                        break;
-                }
-                
-                size_left -= (uint16_t)offset;
                 data += offset;
                 str_length = strlen((char *)data);
                 offset = str_length + 1;
+                
+                // Interger data
+                if (data_index == NEXT_TRAIN_KEY_HOUR ||
+                    data_index == NEXT_TRAIN_KEY_TERMINUS) {
+                    long long temp_int = 0;
+                    for (size_t i = 0; i < str_length; ++i) {
+                        temp_int += data[i] << (8 * (str_length - i - 1));
+                    }
+                    if (data_index == NEXT_TRAIN_KEY_HOUR) {
+                        s_next_trains_list[index].hour = temp_int;
+                    } else if (data_index == NEXT_TRAIN_KEY_TERMINUS) {
+                        s_next_trains_list[index].terminus = temp_int;
+                    }
+                }
+                // C string data
+                else {
+                    char *temp_string = calloc(offset, sizeof(char));
+                    strncpy(temp_string, (char *)data, offset);
+                    if (data_index == NEXT_TRAIN_KEY_CODE) {
+                        s_next_trains_list[index].code = temp_string;
+                    } else if (data_index == NEXT_TRAIN_KEY_PLATFORM) {
+                        s_next_trains_list[index].platform = temp_string;
+                    } else if (data_index == NEXT_TRAIN_KEY_NUMBER) {
+                        s_next_trains_list[index].number = temp_string;
+                    } else if (data_index == NEXT_TRAIN_KEY_MENTION) {
+                        s_next_trains_list[index].mention = temp_string;
+                    }
+                }
+                
+                size_left -= (uint16_t)offset;
             }
         }
     }

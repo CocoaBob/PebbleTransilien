@@ -130,28 +130,23 @@ static void message_succeeded_callback(DictionaryIterator *received) {
         if (tuple_payload->type == TUPLE_BYTE_ARRAY) {
             uint8_t *data = tuple_payload->value->data;
             uint16_t size_left = tuple_payload->length;
-            size_t offset = 0;
+            size_t str_length = 0,offset = 0;
             for (size_t data_index = 0; data_index < TRAIN_DETAIL_KEY_COUNT && size_left > 0; ++data_index) {
-                switch (data_index) {
-                    case TRAIN_DETAIL_KEY_TIME:
-                        if (size_left >= 4) {
-                            s_train_details_list[index].time = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3];
-                            offset = 5;
-                        }
-                        break;
-                    case TRAIN_DETAIL_KEY_STATION:
-                        if (size_left >= 2) {
-                            s_train_details_list[index].station = (data[0] << 8) + data[1];
-                            offset = 3;
-                        }
-                        break;
-                    default:
-                        offset = 0;
-                        break;
+                data += offset;
+                str_length = strlen((char *)data);
+                offset = str_length + 1;
+                
+                long long temp_int = 0;
+                for (size_t i = 0; i < str_length; ++i) {
+                    temp_int += data[i] << (8 * (str_length - i - 1));
+                }
+                if (data_index == TRAIN_DETAIL_KEY_TIME) {
+                    s_train_details_list[index].time = temp_int;
+                } else if (data_index == TRAIN_DETAIL_KEY_STATION) {
+                    s_train_details_list[index].station = temp_int;
                 }
                 
                 size_left -= (uint16_t)offset;
-                data += offset;
             }
         }
     }
