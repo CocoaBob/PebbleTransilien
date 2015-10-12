@@ -17,7 +17,7 @@
 #define CELL_HEIGHT 44
 #define CELL_HEIGHT_2 22
 #define CELL_ICON_SIZE 19
-#define CELL_SUB_ICON_SIZE 15
+#define CELL_SUB_ICON_SIZE 13
 
 #define TEXT_Y_OFFSET -2
 

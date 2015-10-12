@@ -57,8 +57,8 @@ static void idle_timer_start();
 // MARK: Constants
 
 #define NEXT_TRAIN_CELL_ICON_Y 4                    // CELL_MARGIN = 4
-#define NEXT_TRAIN_CELL_SUB_ICON_Y 26               // CELL_MARGIN + CELL_ICON_SIZE + 3 = 4 + 19 + 3
-#define NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN 6     // CELL_MARGIN + (CELL_ICON_SIZE - CELL_SUB_ICON_SIZE) / 2 = 4 + (19 - 15) / 2 = 6
+#define NEXT_TRAIN_CELL_SUB_ICON_Y 27               // CELL_HEIGHT_2 + 5 = 22 + 5
+#define NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN 7     // CELL_MARGIN + (CELL_ICON_SIZE - CELL_SUB_ICON_SIZE) / 2 = 4 + (19 - 13) / 2 = 7
 #define NEXT_TRAIN_CELL_CODE_X 4                    // CELL_MARGIN = 4
 #define NEXT_TRAIN_CELL_CODE_W 56
 #define NEXT_TRAIN_CELL_TIME_X 64                   // CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W + CELL_MARGIN = 4 + 56 + 4
@@ -110,34 +110,20 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
     }
     
     // Mention
-    bool has_mention = false;
-    if (str_mention != NULL && strlen(str_mention) > 0) {
-        has_mention = true;
-        GRect frame_mention = GRect(bounds.size.w - CELL_SUB_ICON_SIZE - NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN,
-                                    NEXT_TRAIN_CELL_SUB_ICON_Y,
-                                    CELL_SUB_ICON_SIZE,
-                                    CELL_SUB_ICON_SIZE);
-        
-#ifdef PBL_COLOR
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_MENTION_DARK:RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
-#else
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
-#endif
-    }
+    bool has_mention = (str_mention != NULL && strlen(str_mention) > 0);
     
     // Terminus
     GRect frame_terminus = GRect(CELL_MARGIN,
                                  CELL_HEIGHT_2 + TEXT_Y_OFFSET + 1,
-                                 bounds.size.w - CELL_MARGIN,
+                                 bounds.size.w - CELL_MARGIN_2,
                                  CELL_HEIGHT_2);
     if (has_mention) {
         if (is_selected) {
+            // Draw mention text
             GRect frame_mention = GRect(CELL_MARGIN,
                                         CELL_HEIGHT_2 + TEXT_Y_OFFSET + 4,
-                                        bounds.size.w - CELL_MARGIN,
-                                        CELL_HEIGHT_2);
-            frame_mention.size.w -= CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
-            frame_terminus.size.w -= CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
+                                        bounds.size.w - CELL_MARGIN_2,
+                                        14);
             GSize mention_size = graphics_text_layout_get_content_size(str_mention,
                                                                        fonts_get_system_font(FONT_KEY_GOTHIC_14),
                                                                        frame_mention,
@@ -153,8 +139,29 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                       FONT_KEY_GOTHIC_14,
                       frame_mention,
                       GTextAlignmentRight);
+            
+            // Draw a mention frame
+            frame_mention.origin.x -= 2;
+            frame_mention.size.w += 4;
+            frame_mention.origin.y = NEXT_TRAIN_CELL_SUB_ICON_Y - 1;
+            frame_mention.size.h += 1;
+            graphics_context_set_stroke_color(ctx, text_color);
+            graphics_draw_round_rect(ctx, frame_mention, 2);
+            
         } else {
             frame_terminus.size.w -= CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
+            
+            // Draw warning icon
+            GRect frame_mention = GRect(bounds.size.w - CELL_SUB_ICON_SIZE - NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN,
+                                        NEXT_TRAIN_CELL_SUB_ICON_Y,
+                                        CELL_SUB_ICON_SIZE,
+                                        CELL_SUB_ICON_SIZE);
+            
+#ifdef PBL_COLOR
+            draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_MENTION_DARK:RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
+#else
+            draw_image_in_rect(ctx, RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
+#endif
         }
     }
     draw_text(ctx,
