@@ -114,7 +114,7 @@ var next_trains_example = '[\
 "trainDock": "A",\
 "trainHour": "22/07/2015 18:24",\
 "trainLane": null,\
-"trainMention": "Supprime",\
+"trainMention": "Supprimé",\
 "trainMissionCode": "POPU",\
 "trainNumber": "135984",\
 "trainTerminus": "PSL",\

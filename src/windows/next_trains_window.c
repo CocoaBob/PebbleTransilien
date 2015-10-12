@@ -59,6 +59,8 @@ static void idle_timer_start();
 #define NEXT_TRAIN_CELL_ICON_Y 4                    // CELL_MARGIN = 4
 #define NEXT_TRAIN_CELL_SUB_ICON_Y 27               // CELL_HEIGHT_2 + 5 = 22 + 5
 #define NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN 7     // CELL_MARGIN + (CELL_ICON_SIZE - CELL_SUB_ICON_SIZE) / 2 = 4 + (19 - 13) / 2 = 7
+#define NEXT_TRAIN_CELL_MENTION_Y_OFFSET 4
+#define NEXT_TRAIN_CELL_MENTION_RIGHT_MARGIN 2
 #define NEXT_TRAIN_CELL_CODE_X 4                    // CELL_MARGIN = 4
 #define NEXT_TRAIN_CELL_CODE_W 56
 #define NEXT_TRAIN_CELL_TIME_X 64                   // CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W + CELL_MARGIN = 4 + 56 + 4
@@ -121,32 +123,33 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
         if (is_selected) {
             // Draw mention text
             GRect frame_mention = GRect(CELL_MARGIN,
-                                        CELL_HEIGHT_2 + TEXT_Y_OFFSET + 4,
-                                        bounds.size.w - CELL_MARGIN_2,
+                                        CELL_HEIGHT_2 + TEXT_Y_OFFSET + NEXT_TRAIN_CELL_MENTION_Y_OFFSET,
+                                        bounds.size.w - CELL_MARGIN_2 - NEXT_TRAIN_CELL_MENTION_RIGHT_MARGIN,
                                         14);
             GSize mention_size = graphics_text_layout_get_content_size(str_mention,
                                                                        fonts_get_system_font(FONT_KEY_GOTHIC_14),
                                                                        frame_mention,
                                                                        GTextOverflowModeTrailingEllipsis,
                                                                        GTextAlignmentRight);
-            frame_mention.size.w = mention_size.w;
             if (mention_size.w > 0) {
-                frame_terminus.size.w -= CELL_MARGIN + mention_size.w;
+                frame_mention.size.w = mention_size.w;
+                frame_terminus.size.w -= CELL_MARGIN + mention_size.w + NEXT_TRAIN_CELL_MENTION_RIGHT_MARGIN;
+                
+                frame_mention.origin.x = frame_terminus.origin.x + frame_terminus.size.w + CELL_MARGIN;
+                draw_text(ctx,
+                          str_mention,
+                          FONT_KEY_GOTHIC_14,
+                          frame_mention,
+                          GTextAlignmentRight);
+                
+                // Draw a mention frame
+                frame_mention.origin.x -= 2;
+                frame_mention.size.w += 4;
+                frame_mention.origin.y = NEXT_TRAIN_CELL_SUB_ICON_Y - 1;
+                frame_mention.size.h += 1;
+                graphics_context_set_stroke_color(ctx, text_color);
+                graphics_draw_round_rect(ctx, frame_mention, 2);
             }
-            frame_mention.origin.x = frame_terminus.origin.x + frame_terminus.size.w + CELL_MARGIN;
-            draw_text(ctx,
-                      str_mention,
-                      FONT_KEY_GOTHIC_14,
-                      frame_mention,
-                      GTextAlignmentRight);
-            
-            // Draw a mention frame
-            frame_mention.origin.x -= 2;
-            frame_mention.size.w += 4;
-            frame_mention.origin.y = NEXT_TRAIN_CELL_SUB_ICON_Y - 1;
-            frame_mention.size.h += 1;
-            graphics_context_set_stroke_color(ctx, text_color);
-            graphics_draw_round_rect(ctx, frame_mention, 2);
             
         } else {
             frame_terminus.size.w -= CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
