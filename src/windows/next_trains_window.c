@@ -224,7 +224,7 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case NEXT_TRAINS_ACTIONS_FAV:
-            return "Set Favorite";
+            return _("Set Favorite");
         default:
             return "";
     }
@@ -500,7 +500,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                      text_color);
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (s_is_updating && s_next_trains_list_count == 0) {
-            draw_centered_title(ctx, cell_layer, "Loading...", NULL,
+            draw_centered_title(ctx, cell_layer, _("Loading..."), NULL,
 #ifdef PBL_COLOR
                                 GColorBlack
 #else
@@ -535,7 +535,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             free(str_hour);
             free(str_terminus);
         } else {
-            draw_centered_title(ctx, cell_layer, "No train.", NULL,
+            draw_centered_title(ctx, cell_layer, _("No train."), NULL,
 #ifdef PBL_COLOR
                                 GColorBlack
 #else

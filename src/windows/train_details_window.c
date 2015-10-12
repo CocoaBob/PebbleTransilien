@@ -68,9 +68,9 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case TRAIN_DETAINS_ACTIONS_TIMETABLE:
-            return "Check Timetable";
+            return _("Check Timetable");
         case TRAIN_DETAINS_ACTIONS_FAV:
-            return "Set Favorite";
+            return _("Set Favorite");
         default:
             return "";
     }
@@ -293,7 +293,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #endif
     
     if (s_is_updating) {
-        draw_centered_title(ctx, cell_layer, "Loading...", NULL,
+        draw_centered_title(ctx, cell_layer, _("Loading..."), NULL,
 #ifdef PBL_COLOR
                             GColorBlack
 #else
@@ -323,7 +323,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         free(str_time);
         free(str_station);
     } else {
-        draw_centered_title(ctx, cell_layer, "No train.", NULL,
+        draw_centered_title(ctx, cell_layer, _("No train."), NULL,
 #ifdef PBL_COLOR
                             GColorBlack
 #else

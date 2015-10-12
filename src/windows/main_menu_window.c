@@ -79,11 +79,11 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case MAIN_MENU_ACTIONS_MOVE_UP:
-            return "Move up";
+            return _("Move up");
         case MAIN_MENU_ACTIONS_EDIT:
-            return "Edit Favorite";
+            return _("Edit Favorite");
         case MAIN_MENU_ACTIONS_DELETE:
-            return "Delete Favorite";
+            return _("Delete Favorite");
         default:
             return "";
     }
@@ -187,7 +187,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         /*if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
             menu_cell_basic_draw(ctx, cell_layer, "Nearby...", _("Based on location"), NULL);
         } else */if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            menu_cell_basic_draw(ctx, cell_layer, "Alphabetic...", _("By choosing letters"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Alphabetic..."), _("By choosing letters"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_SETTING) {
         if (row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {

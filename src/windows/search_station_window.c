@@ -255,11 +255,11 @@ static size_t action_list_get_default_selection_callback(void) {
 static char* action_list_get_title_callback(size_t index) {
     switch (index) {
         case SEARCH_STATION_ACTIONS_DESTINATION:
-            return "Add Destination";
+            return _("Add Destination");
         case SEARCH_STATION_ACTIONS_TIMETABLE:
-            return "Check Timetable";
+            return _("Check Timetable");
         case SEARCH_STATION_ACTIONS_FAV:
-            return "Set Favorite";
+            return _("Set Favorite");
         default:
             return "";
     }
@@ -575,7 +575,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         // Clean
         free(str_station);
     } else {
-        draw_centered_title(ctx, cell_layer, (s_search_results_index >= 0)?"Not found.":"Press UP/DOWN", NULL,
+        draw_centered_title(ctx, cell_layer, (s_search_results_index >= 0)?_("Not found."):_("Press UP/DOWN"), NULL,
 #ifdef PBL_COLOR
                             GColorBlack
 #else
