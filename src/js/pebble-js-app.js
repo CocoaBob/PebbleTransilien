@@ -252,10 +252,22 @@ function str2bin(str) {
     return makeCString(bytes);
 }
 
-function makeCString(bytes) {
-    if (bytes[bytes.length - 1] != 0) {
-        bytes.push(0);
+function trimNullCString(bytes) {
+    var size = bytes.length;
+    while (size > 0 && bytes[0] == 0) {
+        bytes.splice(0,1);
+        --size;
     }
+    while (size > 0 && bytes[size - 1] == 0) {
+        bytes.splice(size - 1,1);
+        --size;
+    }
+    return bytes;
+}
+
+function makeCString(bytes) {
+    bytes = trimNullCString(bytes);
+    bytes.push(0);
     return bytes;
 }
 

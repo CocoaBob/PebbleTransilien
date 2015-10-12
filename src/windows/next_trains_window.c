@@ -295,32 +295,27 @@ static void message_succeeded_callback(DictionaryIterator *received) {
             for (size_t data_index = 0; data_index < NEXT_TRAIN_KEY_COUNT && size_left > 0; ++data_index) {
                 switch (data_index) {
                     case NEXT_TRAIN_KEY_CODE:
-                        strncpy(s_next_trains_list[index].code, (char *)data, 5);
+                        strncpy(s_next_trains_list[index].code, (char *)data, offset);
                         break;
                     case NEXT_TRAIN_KEY_HOUR:
-                        if (size_left >= 4) {
-                            s_next_trains_list[index].hour = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3];
-                        }
+                        s_next_trains_list[index].hour = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3];
                         break;
                     case NEXT_TRAIN_KEY_PLATFORM:
-                        strncpy(s_next_trains_list[index].platform, (char *)data, 3);
+                        strncpy(s_next_trains_list[index].platform, (char *)data, offset);
                         break;
                     case NEXT_TRAIN_KEY_TERMINUS:
-                        if (size_left >= 2) {
-                            s_next_trains_list[index].terminus = (data[0] << 8) + data[1];
+                        s_next_trains_list[index].terminus = 0;
+                        for (size_t i = 0; i < str_length; ++i) {
+                            s_next_trains_list[index].terminus += data[i] << (8 * (str_length - i - 1));
                         }
                         break;
                     case NEXT_TRAIN_KEY_NUMBER:
-                    {
-                        s_next_trains_list[index].number = calloc(str_length + 1, sizeof(char));
-                        strncpy(s_next_trains_list[index].number, (char *)data, str_length + 1);
-                    }
+                        s_next_trains_list[index].number = calloc(offset, sizeof(char));
+                        strncpy(s_next_trains_list[index].number, (char *)data, offset);
                         break;
                     case NEXT_TRAIN_KEY_MENTION:
-                    {
-                        s_next_trains_list[index].mention = calloc(str_length + 1, sizeof(char));
-                        strncpy(s_next_trains_list[index].mention, (char *)data, str_length + 1);
-                    }
+                        s_next_trains_list[index].mention = calloc(offset, sizeof(char));
+                        strncpy(s_next_trains_list[index].mention, (char *)data, offset);
                         break;
                     default:
                         break;
