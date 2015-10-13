@@ -41,8 +41,10 @@ To facilitate the usages, data is organized into several binaries by using this 
 The binaries are:
 
 * station\_code.bin (ordered station codes)
-* station\_name\_pos.bin (ordered station name positions in `station_name.bin`)
-* station\_name.bin (ordered station names)
+* station\_name\_pos.bin (positions of all the names in `station_name.bin`)
+* station\_name.bin (all station names in alphabetic order)
+* station\_name\_search\_pos.bin (positions of all the names in `station_name_search.bin`)
+* station\_name\_search.bin (all station names without white space or accent in alphabetic order)
 * station\_latlng.bin (station indexes grouped into latitude/longitude grids)
 
 For Windows/Linux users, don't worry, let me explain the data structures, so that you can develop another tool to generate the same binaries.
@@ -59,6 +61,16 @@ For Windows/Linux users, don't worry, let me explain the data structures, so tha
 	[2 Byte] uint8_t[2]			station_name_position
 ```
 ### station\_name.bin
+```
+[DATA]
+	[N Byte] char*				station_name (NULL-terminated string)
+```
+### station\_name\_search\_pos.bin
+```
+[DATA]
+	[2 Byte] uint8_t[2]			station_name_position
+```
+### station\_name\_search.bin
 ```
 [DATA]
 	[N Byte] char*				station_name (NULL-terminated string)
@@ -80,16 +92,18 @@ For Windows/Linux users, don't worry, let me explain the data structures, so tha
 ```
 ## Usage
 ### Get a station's code
-1. First you have to know the station's ``index
+1. First you have to know the station's `index`
 2. Then read 3 bytes at the position `3*index` of `station_code.bin`.
 
 ### Get or Search a station's name
-* If you know a station's ``index``
-	1. Then read 2 bytes at the position `2*index` of `station_name_pos.bin`, save it to variable `uint8_t pos[2]`
-	2. So we get the position `size_t position = (pos[0] << 8) + pos[1]`
+* If you know a station's `index`
+	1. Read 2 bytes at position `2*index` of `station_name_pos.bin` and store them into a variable `uint8_t pos[2]`
+	2. Then we get the name position `size_t position = (pos[0] << 8) + pos[1]`
 	3. Then at the `position` of `station_name.bin`, get name's length by using `strlen()` (names are null-terminated strings), then read a string in that length. 
 
-* If you want to search a name, just compare all the chars to find the ones you want.
+* If you want to search a name
+	1. Compare all the letters in `station_name_search.bin` to find the index you want.
+	2. To reduce memory footprint, you can compare names one by one with the help of `station_name_search_pos.bin`, which contains each name's position.
 
 ### Search nearby stations
 1. First you have the current location `curr_lat` and `curr_lng`.
@@ -117,7 +131,7 @@ http://transilien.ods.ocito.com/ods/transilien/iphone
 
 This is the request URL used in the current iOS version of SNCF Translien.
 
-All the requests are HTTP POST requests. Different request has a different POST Body. All the request/response data are in JSON format (`"Content-Type": "application/json; charset=utf-8"`).
+All the requests are HTTP POST requests with POST Body. All the request/response data are in JSON format (`"Content-Type": "application/json; charset=utf-8"`).
 
 ### Request nearby stations
 
@@ -470,8 +484,7 @@ POST Body
     "target": "/transilien/getTrainDetails",
     "map": {
       "trainNumber": "133871",
-      "theoric": "false",
-	  	"theoric": "false"
+      "theoric": "false"
     }
   }
 ]
