@@ -49,14 +49,6 @@ static void idle_timer_start();
 
 // MARK: Action list callbacks
 
-static GColor action_list_get_bar_color(void) {
-#ifdef PBL_COLOR
-    return GColorCobaltBlue;
-#else
-    return GColorWhite;
-#endif
-}
-
 static size_t action_list_get_num_rows_callback(void) {
     return TRAIN_DETAINS_ACTIONS_COUNT;
 }
@@ -66,32 +58,24 @@ static size_t action_list_get_default_selection_callback(void) {
 }
 
 static char* action_list_get_title_callback(size_t index) {
-    switch (index) {
-        case TRAIN_DETAINS_ACTIONS_TIMETABLE:
-            return _("Check Timetable");
-        case TRAIN_DETAINS_ACTIONS_FAV:
-            return _("Set Favorite");
-        default:
-            return "";
+    if (index == TRAIN_DETAINS_ACTIONS_TIMETABLE) {
+        return _("Check Timetable");
+    } else {
+        return _("Set Favorite");
     }
 }
 
 static bool action_list_is_enabled_callback(size_t index) {
-    switch (index) {
-        case TRAIN_DETAINS_ACTIONS_FAV:
-        {
-            MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-            StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
-            if (s_from_station == selected_station_index) {
-                return !fav_exists((Favorite){selected_station_index, STATION_NON});
-            } else {
-                return !fav_exists((Favorite){s_from_station, selected_station_index});
-            }
+    if (index == TRAIN_DETAINS_ACTIONS_FAV) {
+        MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+        StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
+        if (s_from_station == selected_station_index) {
+            return !fav_exists((Favorite){selected_station_index, STATION_NON});
+        } else {
+            return !fav_exists((Favorite){s_from_station, selected_station_index});
         }
-        case TRAIN_DETAINS_ACTIONS_TIMETABLE:
-        default:
-            return true;
     }
+    return true;
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index) {
@@ -105,8 +89,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         case TRAIN_DETAINS_ACTIONS_FAV:
             fav_add(s_from_station, selected_station_index);
             window_stack_remove(action_list_window, true);
-            break;
-        default:
             break;
     }
 }
@@ -311,7 +293,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (!s_is_updating && s_train_details_list_count > 0) {
         action_list_present_with_callbacks((ActionListCallbacks) {
+#ifdef PBL_COLOR
             .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+#endif
             .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
             .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
             .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,

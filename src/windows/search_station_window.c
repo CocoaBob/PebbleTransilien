@@ -238,12 +238,6 @@ static void panel_update_with_menu_layer_selection() {
 
 // MARK: Action list callbacks
 
-#ifdef PBL_COLOR
-static GColor action_list_get_bar_color(void) {
-    return GColorCobaltBlue;
-}
-#endif
-
 static size_t action_list_get_num_rows_callback(void) {
     return SEARCH_STATION_ACTIONS_COUNT;
 }
@@ -253,29 +247,22 @@ static size_t action_list_get_default_selection_callback(void) {
 }
 
 static char* action_list_get_title_callback(size_t index) {
-    switch (index) {
-        case SEARCH_STATION_ACTIONS_DESTINATION:
-            return _("Add Destination");
-        case SEARCH_STATION_ACTIONS_TIMETABLE:
-            return _("Check Timetable");
-        case SEARCH_STATION_ACTIONS_FAV:
-            return _("Set Favorite");
-        default:
-            return "";
+    if (index == SEARCH_STATION_ACTIONS_DESTINATION) {
+        return _("Add Destination");
+    } else if (index == SEARCH_STATION_ACTIONS_TIMETABLE) {
+        return _("Check Timetable");
+    } else {
+        return _("Set Favorite");
     }
 }
 
 static bool action_list_is_enabled_callback(size_t index) {
-    switch (index) {
-        case SEARCH_STATION_ACTIONS_FAV:
-        {
-            DataModelFromTo from_to = s_from_to;
-            confirm_from_to(&from_to);
-            return !fav_exists(from_to);
-        }
-        default:
-            return true;
+    if (index == SEARCH_STATION_ACTIONS_FAV) {
+        DataModelFromTo from_to = s_from_to;
+        confirm_from_to(&from_to);
+        return !fav_exists(from_to);
     }
+    return true;
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index) {
@@ -307,8 +294,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
             window_stack_remove(action_list_window, true);
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -525,12 +510,7 @@ static void selection_handle_dec(int index, uint8_t clicks, void *context) {
 // MARK: Menu layer callbacks
 
 static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
-    size_t return_value = current_search_results_count();
-    if (return_value == 0) {
-        return 1;
-    } else {
-        return return_value;
-    }
+    return current_search_results_count()?:1;
 }
 
 static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {

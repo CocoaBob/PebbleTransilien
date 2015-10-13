@@ -216,14 +216,6 @@ static bool reverse_from_to() {
 
 // MARK: Action list callbacks
 
-static GColor action_list_get_bar_color(void) {
-#ifdef PBL_COLOR
-    return GColorCobaltBlue;
-#else
-    return GColorWhite;
-#endif
-}
-
 static size_t action_list_get_num_rows_callback(void) {
     return NEXT_TRAINS_ACTIONS_COUNT;
 }
@@ -233,12 +225,7 @@ static size_t action_list_get_default_selection_callback(void) {
 }
 
 static char* action_list_get_title_callback(size_t index) {
-    switch (index) {
-        case NEXT_TRAINS_ACTIONS_FAV:
-            return _("Set Favorite");
-        default:
-            return "";
-    }
+    return _("Set Favorite");
 }
 
 static bool action_list_is_enabled_callback(size_t index) {
@@ -254,8 +241,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
             fav_add(s_from_to.from, s_from_to.to);
             window_stack_remove(action_list_window, true);
             break;
-        default:
-            break;
     }
 }
 
@@ -265,7 +250,9 @@ static void long_select_handler_for_menu_layer(ClickRecognizerRef recognizer, vo
     MenuIndex selected_index = menu_layer_get_selected_index(context);
     if (selected_index.section == NEXT_TRAINS_SECTION_INFO) {
         action_list_present_with_callbacks((ActionListCallbacks) {
+#ifdef PBL_COLOR
             .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+#endif
             .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
             .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
             .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,

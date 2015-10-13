@@ -9,6 +9,8 @@
 #include <pebble.h>
 #include "headers.h"
 
+// MARK: Menu Layer
+
 void menu_layer_button_up_handler(ClickRecognizerRef recognizer, void *context) {
     MenuIndex old_index = menu_layer_get_selected_index(context);
     if (old_index.section == 0 && old_index.row == 0) {
@@ -41,5 +43,13 @@ void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, b
     GRect frame = layer_get_frame(bg_layer);
     graphics_context_set_fill_color(ctx, curr_bg_color());
     graphics_fill_rect(ctx, frame, 0, GCornerNone);
+}
+#endif
+
+// MARK: Action list callbacks
+
+#ifdef PBL_COLOR
+GColor action_list_get_bar_color(void) {
+    return GColorCobaltBlue;
 }
 #endif

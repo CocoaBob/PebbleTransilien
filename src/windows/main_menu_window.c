@@ -60,14 +60,6 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
 
 // MARK: Action list callbacks
 
-static GColor action_list_get_bar_color(void) {
-#ifdef PBL_COLOR
-    return GColorCobaltBlue;
-#else
-    return GColorWhite;
-#endif
-}
-
 static size_t action_list_get_num_rows_callback(void) {
     return MAIN_MENU_ACTIONS_COUNT;
 }
@@ -77,29 +69,20 @@ static size_t action_list_get_default_selection_callback(void) {
 }
 
 static char* action_list_get_title_callback(size_t index) {
-    switch (index) {
-        case MAIN_MENU_ACTIONS_MOVE_UP:
-            return _("Move up");
-        case MAIN_MENU_ACTIONS_EDIT:
-            return _("Edit Favorite");
-        case MAIN_MENU_ACTIONS_DELETE:
-            return _("Delete Favorite");
-        default:
-            return "";
+    if (index == MAIN_MENU_ACTIONS_MOVE_UP) {
+        return _("Move up");
+    } else if (index == MAIN_MENU_ACTIONS_EDIT) {
+        return _("Edit Favorite");
+    } else {
+        return _("Delete Favorite");
     }
 }
 
 static bool action_list_is_enabled_callback(size_t index) {
-    switch (index) {
-        case MAIN_MENU_ACTIONS_MOVE_UP:
-            return (fav_get_count() > 1 && menu_layer_get_selected_index(s_menu_layer).row > 0);
-        case MAIN_MENU_ACTIONS_EDIT:
-            return true;
-        case MAIN_MENU_ACTIONS_DELETE:
-            return true;
-        default:
-            return true;
+    if (index == MAIN_MENU_ACTIONS_MOVE_UP) {
+        return (fav_get_count() > 1 && menu_layer_get_selected_index(s_menu_layer).row > 0);
     }
+    return true;
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index) {
@@ -125,8 +108,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
             window_stack_remove(action_list_window, true);
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -137,17 +118,14 @@ static uint16_t menu_layer_get_num_sections_callback(struct MenuLayer *menu_laye
 }
 
 static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
-    switch(section_index) {
-        case MAIN_MENU_SECTION_FAV:
-            return fav_get_count();
-        case MAIN_MENU_SECTION_SEARCH:
-            return MAIN_MENU_SECTION_SEARCH_ROW_COUNT;
-        case MAIN_MENU_SECTION_SETTING:
-            return MAIN_MENU_SECTION_SETTING_ROW_COUNT;
-        case MAIN_MENU_SECTION_ABOUT:
-            return MAIN_MENU_SECTION_ABOUT_ROW_COUNT;
-        default:
-            return 0;
+    if (section_index == MAIN_MENU_SECTION_FAV) {
+        return fav_get_count();
+    } else if (section_index == MAIN_MENU_SECTION_SEARCH) {
+        return MAIN_MENU_SECTION_SEARCH_ROW_COUNT;
+    } else if (section_index == MAIN_MENU_SECTION_SETTING) {
+        return MAIN_MENU_SECTION_SETTING_ROW_COUNT;
+    } else {
+        return MAIN_MENU_SECTION_ABOUT_ROW_COUNT;
     }
 }
 
@@ -278,7 +256,9 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
 static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         action_list_present_with_callbacks((ActionListCallbacks) {
+#ifdef PBL_COLOR
             .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+#endif
             .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
             .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
             .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
