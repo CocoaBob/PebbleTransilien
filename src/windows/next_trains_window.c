@@ -177,6 +177,17 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
 
 // MARK: Data
 
+static void release_next_trains_list() {
+    for (size_t idx = 0; idx < s_next_trains_list_count; ++idx) {
+        NULL_FREE(s_next_trains_list[idx].code);
+        NULL_FREE(s_next_trains_list[idx].platform);
+        NULL_FREE(s_next_trains_list[idx].number);
+        NULL_FREE(s_next_trains_list[idx].mention);
+    }
+    NULL_FREE(s_next_trains_list);
+    s_next_trains_list_count = 0;
+}
+
 static void set_from_to(StationIndex from, StationIndex to) {
     s_from_to.from = from;
     s_from_to.to = to;
@@ -191,7 +202,7 @@ static void set_from_to(StationIndex from, StationIndex to) {
         stations_get_name(s_from_to.to, s_str_to, STATION_NAME_MAX_LENGTH);
     }
     
-    s_next_trains_list_count = 0;
+    release_next_trains_list();
 }
 
 static bool reverse_from_to() {
@@ -279,14 +290,14 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     Tuple *tuple_payload_count = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT);
     size_t count = tuple_payload_count->value->int16;
     
+    release_next_trains_list();
     s_next_trains_list_count = count;
-    NULL_FREE(s_next_trains_list);
     if (s_next_trains_list_count > 0) {
         s_next_trains_list = malloc(sizeof(DataModelNextTrain) * s_next_trains_list_count);
     }
     
-    for (uint32_t index = 0; index < count; ++index) {
-        Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + index);
+    for (size_t idx = 0; idx < count; ++idx) {
+        Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + idx);
         if (tuple_payload->type == TUPLE_BYTE_ARRAY) {
             uint8_t *data = tuple_payload->value->data;
             uint16_t size_left = tuple_payload->length;
@@ -304,9 +315,9 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                         temp_int += data[i] << (8 * (str_length - i - 1));
                     }
                     if (data_index == NEXT_TRAIN_KEY_HOUR) {
-                        s_next_trains_list[index].hour = temp_int;
+                        s_next_trains_list[idx].hour = temp_int;
                     } else if (data_index == NEXT_TRAIN_KEY_TERMINUS) {
-                        s_next_trains_list[index].terminus = temp_int;
+                        s_next_trains_list[idx].terminus = temp_int;
                     }
                 }
                 // C string data
@@ -314,13 +325,13 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                     char *temp_string = calloc(offset, sizeof(char));
                     strncpy(temp_string, (char *)data, offset);
                     if (data_index == NEXT_TRAIN_KEY_CODE) {
-                        s_next_trains_list[index].code = temp_string;
+                        s_next_trains_list[idx].code = temp_string;
                     } else if (data_index == NEXT_TRAIN_KEY_PLATFORM) {
-                        s_next_trains_list[index].platform = temp_string;
+                        s_next_trains_list[idx].platform = temp_string;
                     } else if (data_index == NEXT_TRAIN_KEY_NUMBER) {
-                        s_next_trains_list[index].number = temp_string;
+                        s_next_trains_list[idx].number = temp_string;
                     } else if (data_index == NEXT_TRAIN_KEY_MENTION) {
-                        s_next_trains_list[index].mention = temp_string;
+                        s_next_trains_list[idx].mention = temp_string;
                     }
                 }
                 
@@ -644,7 +655,7 @@ static void window_unload(Window *window) {
     // Data
     NULL_FREE(s_str_from);
     NULL_FREE(s_str_to);
-    NULL_FREE(s_next_trains_list);
+    release_next_trains_list();
     
     // Window
     menu_layer_destroy(s_menu_layer);
@@ -696,12 +707,9 @@ void push_next_trains_window(DataModelFromTo from_to, bool animated) {
     
     // Reset data
     set_from_to(from_to.from, from_to.to);
-    
-    s_next_trains_list_count = 0;
     s_is_updating = false;
     
     // Reset some status
-    NULL_FREE(s_next_trains_list);
     s_show_relative_time = false;
     
     // Push window

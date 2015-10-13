@@ -125,8 +125,8 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     NULL_FREE(s_train_details_list);
     s_train_details_list = malloc(sizeof(DataModelTrainDetail) * s_train_details_list_count);
     
-    for (uint32_t index = 0; index < count; ++index) {
-        Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + index);
+    for (size_t idx = 0; idx < count; ++idx) {
+        Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + idx);
         if (tuple_payload->type == TUPLE_BYTE_ARRAY) {
             uint8_t *data = tuple_payload->value->data;
             uint16_t size_left = tuple_payload->length;
@@ -141,9 +141,9 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                     temp_int += data[i] << (8 * (str_length - i - 1));
                 }
                 if (data_index == TRAIN_DETAIL_KEY_TIME) {
-                    s_train_details_list[index].time = temp_int;
+                    s_train_details_list[idx].time = temp_int;
                 } else if (data_index == TRAIN_DETAIL_KEY_STATION) {
-                    s_train_details_list[index].station = temp_int;
+                    s_train_details_list[idx].station = temp_int;
                 }
                 
                 size_left -= (uint16_t)offset;
