@@ -22,14 +22,15 @@ void status_init() {
     // Get current locale
     s_curr_locale = calloc(6, sizeof(char));
     persist_read_string(SETTING_LOCALE, s_curr_locale, 6);
-    s_curr_locale = setlocale(LC_ALL, s_curr_locale);
+    char *curr_locale = setlocale(LC_ALL, s_curr_locale);
+    NULL_FREE(s_curr_locale);
+    s_curr_locale = curr_locale;
     
     // Get is fave on launch
     s_is_fav_on_launch = persist_read_bool(SETTING_IS_FAV_ON_LAUNCH);
 }
 
 void status_deinit() {
-    NULL_FREE(s_curr_locale);
 }
 
 bool status_is_dark_theme() {
@@ -44,6 +45,7 @@ void status_set_theme(bool is_dark) {
 void status_toggle_locale() {
     s_curr_locale = setlocale(LC_ALL, (strncmp(s_curr_locale, "en", 2) == 0)?"fr_FR":"en_US");
     persist_write_string(SETTING_LOCALE, s_curr_locale);
+    locale_deinit();
     locale_init();
 }
 
