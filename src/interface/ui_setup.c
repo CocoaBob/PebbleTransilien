@@ -36,7 +36,7 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
 }
 
 void status_bar_set_colors(StatusBarLayer *status_bar_layer) {
-    status_bar_layer_set_colors(status_bar_layer, status_is_dark_theme()?GColorBlack:GColorWhite, status_is_dark_theme()?GColorWhite:GColorBlack);
+    status_bar_layer_set_colors(status_bar_layer, settings_is_dark_theme()?GColorBlack:GColorWhite, settings_is_dark_theme()?GColorWhite:GColorBlack);
 }
 
 void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_layer, Layer **status_bar_background_layer) {
@@ -64,7 +64,7 @@ void ui_setup_theme(Window *window_layer, MenuLayer *menu_layer) {
 }
 #else
 void ui_setup_theme(Window *window, InverterLayer *inverter_layer) {
-    if (status_is_dark_theme()) {
+    if (settings_is_dark_theme()) {
         Layer *window_layer = window_get_root_layer(window);
         layer_add_child(window_layer, inverter_layer_get_layer(inverter_layer));
     } else {

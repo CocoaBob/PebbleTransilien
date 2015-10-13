@@ -493,8 +493,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
 #ifdef PBL_COLOR
-    bool is_highlighed = status_is_dark_theme() || is_selected;
-    GColor text_color = (is_selected && !status_is_dark_theme())?curr_bg_color():curr_fg_color();
+    bool is_highlighed = settings_is_dark_theme() || is_selected;
+    GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
 #else
     GColor text_color = curr_fg_color();
 #endif

@@ -1,5 +1,5 @@
 //
-//  status.c
+//  settings.c
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 10/07/15.
@@ -13,8 +13,8 @@ static bool s_is_dark_theme;
 static char* s_curr_locale;
 static bool s_is_fav_on_launch;
 
-void status_init() {
-    status_deinit();
+void settings_init() {
+    settings_deinit();
     
     // Get current theme
     s_is_dark_theme = persist_read_bool(SETTING_THEME);
@@ -30,30 +30,30 @@ void status_init() {
     s_is_fav_on_launch = persist_read_bool(SETTING_IS_FAV_ON_LAUNCH);
 }
 
-void status_deinit() {
+void settings_deinit() {
 }
 
-bool status_is_dark_theme() {
+bool settings_is_dark_theme() {
     return s_is_dark_theme;
 }
 
-void status_set_theme(bool is_dark) {
+void settings_set_theme(bool is_dark) {
     persist_write_bool(SETTING_THEME, is_dark);
     s_is_dark_theme = is_dark;
 }
 
-void status_toggle_locale() {
+void settings_toggle_locale() {
     s_curr_locale = setlocale(LC_ALL, (strncmp(s_curr_locale, "en", 2) == 0)?"fr_FR":"en_US");
     persist_write_string(SETTING_LOCALE, s_curr_locale);
     locale_deinit();
     locale_init();
 }
 
-bool status_is_fav_on_launch() {
+bool settings_is_fav_on_launch() {
     return s_is_fav_on_launch;
 }
 
-void status_toggle_is_fav_on_launch() {
+void settings_toggle_is_fav_on_launch() {
     s_is_fav_on_launch = !s_is_fav_on_launch;
     persist_write_bool(SETTING_IS_FAV_ON_LAUNCH, s_is_fav_on_launch);
 }

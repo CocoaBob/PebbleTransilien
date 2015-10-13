@@ -141,12 +141,12 @@ static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_laye
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
-    bool is_fav_on_launch = status_is_fav_on_launch();
+    bool is_fav_on_launch = settings_is_fav_on_launch();
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
-    bool is_highlighed = status_is_dark_theme() || is_selected;
-    GColor text_color = (is_selected && !status_is_dark_theme())?curr_bg_color():curr_fg_color();
+    bool is_highlighed = settings_is_dark_theme() || is_selected;
+    GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
 #else
     GColor text_color = curr_fg_color();
 #endif
@@ -168,7 +168,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         }
     } else if (section == MAIN_MENU_SECTION_SETTING) {
         if (row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Theme"), status_is_dark_theme()?_("Dark theme"):_("Light theme"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Theme"), settings_is_dark_theme()?_("Dark theme"):_("Light theme"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             menu_cell_basic_draw(ctx, cell_layer, "Language", _("English"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_ON_LAUNCH) {
@@ -224,7 +224,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             // Change theme
-            status_set_theme(!status_is_dark_theme());
+            settings_set_theme(!settings_is_dark_theme());
 #ifdef PBL_COLOR
             ui_setup_theme(s_window, s_menu_layer);
 #else
@@ -235,9 +235,9 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             status_bar_set_colors(s_status_bar);
 #endif
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
-            status_toggle_locale();
+            settings_toggle_locale();
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_ON_LAUNCH) {
-            status_toggle_is_fav_on_launch();
+            settings_toggle_is_fav_on_launch();
         }
         menu_layer_reload_data(s_menu_layer);
     }
