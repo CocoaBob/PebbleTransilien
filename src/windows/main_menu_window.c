@@ -225,7 +225,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             // Change theme
-            storage_set_theme(!status_is_dark_theme());
+            status_set_theme(!status_is_dark_theme());
 #ifdef PBL_COLOR
             ui_setup_theme(s_window, s_menu_layer);
 #else
@@ -236,18 +236,9 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             status_bar_set_colors(s_status_bar);
 #endif
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
-            // Change language
-            const char* locale_str = setlocale(LC_ALL, NULL);
-            char *result;
-            if (strncmp(locale_str, "en", 2) == 0) {
-                result = setlocale(LC_ALL, "fr_FR");
-            } else {
-                result = setlocale(LC_ALL, "en_US");
-            }
-            storage_set_locale(result);
-            locale_init();
+            status_toggle_locale();
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_ON_LAUNCH) {
-            storage_set_is_fav_on_launch(!status_is_fav_on_launch());
+            status_toggle_is_fav_on_launch();
         }
         menu_layer_reload_data(s_menu_layer);
     }

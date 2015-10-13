@@ -8,6 +8,12 @@
 
 #pragma once
 
+#define SETTING_THEME 100
+#define SETTING_LOCALE 101
+#define SETTING_IS_FAV_ON_LAUNCH 102
+#define SETTING_FAVORITES 200
+#define SETTING_FAVORITES_COUNT 201
+
 #define NULL_FREE(x) {if (x != NULL) free(x); x = NULL;}
 
 #define CELL_MARGIN 4

@@ -11,6 +11,14 @@
 
 static Favorite *s_favorites;
 
+static void storage_set_favorites(const Favorite *favorites, size_t fav_count) {
+    if (fav_count == 0) {
+        persist_delete(SETTING_FAVORITES);
+    } else {
+        persist_write_data(SETTING_FAVORITES, favorites, sizeof(Favorite) * fav_count);
+    }
+}
+
 void favorite_copy(Favorite *dest, Favorite *src) {
     dest->from = src->from;
     dest->to = src->to;
@@ -22,7 +30,8 @@ void load_favorites() {
     }
     size_t buffer_size = sizeof(Favorite) * fav_get_count();
     s_favorites = malloc(buffer_size);
-    if (!storage_get_favorites(s_favorites,buffer_size)) {
+    if (!persist_exists(SETTING_FAVORITES) ||
+        persist_read_data(SETTING_FAVORITES, s_favorites, buffer_size) == E_DOES_NOT_EXIST) {
         unload_favorites();
     }
 }
@@ -32,7 +41,7 @@ void unload_favorites() {
 }
 
 size_t fav_get_count() {
-    return storage_get_favorites_count();
+    return persist_read_int(SETTING_FAVORITES_COUNT);
 }
 
 Favorite fav_at_index(size_t index) {
@@ -77,7 +86,7 @@ bool fav_add(StationIndex from, StationIndex to) {
     new_fav->to = (to == from)?STATION_NON:to;
     
     // Save data
-    storage_set_favorites_count(fav_count);
+    persist_write_int(SETTING_FAVORITES_COUNT, fav_count);
     storage_set_favorites(s_favorites, fav_count);
     
     return true;
@@ -95,7 +104,7 @@ bool fav_delete_at_index(size_t index) {
     }
     
     // Save new count
-    storage_set_favorites_count(new_fav_count);
+    persist_write_int(SETTING_FAVORITES_COUNT, new_fav_count);
     
     // Save new favorites list
     s_favorites = realloc(s_favorites, sizeof(Favorite) * new_fav_count);

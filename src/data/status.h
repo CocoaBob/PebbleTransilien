@@ -12,8 +12,12 @@ void status_init();
 void status_deinit();
 
 bool status_is_dark_theme();
-char *status_curr_locale();
+void status_set_theme(bool is_dark);
+
+void status_toggle_locale();
+
 bool status_is_fav_on_launch();
+void status_toggle_is_fav_on_launch();
 
 GColor curr_fg_color();
 GColor curr_bg_color();
