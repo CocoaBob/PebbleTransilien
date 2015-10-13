@@ -18,7 +18,7 @@ enum {
 static Window *s_window;
 static MenuLayer *s_menu_layer;
 static ClickConfigProvider s_ccp_of_menu_layer;
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
 #endif
@@ -29,8 +29,10 @@ static InverterLayer *s_inverter_layer;
 
 #define UPDATE_TIME_FORMAT_INTERVAL 3750 // 3.75 seconds
 static AppTimer *s_update_time_format_timer;
+#if !defined(PBL_PLATFORM_APLITE)
 #define IDLE_TIMEOUT 300000 // 5 minutes
 static AppTimer *s_idle_timer;
+#endif
 
 static char* s_train_number;
 static StationIndex s_from_station;
@@ -45,7 +47,9 @@ static bool s_show_relative_time;
 
 static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context);
 static void restart_timers();
+#if !defined(PBL_PLATFORM_APLITE)
 static void idle_timer_start();
+#endif
 
 // MARK: Action list callbacks
 
@@ -200,6 +204,7 @@ static void restart_timers() {
     update_time_format_timer_start();
 }
 
+#if !defined(PBL_PLATFORM_APLITE)
 static void idle_timer_callback(void *context) {
     window_stack_pop_all(false);
     push_main_menu_window(false);
@@ -215,6 +220,7 @@ static void idle_timer_stop() {
         s_idle_timer = NULL;
     }
 }
+#endif
 
 // MARK: Click Config Provider
 
@@ -242,9 +248,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
-    bool is_dark_theme = status_is_dark_theme();
-    bool is_highlighed = is_dark_theme || is_selected;
-    GColor text_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
+    bool is_highlighed = status_is_dark_theme() || is_selected;
+    GColor text_color = (is_selected && !status_is_dark_theme())?curr_bg_color():curr_fg_color();
 #else
     GColor text_color = curr_fg_color();
 #endif
@@ -313,13 +318,13 @@ static void window_load(Window *window) {
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
 #endif
     
     // Add menu layer
     int16_t status_bar_height = 0;
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
 #endif
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
@@ -330,7 +335,7 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     
     // Setup menu layer
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     menu_layer_pad_bottom_enable(s_menu_layer, false);
 #endif
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
@@ -338,7 +343,7 @@ static void window_load(Window *window) {
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
@@ -374,7 +379,7 @@ static void window_unload(Window *window) {
     window_destroy(s_window);
     s_window = NULL;
     
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     layer_destroy(s_status_bar_background_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif
@@ -391,7 +396,9 @@ static void window_appear(Window *window) {
     
     // Start timer
     update_time_format_timer_start();
+#if !defined(PBL_PLATFORM_APLITE)
     idle_timer_start();
+#endif
 }
 
 static void window_disappear(Window *window) {
@@ -399,7 +406,9 @@ static void window_disappear(Window *window) {
     
     // Stop timer
     update_time_format_timer_stop();
+#if !defined(PBL_PLATFORM_APLITE)
     idle_timer_stop();
+#endif
 }
 
 // MARK: Entry point

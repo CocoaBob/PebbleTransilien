@@ -30,7 +30,7 @@ void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title
 }
 #endif
 
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
 void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color) {
     graphics_context_set_stroke_color(ctx, color);
     for (int16_t dx = 0; dx < layer_get_bounds(cell_layer).size.w; dx+=2) {

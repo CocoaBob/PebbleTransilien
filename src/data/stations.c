@@ -20,7 +20,7 @@ static ResHandle s_name_search_pos_handle;
 #endif
 
 // High performance solution
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
 static size_t s_names_to_search_size;
 static char *s_names_to_search;
 #endif
@@ -54,7 +54,7 @@ size_t stations_get_code(StationIndex index, char *buffer, const size_t buffer_s
 }
 
 // High performance solution
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
 void stations_search_name_begin() {
     s_names_to_search_size = resource_size(s_name_search_handle);
     s_names_to_search = malloc(s_names_to_search_size);

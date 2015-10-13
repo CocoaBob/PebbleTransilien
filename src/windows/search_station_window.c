@@ -42,7 +42,7 @@ static MenuLayer *s_menu_layer;
 static Layer *s_menu_layer_layer;
 static Layer *s_panel_layer;
 static ClickConfigProvider s_last_ccp;
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
 #endif
@@ -530,9 +530,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 
 #ifdef PBL_COLOR
     bool is_selected = (s_actived_layer_index == SEARCH_STATION_MENU_LAYER)?(menu_index_compare(&selected_index, cell_index) == 0):false;
-    bool is_dark_theme = status_is_dark_theme();
-    bool is_highlighed = is_dark_theme || is_selected;
-    GColor text_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
+    bool is_highlighed = status_is_dark_theme() || is_selected;
+    GColor text_color = (is_selected && !status_is_dark_theme())?curr_bg_color():curr_fg_color();
 #else
     GColor text_color = curr_fg_color();
 #endif
@@ -595,22 +594,22 @@ static void window_load(Window *window) {
     
     // Add status bar
     int16_t status_bar_height = 0;
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
 #endif
     
     // Add separator between selection layer and menu layer
     // To save memory, we just change the window background's color
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     window_set_background_color(s_window, curr_fg_color());
 #endif
     
     // Add menu layer
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
-    uint8_t separator_height = 1;
-#else
+#if defined(PBL_PLATFORM_APLITE)
     uint8_t separator_height = 0;
+#else
+    uint8_t separator_height = 1;
 #endif
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
                                    window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT + separator_height,
@@ -629,7 +628,7 @@ static void window_load(Window *window) {
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback,
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
@@ -691,7 +690,7 @@ static void window_unload(Window *window) {
     window_destroy(s_window);
     s_window = NULL;
     
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     layer_destroy(s_status_bar_background_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif
@@ -704,13 +703,13 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_begin();
 #endif
 }
 
 static void window_disappear(Window *window) {
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_end();
 #endif
 }

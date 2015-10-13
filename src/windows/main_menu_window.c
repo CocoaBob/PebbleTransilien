@@ -45,7 +45,7 @@ enum {
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
 static StatusBarLayer *s_status_bar;
 static Layer *s_status_bar_background_layer;
 #endif
@@ -141,13 +141,12 @@ static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_laye
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
-    bool is_dark_theme = status_is_dark_theme();
     bool is_fav_on_launch = status_is_fav_on_launch();
 #ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
-    bool is_highlighed = is_dark_theme || is_selected;
-    GColor text_color = (is_selected && !is_dark_theme)?curr_bg_color():curr_fg_color();
+    bool is_highlighed = status_is_dark_theme() || is_selected;
+    GColor text_color = (is_selected && !status_is_dark_theme())?curr_bg_color():curr_fg_color();
 #else
     GColor text_color = curr_fg_color();
 #endif
@@ -169,7 +168,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         }
     } else if (section == MAIN_MENU_SECTION_SETTING) {
         if (row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Theme"), is_dark_theme?_("Dark theme"):_("Light theme"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Theme"), status_is_dark_theme()?_("Dark theme"):_("Light theme"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             menu_cell_basic_draw(ctx, cell_layer, "Language", _("English"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_ON_LAUNCH) {
@@ -232,7 +231,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             ui_setup_theme(s_window, s_inverter_layer);
 #endif
             
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
             status_bar_set_colors(s_status_bar);
 #endif
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
@@ -268,13 +267,13 @@ static void window_load(Window *window) {
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
 #endif
     
     // Add menu layer
     int16_t status_bar_height = 0;
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     status_bar_height = STATUS_BAR_LAYER_HEIGHT;
 #endif
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
@@ -292,7 +291,7 @@ static void window_load(Window *window) {
         .draw_header = (MenuLayerDrawHeaderCallback)menu_layer_draw_header_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
@@ -328,7 +327,7 @@ static void window_appear(Window *window) {
 
 static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     layer_destroy(s_status_bar_background_layer);
     status_bar_layer_destroy(s_status_bar);
 #endif

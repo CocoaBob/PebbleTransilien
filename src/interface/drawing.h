@@ -14,7 +14,7 @@ void draw_text(GContext *ctx, const char * text, const char * font_key, GRect fr
 void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color);
 #endif
 
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
 void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color);
 #endif
 

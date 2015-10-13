@@ -26,7 +26,7 @@ void stations_deinit();
 size_t stations_get_name(StationIndex index, char *buffer, const size_t buffer_size);
 size_t stations_get_code(StationIndex index, char *buffer, const size_t buffer_size);
 
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
 void stations_search_name_begin();
 void stations_search_name_end();
 #endif

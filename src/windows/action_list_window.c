@@ -78,10 +78,10 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     graphics_context_set_text_color(ctx, is_selected?s_highlight_text_color:(is_enabled?s_text_color:s_disabled_text_color));
     
     GFont font;
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
-    font =  fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
-#else
+#if defined(PBL_PLATFORM_APLITE)
     font =  fonts_get_system_font(is_selected?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
+#else
+    font =  fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
 #endif
     
     char *text = s_callbacks.get_title(cell_index->row);
@@ -131,7 +131,7 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
     
     // Setup menu layer
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
+#if !defined(PBL_PLATFORM_APLITE)
     menu_layer_pad_bottom_enable(s_menu_layer, false);
 #endif
     
