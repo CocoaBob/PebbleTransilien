@@ -1,5 +1,5 @@
 //
-//  setup_ui.c
+//  ui_setup.c
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 10/07/15.
@@ -58,12 +58,12 @@ void window_add_status_bar(Layer *window_layer, StatusBarLayer **status_bar_laye
 // MARK: Theme
 
 #ifdef PBL_COLOR
-void setup_ui_theme(Window *window_layer, MenuLayer *menu_layer) {
+void ui_setup_theme(Window *window_layer, MenuLayer *menu_layer) {
     menu_layer_set_normal_colors(menu_layer, curr_bg_color(), curr_fg_color());
     menu_layer_set_highlight_colors(menu_layer, GColorCobaltBlue, GColorWhite);
 }
 #else
-void setup_ui_theme(Window *window, InverterLayer *inverter_layer) {
+void ui_setup_theme(Window *window, InverterLayer *inverter_layer) {
     if (status_is_dark_theme()) {
         Layer *window_layer = window_get_root_layer(window);
         layer_add_child(window_layer, inverter_layer_get_layer(inverter_layer));

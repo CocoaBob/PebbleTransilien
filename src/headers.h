@@ -24,7 +24,8 @@
 #include "data/storage.h"
 
 #include "interface/drawing.h"
-#include "interface/setup_ui.h"
+#include "interface/ui_setup.h"
+#include "interface/ui_common_menu_layer.h"
 
 #include "message/app_message.h"
 

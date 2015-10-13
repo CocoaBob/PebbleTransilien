@@ -262,7 +262,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 // MARK: Click Config Provider
 
 static void long_select_handler_for_menu_layer(ClickRecognizerRef recognizer, void *context) {
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    MenuIndex selected_index = menu_layer_get_selected_index(context);
     if (selected_index.section == NEXT_TRAINS_SECTION_INFO) {
         action_list_present_with_callbacks((ActionListCallbacks) {
             .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
@@ -278,6 +278,8 @@ static void long_select_handler_for_menu_layer(ClickRecognizerRef recognizer, vo
 static void click_config_provider(void *context) {
     s_last_ccp(context);
     window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler_for_menu_layer, NULL);
+    window_single_repeating_click_subscribe(BUTTON_ID_UP, 30, menu_layer_button_up_handler);
+    window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 30, menu_layer_button_down_handler);
 }
 
 // MARK: Message Request callbacks
@@ -572,25 +574,12 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
 
 #if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
 
-static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
-    return 1;
-}
-
-static void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
-    draw_separator(ctx, cell_layer, curr_fg_color());
-}
-
 static void menu_layer_selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
     if (new_index->section == NEXT_TRAINS_SECTION_TRAINS && s_next_trains_list_count == 0) {
         *new_index = old_index;
     }
 }
 
-static void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
-    GRect frame = layer_get_frame(bg_layer);
-    graphics_context_set_fill_color(ctx, curr_bg_color());
-    graphics_fill_rect(ctx, frame, 0, GCornerNone);
-}
 #endif
 
 // MARK: Window callbacks
@@ -645,9 +634,9 @@ static void window_load(Window *window) {
     
     // Setup theme
 #ifdef PBL_COLOR
-    setup_ui_theme(s_window, s_menu_layer);
+    ui_setup_theme(s_window, s_menu_layer);
 #else
-    setup_ui_theme(s_window, s_inverter_layer);
+    ui_setup_theme(s_window, s_inverter_layer);
 #endif
 }
 

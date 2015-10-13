@@ -236,30 +236,10 @@ static void idle_timer_stop() {
 
 // MARK: Click Config Provider
 
-static void button_up_handler(ClickRecognizerRef recognizer, void *context) {
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    if (selected_index.row == 0) {
-        uint16_t num_rows = menu_layer_get_num_rows_callback(s_menu_layer, 0, NULL);
-        menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, num_rows - 1), MenuRowAlignBottom, true);
-    } else {
-        menu_layer_set_selected_next(s_menu_layer, true, MenuRowAlignCenter, true);
-    }
-}
-
-static void button_down_handler(ClickRecognizerRef recognizer, void *context) {
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    uint16_t num_rows = menu_layer_get_num_rows_callback(s_menu_layer, 0, NULL);
-    if (selected_index.row == num_rows - 1) {
-        menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, 0), MenuRowAlignTop, true);
-    } else {
-        menu_layer_set_selected_next(s_menu_layer, false, MenuRowAlignCenter, true);
-    }
-}
-
 static void click_config_provider(void *context) {
     s_ccp_of_menu_layer(context);
-    window_single_repeating_click_subscribe(BUTTON_ID_UP, 30, button_up_handler);
-    window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 30, button_down_handler);
+    window_single_repeating_click_subscribe(BUTTON_ID_UP, 30, menu_layer_button_up_handler);
+    window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 30, menu_layer_button_down_handler);
 }
 
 // MARK: Menu layer callbacks
@@ -341,23 +321,6 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     }
 }
 
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
-
-static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
-    return 1;
-}
-
-static void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context)  {
-    draw_separator(ctx, cell_layer, curr_fg_color());
-}
-
-static void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
-    GRect frame = layer_get_frame(bg_layer);
-    graphics_context_set_fill_color(ctx, curr_bg_color());
-    graphics_fill_rect(ctx, frame, 0, GCornerNone);
-}
-#endif
-
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
@@ -411,9 +374,9 @@ static void window_load(Window *window) {
     
     // Setup theme
 #ifdef PBL_COLOR
-    setup_ui_theme(s_window, s_menu_layer);
+    ui_setup_theme(s_window, s_menu_layer);
 #else
-    setup_ui_theme(s_window, s_inverter_layer);
+    ui_setup_theme(s_window, s_inverter_layer);
 #endif
 }
 

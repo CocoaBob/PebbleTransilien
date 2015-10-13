@@ -249,9 +249,9 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             // Change theme
             storage_set_theme(!status_is_dark_theme());
 #ifdef PBL_COLOR
-            setup_ui_theme(s_window, s_menu_layer);
+            ui_setup_theme(s_window, s_menu_layer);
 #else
-            setup_ui_theme(s_window, s_inverter_layer);
+            ui_setup_theme(s_window, s_inverter_layer);
 #endif
             
 #if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
@@ -289,23 +289,6 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
         menu_layer_select_callback(s_menu_layer, cell_index, context);
     }
 }
-
-#if defined(PBL_PLATFORM_BASALT) || defined(PBL_PLATFORM_CHALK)
-
-static int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
-    return 1;
-}
-
-static void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
-    draw_separator(ctx, cell_layer, curr_fg_color());
-}
-
-static void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
-    GRect frame = layer_get_frame(bg_layer);
-    graphics_context_set_fill_color(ctx, curr_bg_color());
-    graphics_fill_rect(ctx, frame, 0, GCornerNone);
-}
-#endif
 
 // MARK: Window callbacks
 
@@ -356,9 +339,9 @@ static void window_load(Window *window) {
     
     // Setup theme
 #ifdef PBL_COLOR
-    setup_ui_theme(s_window, s_menu_layer);
+    ui_setup_theme(s_window, s_menu_layer);
 #else
-    setup_ui_theme(s_window, s_inverter_layer);
+    ui_setup_theme(s_window, s_inverter_layer);
 #endif
 }
 
