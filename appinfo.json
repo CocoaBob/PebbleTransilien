@@ -85,7 +85,10 @@
       {
         "type": "raw",
         "name": "STATION_NAME_SEARCH_POS",
-        "file": "data/station_name_search_pos.bin"
+        "file": "data/station_name_search_pos.bin",
+        "targetPlatforms": [
+          "aplite"
+        ]
       },
       {
         "type": "raw",

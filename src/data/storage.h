@@ -18,7 +18,6 @@ bool storage_get_is_fav_on_launch();
 void storage_set_is_fav_on_launch(bool is_fav_on_launch);
 
 bool storage_get_favorites(void *favorites, const size_t buffer_size);
-bool storage_set_favorites(const Favorite *favorites, size_t fav_count);
-bool storage_delete_all_favorites();
+void storage_set_favorites(const Favorite *favorites, size_t fav_count);
 size_t storage_get_favorites_count();
-bool storage_set_favorites_count(size_t fav_count);
+void storage_set_favorites_count(size_t fav_count);

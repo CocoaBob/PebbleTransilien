@@ -60,21 +60,18 @@ bool storage_get_favorites(void *favorites, const size_t buffer_size) {
     return false;
 }
 
-bool storage_set_favorites(const Favorite *favorites, size_t fav_count) {
-    int result = persist_write_data(SETTING_FAVORITES, favorites, size_of_Favorite() * fav_count);
-    return (result == (int)(size_of_Favorite() * fav_count));
-}
-
-bool storage_delete_all_favorites() {
-    status_t result = persist_delete(SETTING_FAVORITES);
-    return result == S_SUCCESS;
+void storage_set_favorites(const Favorite *favorites, size_t fav_count) {
+    if (fav_count == 0) {
+        persist_delete(SETTING_FAVORITES);
+    } else {
+        persist_write_data(SETTING_FAVORITES, favorites, sizeof(Favorite) * fav_count);
+    }
 }
 
 size_t storage_get_favorites_count() {
     return persist_read_int(SETTING_FAVORITES_COUNT);
 }
 
-bool storage_set_favorites_count(size_t fav_count) {
-    status_t result = persist_write_int(SETTING_FAVORITES_COUNT, fav_count);
-    return result == S_SUCCESS;
+void storage_set_favorites_count(size_t fav_count) {
+    persist_write_int(SETTING_FAVORITES_COUNT, fav_count);
 }

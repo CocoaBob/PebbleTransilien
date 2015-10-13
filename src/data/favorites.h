@@ -12,7 +12,6 @@
 
 #define FAV_MAX_COUNT 64// 4*64=256, 256 is persist data max length
 
-size_t size_of_Favorite();
 void load_favorites();
 void unload_favorites();
 size_t fav_get_count();

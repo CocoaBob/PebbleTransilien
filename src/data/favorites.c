@@ -11,11 +11,6 @@
 
 static Favorite *s_favorites;
 
-size_t size_of_Favorite() {
-    static size_t _favorite_size = sizeof(Favorite);
-    return _favorite_size;
-}
-
 void favorite_copy(Favorite *dest, Favorite *src) {
     dest->from = src->from;
     dest->to = src->to;
@@ -25,7 +20,7 @@ void load_favorites() {
     if (s_favorites != NULL) {
         return;
     }
-    size_t buffer_size = size_of_Favorite() * fav_get_count();
+    size_t buffer_size = sizeof(Favorite) * fav_get_count();
     s_favorites = malloc(buffer_size);
     if (!storage_get_favorites(s_favorites,buffer_size)) {
         unload_favorites();
@@ -65,13 +60,10 @@ bool fav_add(StationIndex from, StationIndex to) {
     
     if (s_favorites == NULL) {
         // The 1st time
-        s_favorites = malloc(size_of_Favorite());
+        s_favorites = malloc(sizeof(Favorite));
     } else {
         // Resize the existing array
-        Favorite* new_favorites = realloc(s_favorites, size_of_Favorite() * fav_count);
-        if (new_favorites != NULL) {
-            s_favorites = new_favorites;
-        }
+        s_favorites = realloc(s_favorites, sizeof(Favorite) * fav_count);
     }
     
     // If failed to allocate memory
@@ -106,18 +98,9 @@ bool fav_delete_at_index(size_t index) {
     storage_set_favorites_count(new_fav_count);
     
     // Save new favorites list
-    if (new_fav_count == 0) {
-        storage_delete_all_favorites();
-        return true;
-    } else {
-        Favorite* new_favorites = realloc(s_favorites, size_of_Favorite() * new_fav_count);
-        if (new_favorites != NULL) {
-            s_favorites = new_favorites;
-            
-            storage_set_favorites(s_favorites, new_fav_count);
-            return true;
-        }
-    }
+    s_favorites = realloc(s_favorites, sizeof(Favorite) * new_fav_count);
+    storage_set_favorites(s_favorites, new_fav_count);
+    return true;
     return false;
 }
 
