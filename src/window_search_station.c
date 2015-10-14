@@ -285,7 +285,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         case SEARCH_STATION_ACTIONS_TIMETABLE:
         {
             window_stack_remove(action_list_window, false);
-            push_next_trains_window(from_to, true);
+            push_window_next_trains(from_to, true);
             break;
         }
         case SEARCH_STATION_ACTIONS_FAV:
@@ -433,7 +433,7 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
 #if defined(PBL_PLATFORM_APLITE)
             // Remove main menu window to reduce memory for Aplite.
             window_stack_remove(s_window, true);
-            push_main_menu_window(false);
+            push_window_main_menu(false);
 #else
             window_stack_pop(true);
 #endif
@@ -717,7 +717,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_search_train_window(StationIndex from, StationIndex to, bool animated) {
+void push_window_search_train(StationIndex from, StationIndex to, bool animated) {
     // Show window
     if(!s_window) {
         s_window = window_create();
@@ -739,4 +739,8 @@ void push_search_train_window(StationIndex from, StationIndex to, bool animated)
     
     // Focus the selection layer
     move_focus_to_selection_layer();
+}
+
+Window *get_window_search_train() {
+    return s_window;
 }

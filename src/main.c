@@ -12,7 +12,7 @@
 static void pebble_js_is_ready_callback(DictionaryIterator *received) {
     if (settings_is_fav_on_launch() && fav_get_count() > 0) {
         Favorite favorite = fav_at_index(0);
-        push_next_trains_window(favorite, true);
+        push_window_next_trains(favorite, true);
     }
 }
 
@@ -25,7 +25,7 @@ void handle_init(void) {
     favorites_init();
     services_init();
     
-    push_main_menu_window(false);
+    push_window_main_menu(false);
     
     message_init((MessageCallbacks){
         .message_succeeded_callback = pebble_js_is_ready_callback

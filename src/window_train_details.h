@@ -8,4 +8,4 @@
 
 #pragma once
 
-void push_train_details_window(char* train_number, StationIndex from_station, bool animated);
+void push_window_train_details(char* train_number, StationIndex from_station, bool animated);

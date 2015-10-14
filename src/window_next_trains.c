@@ -451,7 +451,7 @@ static void restart_timers() {
 #if !defined(PBL_PLATFORM_APLITE)
 static void idle_timer_callback(void *context) {
     window_stack_pop_all(false);
-    push_main_menu_window(false);
+    push_window_main_menu(false);
 }
 
 static void idle_timer_start() {
@@ -562,8 +562,12 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
         }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (!s_is_updating && s_next_trains_list_count > 0) {
+#if defined(PBL_PLATFORM_APLITE)
+            // Remove SearchStation window to reduce RAM footprint for Aplite.
+            window_stack_remove(get_window_search_train(), false);
+#endif
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
-            push_train_details_window(next_train.number, s_from_to.from, true);
+            push_window_train_details(next_train.number, s_from_to.from, true);
         }
     }
 }
@@ -684,7 +688,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_next_trains_window(DataModelFromTo from_to, bool animated) {
+void push_window_next_trains(DataModelFromTo from_to, bool animated) {
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {

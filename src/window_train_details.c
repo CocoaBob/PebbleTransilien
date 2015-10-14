@@ -94,7 +94,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 #if !defined(PBL_PLATFORM_APLITE)
         case TRAIN_DETAINS_ACTIONS_TIMETABLE:
             window_stack_remove(action_list_window, false);
-            push_next_trains_window((DataModelFromTo){selected_station_index, STATION_NON}, true);
+            push_window_next_trains((DataModelFromTo){selected_station_index, STATION_NON}, true);
             break;
 #endif
         case TRAIN_DETAINS_ACTIONS_FAV:
@@ -214,7 +214,7 @@ static void restart_timers() {
 #if !defined(PBL_PLATFORM_APLITE)
 static void idle_timer_callback(void *context) {
     window_stack_pop_all(false);
-    push_main_menu_window(false);
+    push_window_main_menu(false);
 }
 
 static void idle_timer_start() {
@@ -423,7 +423,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_train_details_window(char* train_number, StationIndex from_station, bool animated) {
+void push_window_train_details(char* train_number, StationIndex from_station, bool animated) {
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {

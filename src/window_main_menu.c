@@ -99,7 +99,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         {
             Favorite favorite = fav_at_index(current_selection.row);
             window_stack_remove(action_list_window, false);
-            push_search_train_window(favorite.from, favorite.to, true);
+            push_window_search_train(favorite.from, favorite.to, true);
             break;
         }
         case MAIN_MENU_ACTIONS_DELETE:
@@ -210,10 +210,10 @@ static void menu_layer_draw_header_callback(GContext *ctx, const Layer *cell_lay
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         Favorite favorite = fav_at_index(cell_index->row);
-        push_next_trains_window(favorite, true);
+        push_window_next_trains(favorite, true);
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            push_search_train_window(STATION_NON, STATION_NON, true);
+            push_window_search_train(STATION_NON, STATION_NON, true);
 #if defined(PBL_PLATFORM_APLITE)
             // Remove main menu window to reduce memory for Aplite.
             window_stack_remove(s_window, false);
@@ -342,7 +342,7 @@ static void window_unload(Window *window) {
 
 // MARK: Entry point
 
-void push_main_menu_window(bool animated) {
+void push_window_main_menu(bool animated) {
     if(!s_window) {
         s_window = window_create();
         window_set_window_handlers(s_window, (WindowHandlers) {
