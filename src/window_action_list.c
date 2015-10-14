@@ -199,7 +199,7 @@ static void window_appear(Window *window) {
     // BUG FIX: When it appears for the 1st time, the selected row's inverter layer position is incorrect
     menu_layer_reload_data(s_menu_layer);
 #endif
-    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

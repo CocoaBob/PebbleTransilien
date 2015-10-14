@@ -9,4 +9,6 @@
 #pragma once
 
 void push_window_search_train(StationIndex from, StationIndex to, bool animated);
+#if defined(PBL_PLATFORM_APLITE)
 Window *get_window_search_train();
+#endif

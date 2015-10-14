@@ -9,3 +9,4 @@
 #pragma once
 
 void push_window_main_menu(bool animated);
+Window *get_window_main_menu();

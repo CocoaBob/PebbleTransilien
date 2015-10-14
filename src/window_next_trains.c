@@ -250,7 +250,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 
 // MARK: Click Config Provider
 
-static void long_select_handler_for_menu_layer(ClickRecognizerRef recognizer, void *context) {
+static void window_long_click_handler(ClickRecognizerRef recognizer, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(context);
     if (selected_index.section == NEXT_TRAINS_SECTION_INFO) {
         action_list_present_with_callbacks((ActionListCallbacks) {
@@ -266,11 +266,24 @@ static void long_select_handler_for_menu_layer(ClickRecognizerRef recognizer, vo
     }
 }
 
+#if defined(PBL_PLATFORM_APLITE)
+static void window_back_click_handler(ClickRecognizerRef recognizer, void *context) {
+    window_stack_pop(true);
+    if (!window_stack_contains_window(get_window_main_menu())) {
+        push_window_main_menu(false);
+    }
+}
+#endif
+
 static void click_config_provider(void *context) {
     s_last_ccp(context);
-    window_long_click_subscribe(BUTTON_ID_SELECT, 0, long_select_handler_for_menu_layer, NULL);
+    window_long_click_subscribe(BUTTON_ID_SELECT, 0, window_long_click_handler, NULL);
     window_single_repeating_click_subscribe(BUTTON_ID_UP, 30, menu_layer_button_up_handler);
     window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 30, menu_layer_button_down_handler);
+    
+#if defined(PBL_PLATFORM_APLITE)
+    window_single_click_subscribe(BUTTON_ID_BACK, window_back_click_handler);
+#endif
 }
 
 // MARK: Message Request callbacks
@@ -670,7 +683,7 @@ static void window_appear(Window *window) {
     reload_data_timer_start();
     idle_timer_start();
 #endif
-    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

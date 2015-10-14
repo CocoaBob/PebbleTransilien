@@ -323,7 +323,7 @@ static void window_appear(Window *window) {
     
     // Show the selected row
     menu_layer_set_selected_index(s_menu_layer, menu_layer_get_selected_index(s_menu_layer), MenuRowAlignCenter, false);
-    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_unload(Window *window) {
@@ -352,4 +352,8 @@ void push_window_main_menu(bool animated) {
         });
     }
     window_stack_push(s_window, animated);
+}
+
+Window *get_window_main_menu() {
+    return s_window;
 }

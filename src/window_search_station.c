@@ -706,7 +706,7 @@ static void window_appear(Window *window) {
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_begin();
 #endif
-    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {
@@ -741,6 +741,8 @@ void push_window_search_train(StationIndex from, StationIndex to, bool animated)
     move_focus_to_selection_layer();
 }
 
+#if defined(PBL_PLATFORM_APLITE)
 Window *get_window_search_train() {
     return s_window;
 }
+#endif

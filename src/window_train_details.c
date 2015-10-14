@@ -9,13 +9,13 @@
 #include <pebble.h>
 #include "headers.h"
 
-enum {
 #if !defined(PBL_PLATFORM_APLITE)
+enum {
     TRAIN_DETAINS_ACTIONS_TIMETABLE,
-#endif
     TRAIN_DETAINS_ACTIONS_FAV,
     TRAIN_DETAINS_ACTIONS_COUNT
 };
+#endif
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
@@ -53,24 +53,21 @@ static void restart_timers();
 static void idle_timer_start();
 #endif
 
+#if !defined(PBL_PLATFORM_APLITE)
 // MARK: Action list callbacks
 
 static size_t action_list_get_num_rows_callback(void) {
     return TRAIN_DETAINS_ACTIONS_COUNT;
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
 static size_t action_list_get_default_selection_callback(void) {
     return TRAIN_DETAINS_ACTIONS_TIMETABLE;
 }
-#endif
 
 static char* action_list_get_title_callback(size_t index) {
-#if !defined(PBL_PLATFORM_APLITE)
     if (index == TRAIN_DETAINS_ACTIONS_TIMETABLE) {
         return _("Check Timetable");
     }
-#endif
     return _("Set Favorite");
 }
 
@@ -91,18 +88,17 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
     switch (index) {
-#if !defined(PBL_PLATFORM_APLITE)
         case TRAIN_DETAINS_ACTIONS_TIMETABLE:
             window_stack_remove(action_list_window, false);
             push_window_next_trains((DataModelFromTo){selected_station_index, STATION_NON}, true);
             break;
-#endif
         case TRAIN_DETAINS_ACTIONS_FAV:
             fav_add(s_from_station, selected_station_index);
             window_stack_remove(action_list_window, true);
             break;
     }
 }
+#endif
 
 // MARK: Message Request callbacks
 
@@ -304,6 +300,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     }
 }
 
+#if !defined(PBL_PLATFORM_APLITE)
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (!s_is_updating && s_train_details_list_count > 0) {
         action_list_present_with_callbacks((ActionListCallbacks) {
@@ -311,15 +308,14 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
 #endif
             .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
-#if !defined(PBL_PLATFORM_APLITE)
             .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
-#endif
             .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
             .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
             .select_click = (ActionListSelectCallback)action_list_select_callback
         });
     }
 }
+#endif
 
 // MARK: Window callbacks
 
@@ -352,10 +348,10 @@ static void window_load(Window *window) {
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
-        .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
+        .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback
 #if !defined(PBL_PLATFORM_APLITE)
         ,
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
@@ -410,7 +406,7 @@ static void window_appear(Window *window) {
     update_time_format_timer_start();
     idle_timer_start();
 #endif
-    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {
