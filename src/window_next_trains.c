@@ -32,9 +32,9 @@ static Layer *s_status_bar_background_layer;
 static InverterLayer *s_inverter_layer;
 #endif
 
+#if !defined(PBL_PLATFORM_APLITE)
 #define UPDATE_TIME_FORMAT_INTERVAL 3750 // 3.75 seconds
 static AppTimer *s_update_time_format_timer;
-#if !defined(PBL_PLATFORM_APLITE)
 #define RELOAD_DATA_TIMER_INTERVAL 15000 // 15 seconds
 static AppTimer *s_reload_data_timer;
 #define IDLE_TIMEOUT 300000 // 5 minutes
@@ -53,8 +53,8 @@ static bool s_show_relative_time;
 
 // Forward declaration
 
-static void restart_timers();
 #if !defined(PBL_PLATFORM_APLITE)
+static void restart_timers();
 static void idle_timer_start();
 #endif
 
@@ -335,7 +335,9 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     
     // Update UI
     s_is_updating = false;
+#if !defined(PBL_PLATFORM_APLITE)
     restart_timers();
+#endif
     s_show_relative_time = false;
     menu_layer_reload_data(s_menu_layer);
 }
@@ -398,6 +400,7 @@ static void request_next_stations() {
     free(dict_buffer);
 }
 
+#if !defined(PBL_PLATFORM_APLITE)
 // MARK: Timer
 
 static void update_time_format_timer_callback(void *context);
@@ -419,7 +422,6 @@ static void update_time_format_timer_callback(void *context) {
     update_time_format_timer_start();
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
 static void reload_data_timer_callback(void *context);
 
 static void reload_data_timer_start() {
@@ -437,18 +439,14 @@ static void reload_data_timer_callback(void *context) {
     request_next_stations();
     reload_data_timer_start();
 }
-#endif
 
 static void restart_timers() {
     update_time_format_timer_stop();
     update_time_format_timer_start();
-#if !defined(PBL_PLATFORM_APLITE)
     reload_data_timer_stop();
     reload_data_timer_start();
-#endif
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
 static void idle_timer_callback(void *context) {
     window_stack_pop_all(false);
     push_window_main_menu(false);
@@ -667,8 +665,8 @@ static void window_appear(Window *window) {
     }
     
     // Start timer
-    update_time_format_timer_start();
 #if !defined(PBL_PLATFORM_APLITE)
+    update_time_format_timer_start();
     reload_data_timer_start();
     idle_timer_start();
 #endif
@@ -678,9 +676,9 @@ static void window_appear(Window *window) {
 static void window_disappear(Window *window) {
     message_clear_callbacks();
     
+#if !defined(PBL_PLATFORM_APLITE)
     // Stop timer
     update_time_format_timer_stop();
-#if !defined(PBL_PLATFORM_APLITE)
     reload_data_timer_stop();
     idle_timer_stop();
 #endif
