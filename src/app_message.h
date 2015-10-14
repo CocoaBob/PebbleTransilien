@@ -9,6 +9,7 @@
 #pragma once
 
 typedef enum {
+    MESSAGE_TYPE_ERROR = -1,
     MESSAGE_TYPE_NEXT_TRAINS = 0,
     MESSAGE_TYPE_TRAIN_DETAILS
 } MESSAGE_TYPE;

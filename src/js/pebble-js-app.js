@@ -236,6 +236,8 @@ var next_trains_example = '[\
 
 var _allStationCodes = ["AB","ABL","ACW","AEE","AEH","AGV","AHM","ALC","ANY","APK","ARK","ARP","ARW","ATH","ATW","AUU","AUW","AVF","BAM","BBN","BCO","BDE","BDY","BEC","BEL","BFM","BFX","BGK","BGV","BIH","BIS","BJN","BJR","BKR","BLA","BLU","BNR","BNY","BOF","BOM","BQA","BQC","BQQ","BQV","BRK","BRN","BRW","BSO","BSR","BSW","BUR","BVA","BVI","BVJ","BWI","BWR","BXG","BXI","BXN","BXP","BXR","BY","BYS","CAZ","CBK","CBV","CEG","CEJ","CES","CEV","CEX","CFD","CFO","CGG","CGJ","CGP","CGW","CHK","CHQ","CHR","CHV","CJN","CJR","CJV","CL","CLC","CLL","CLR","CLX","CLY","CMA","CME","CO","COE","COJ","CPA","CPK","CPM","CPO","CPW","CQQ","CSG","CSH","CTH","CUF","CVF","CVI","CVW","CWJ","CXA","CYC","CYP","CYQ","CYV","CYZ","D","DA","DAM","DDI","DEU","DFR","DMO","DRN","DX","ECZ","ELW","ELY","EM","EN","EPL","EPO","EPV","ERA","ERE","ERM","ERT","ESO","ETP","ETY","EVC","EVR","EY","EYO","EYS","FAF","FFY","FMN","FMP","FMY","FNR","FON","FPB","FPN","FPO","FSB","GAJ","GAQ","GAW","GBG","GBI","GCM","GCR","GDS","GEN","GGG","GGV","GIF","GIS","GMC","GN","GNX","GOU","GPA","GRL","GTL","GU","GUW","GYN","GZ","GZA","HAQ","HAR","HER","HOA","HRY","HSL","IAC","IAP","IBM","IGY","INV","IPO","ISP","ISY","IV","JAS","JUZ","JVL","JVR","JY","KOU","KRW","KVE","LAD","LBJ","LBT","LCB","LDU","LEG","LFA","LFC","LFJ","LFM","LGK","LGY","LIE","LIM","LIU","LJA","LJU","LMU","LNX","LON","LOV","LPE","LPN","LQK","LQN","LSD","LSI","LSW","LUZ","LVZ","LWA","LXJ","LYO","LYQ","LYV","LZO","LZV","MAE","MAG","MAL","MAQ","MBP","MBR","MDN","MDS","MEA","MEL","MFA","MFL","MFY","MHD","MJM","MJW","MKN","MKU","MLB","MLF","MLM","MLR","MLV","MNY","MOF","MOR","MP","MPJ","MPU","MRK","MRT","MS","MSN","MSO","MSX","MTE","MTQ","MTU","MVC","MVH","MVP","MVW","MW","MWI","MWO","MXK","MY","MYD","NAA","NAF","NAN","NAU","NC1","NC2","NC3","NC4","NC5","NC6","NG","NGM","NH","NIO","NLP","NO","NPT","NSL","NSP","NSY","NTN","NUE","NUN","NYC","NYG","NYP","NZL","OBP","OGB","ORM","ORS","ORY","OSN","OY","OZF","PAA","PAN","PAW","PAX","PAZ","PBY","PCX","PDM","PE","PEB","PEX","PG","PIE","PJ","PKY","PLB","PLY","PMP","PNB","PNO","POA","POP","PPD","PPT","PRF","PRO","PRQ","PRR","PRU","PRY","PSE","PSL","PSY","PTC","PTX","PV","PVA","PWR","PWZ","PXO","PYO","PZB","RBI","RBT","RF","RIS","RNS","ROB","RSB","RSS","RSY","RVM","RYR","SAO","SCD","SCR","SCW","SDE","SEV","SF","SFD","SGM","SGT","SHL","SHO","SKX","SLF","SLL","SLT","SME","SNB","SNM","SNN","SOA","SOS","SPP","SQY","SUR","SVL","SVR","SWY","SXE","SXG","TAE","TLP","TMR","TNT","TOC","TOU","TPA","TRH","TSS","TVO","TVY","US","VAI","VBB","VBO","VBV","VC","VCN","VCX","VD","VDA","VDE","VDF","VDO","VDV","VEH","VEP","VET","VFD","VFG","VFR","VGL","VGS","VIB","VII","VMD","VMK","VMS","VNC","VNL","VOM","VPN","VRD","VRG","VRI","VSG","VSM","VSS","VSW","VTV","VUN","VVG","VW","VWC","VWT","VXS","VY","VYL","WEE","XBY","XCS","XFA","XMC","XND","XOA","XPY","YES","ZTN","ZUB"];
 
+var _request;
+
 function stationCode2Index(code) {
     return _allStationCodes.indexOf(code.toUpperCase());
 }
@@ -306,11 +308,26 @@ function parseTrainHour(str) {
     return new Date(0);
 }
 
+function abortLastRequest() {
+    if (_request != null) {
+        _request.abort();
+        _request = null;
+    }
+}
+
+function sendAppMessageForError(errorCode) {
+    Pebble.sendAppMessage({
+                          "MESSAGE_KEY_RESPONSE_TYPE": -1,
+                          "MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT":1,
+                          "MESSAGE_KEY_RESPONSE_PAYLOAD":errorCode
+                          });
+}
+
 function sendAppMessageForNextTrains(responseText) {
     var dataArray = JSON.parse(responseText)[0]["data"];
     if (dataArray == null) {
-        // TODO: Failed
-        // Failed to request next trains! (2)
+        sendAppMessageForError(2);
+        return;
     }
     var payloadLength = dataArray.length;
     var message = {
@@ -371,26 +388,30 @@ function requestNextTrains(from, to) {
 //    sendAppMessageForNextTrains(next_trains_example);
 //    return;
     
-    var req = new XMLHttpRequest();
-    req.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", false);
-    req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+    abortLastRequest();
     
-    var data = JSON.stringify([{"target": "/transilien/getNextTrains", "map": { "codeDepart": from, "codeArrivee": to, "theoric": "false" }}]);
-    req.send(data);
-    if (req.readyState == 4 && req.status == 200) {
-        sendAppMessageForNextTrains(req.responseText);
-    } else {
-        // TODO: Failed
-        // Failed to request next trains! (1)
-    }
+    _request = new XMLHttpRequest();
+    _request.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", true);
+    _request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+    _request.onload = function (e) {
+        if (_request.readyState == 4 && _request.status == 200) {
+            sendAppMessageForNextTrains(_request.responseText);
+        } else {
+            sendAppMessageForError(1);
+            return;
+        }
+    };
+    
+    var postBody = JSON.stringify([{"target": "/transilien/getNextTrains", "map": { "codeDepart": from, "codeArrivee": to, "theoric": "false" }}]);
+    _request.send(postBody);
 }
 
 function sendAppMessageForTrainDetails(responseText) {
     var parseResult = JSON.parse(responseText)[0];
     var dataArray = parseResult["data"];
     if (dataArray == null) {
-        // TODO: Failed
-        // Failed to request train details! (2)
+        sendAppMessageForError(2);
+        return;
     }
     var payloadLength = dataArray.length;
     var message = {
@@ -440,18 +461,22 @@ function requestTrainDetails(trainNumber) {
 //    sendAppMessageForTrainDetails(train_details_example);
 //    return;
     
-    var req = new XMLHttpRequest();
-    req.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", false);
-    req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+    abortLastRequest();
     
-    var data = JSON.stringify([{"target": "/transilien/getTrainDetails", "map": { "trainNumber": trainNumber, "theoric": "false"}}]);
-    req.send(data);
-    if (req.readyState == 4 && req.status == 200) {
-        sendAppMessageForTrainDetails(req.responseText);
-    } else {
-        // TODO: Failed
-        // Failed to request train details! (1)
-    }
+    _request = new XMLHttpRequest();
+    _request.open("POST", "http://transilien.ods.ocito.com/ods/transilien/iphone", true);
+    _request.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+    _request.onload = function (e) {
+        if (_request.readyState == 4 && _request.status == 200) {
+            sendAppMessageForTrainDetails(_request.responseText);
+        } else {
+            sendAppMessageForError(1);
+            return;
+        }
+    };
+    
+    var postBody = JSON.stringify([{"target": "/transilien/getTrainDetails", "map": { "trainNumber": trainNumber, "theoric": "false"}}]);
+    _request.send(postBody);
 }
 
 // Called when JS is ready
