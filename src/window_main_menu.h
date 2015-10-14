@@ -1,5 +1,5 @@
 //
-//  next_trains_window.h
+//  window_main_menu.h
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 09/07/15.
@@ -8,4 +8,4 @@
 
 #pragma once
 
-void push_next_trains_window(DataModelFromTo from_to, bool animated);
+void push_main_menu_window(bool animated);

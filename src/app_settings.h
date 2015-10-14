@@ -1,5 +1,5 @@
 //
-//  settings.h
+//  app_settings.h
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 10/07/15.

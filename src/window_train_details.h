@@ -1,5 +1,5 @@
 //
-//  train_details_window.h
+//  window_train_details.h
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 23/07/15.

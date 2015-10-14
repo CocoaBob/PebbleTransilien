@@ -1,5 +1,5 @@
 //
-//  action_list_window.c
+//  window_action_list.c
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 30/07/15.
@@ -8,7 +8,7 @@
 
 #include <pebble.h>
 
-#include "action_list_window.h"
+#include "window_action_list.h"
 
 #define ACTION_LIST_BAR_WIDTH 14
 #define ACTION_LIST_BAR_POINT_X 7

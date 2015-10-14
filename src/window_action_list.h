@@ -1,5 +1,5 @@
 //
-//  action_list_window.h
+//  window_action_list.h
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 30/07/15.

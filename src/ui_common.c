@@ -1,15 +1,15 @@
 //
-//  drawing.c
+//  ui_common.c
 //  PebbleTransilien
 //
-//  Created by CocoaBob on 10/07/15.
-//  Copyright (c) 2015 CocoaBob. All rights reserved.
+//  Created by CocoaBob on 13/10/15.
+//  Copyright © 2015 CocoaBob. All rights reserved.
 //
 
 #include <pebble.h>
 #include "headers.h"
 
-// MARK: Basics
+// MARK: Darw Basics
 
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment) {
     graphics_draw_text(ctx, text, fonts_get_system_font(font_key), frame, GTextOverflowModeTrailingEllipsis, alignment, NULL);
@@ -67,12 +67,12 @@ void draw_centered_title(GContext* ctx, const Layer *cell_layer, const char *tit
 // MARK: Draw From To Layer, layer height should be 44
 
 void draw_from_to(GContext* ctx,
-                        const Layer *layer,
-                        DataModelFromTo from_to,
+                  const Layer *layer,
+                  DataModelFromTo from_to,
 #ifdef PBL_COLOR
-                        bool is_highlighed,
+                  bool is_highlighed,
 #endif
-                        GColor text_color) {
+                  GColor text_color) {
     graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(layer);
     bool is_from_to = (from_to.to != STATION_NON);
@@ -179,3 +179,48 @@ void draw_station(GContext *ctx, Layer *cell_layer,
                                 CELL_HEIGHT_2);
     draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
 }
+
+// MARK: Menu Layer Callbacks
+
+void menu_layer_button_up_handler(ClickRecognizerRef recognizer, void *context) {
+    MenuIndex old_index = menu_layer_get_selected_index(context);
+    if (old_index.section == 0 && old_index.row == 0) {
+        menu_layer_set_selected_index(context, MenuIndex(UINT16_MAX, UINT16_MAX), MenuRowAlignBottom, true);
+    } else {
+        menu_layer_set_selected_next(context, true, MenuRowAlignCenter, true);
+    }
+}
+
+void menu_layer_button_down_handler(ClickRecognizerRef recognizer, void *context) {
+    MenuIndex old_index = menu_layer_get_selected_index(context);
+    menu_layer_set_selected_next(context, false, MenuRowAlignCenter, true);
+    MenuIndex new_index = menu_layer_get_selected_index(context);
+    if (menu_index_compare(&old_index, &new_index) == 0) {
+        menu_layer_set_selected_index(context, MenuIndex(0, 0), MenuRowAlignTop, true);
+    }
+}
+
+#if !defined(PBL_PLATFORM_APLITE)
+
+int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
+    return 1;
+}
+
+void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
+    draw_separator(ctx, cell_layer, curr_fg_color());
+}
+
+void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context) {
+    GRect frame = layer_get_frame(bg_layer);
+    graphics_context_set_fill_color(ctx, curr_bg_color());
+    graphics_fill_rect(ctx, frame, 0, GCornerNone);
+}
+#endif
+
+// MARK: Action List Callbacks
+
+#ifdef PBL_COLOR
+GColor action_list_get_bar_color(void) {
+    return GColorCobaltBlue;
+}
+#endif

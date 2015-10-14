@@ -1,5 +1,5 @@
 //
-//  main_menu_window.c
+//  window_main_menu.c
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 09/07/15.

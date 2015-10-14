@@ -1,5 +1,5 @@
 //
-//  search_station_window.c
+//  window_search_station.c
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 25/07/15.

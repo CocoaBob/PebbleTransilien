@@ -8,27 +8,25 @@
 
 #pragma once
 
-#include "3rd_party/selection_layer.h"
+#include "3rd_party/selection_layer/selection_layer.h"
+#include "3rd_party/locale_framework/localize.h"
 
-#include "windows/action_list_window.h"
-
-#include "locale_framework/localize.h"
+#include "window_action_list.h"
 
 #include "constants.h"
 
-#include "data/favorites.h"
-#include "data/data_process.h"
-#include "data/data_model.h"
-#include "data/stations.h"
-#include "data/settings.h"
+#include "data_favorites.h"
+#include "data_process.h"
+#include "data_model.h"
+#include "data_stations.h"
+#include "app_settings.h"
 
-#include "interface/drawing.h"
-#include "interface/ui_setup.h"
-#include "interface/ui_common_menu_layer.h"
+#include "ui_setup.h"
+#include "ui_common.h"
 
-#include "message/app_message.h"
+#include "app_message.h"
 
-#include "windows/main_menu_window.h"
-#include "windows/next_trains_window.h"
-#include "windows/search_station_window.h"
-#include "windows/train_details_window.h"
+#include "window_main_menu.h"
+#include "window_next_trains.h"
+#include "window_search_station.h"
+#include "window_train_details.h"

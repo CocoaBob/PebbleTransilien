@@ -1,5 +1,5 @@
 //
-//  favorites.c
+//  data_favorites.c
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 10/07/15.

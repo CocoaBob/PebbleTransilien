@@ -1,5 +1,5 @@
 //
-//  favorites.h
+//  data_favorites.h
 //  PebbleTransilien
 //
 //  Created by CocoaBob on 10/07/15.
@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "data/data_model.h"
+#include "data_model.h"
 
 #define FAV_MAX_COUNT 64// 4*64=256, 256 is persist data max length
 
