@@ -22,7 +22,8 @@ void handle_init(void) {
     settings_init();
     locale_init();
     stations_init();
-    load_favorites();
+    favorites_init();
+    services_init();
     
     push_main_menu_window(false);
     
@@ -32,7 +33,8 @@ void handle_init(void) {
 }
 
 void handle_deinit(void) {
-    unload_favorites();
+    services_deinit();
+    favorites_deinit();
     stations_deinit();
     locale_deinit();
     settings_deinit();

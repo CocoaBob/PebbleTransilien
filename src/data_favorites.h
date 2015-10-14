@@ -12,8 +12,8 @@
 
 #define FAV_MAX_COUNT 64// 4*64=256, 256 is persist data max length
 
-void load_favorites();
-void unload_favorites();
+void favorites_init();
+void favorites_deinit();
 size_t fav_get_count();
 Favorite fav_at_index(size_t index);
 bool fav_add(StationIndex from, StationIndex to);

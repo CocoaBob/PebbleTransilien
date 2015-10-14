@@ -24,7 +24,7 @@ void favorite_copy(Favorite *dest, Favorite *src) {
     dest->to = src->to;
 }
 
-void load_favorites() {
+void favorites_init() {
     if (s_favorites != NULL) {
         return;
     }
@@ -32,11 +32,11 @@ void load_favorites() {
     s_favorites = malloc(buffer_size);
     if (!persist_exists(SETTING_FAVORITES) ||
         persist_read_data(SETTING_FAVORITES, s_favorites, buffer_size) == E_DOES_NOT_EXIST) {
-        unload_favorites();
+        favorites_deinit();
     }
 }
 
-void unload_favorites() {
+void favorites_deinit() {
     NULL_FREE(s_favorites);
 }
 
@@ -56,7 +56,7 @@ bool fav_add(StationIndex from, StationIndex to) {
     
     // If s_favorites hasn't been loaded
     if (s_favorites == NULL) {
-        load_favorites();
+        favorites_init();
     }
     
     size_t fav_count = fav_get_count();

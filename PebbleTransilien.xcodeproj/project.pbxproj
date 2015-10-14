@@ -23,6 +23,7 @@
 		457D34FC1BCE469F0057BC11 /* window_next_trains.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E81BCE469F0057BC11 /* window_next_trains.c */; settings = {ASSET_TAGS = (); }; };
 		457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EA1BCE469F0057BC11 /* window_search_station.c */; settings = {ASSET_TAGS = (); }; };
 		457D34FE1BCE469F0057BC11 /* window_train_details.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EC1BCE469F0057BC11 /* window_train_details.c */; settings = {ASSET_TAGS = (); }; };
+		457D35011BCE54EB0057BC11 /* app_services.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34FF1BCE54EB0057BC11 /* app_services.c */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -76,6 +77,8 @@
 		457D34EB1BCE469F0057BC11 /* window_search_station.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = window_search_station.h; sourceTree = "<group>"; };
 		457D34EC1BCE469F0057BC11 /* window_train_details.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = window_train_details.c; sourceTree = "<group>"; };
 		457D34ED1BCE469F0057BC11 /* window_train_details.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = window_train_details.h; sourceTree = "<group>"; };
+		457D34FF1BCE54EB0057BC11 /* app_services.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = app_services.c; sourceTree = "<group>"; };
+		457D35001BCE54EB0057BC11 /* app_services.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = app_services.h; sourceTree = "<group>"; };
 		4587C5FA1BC976BE00FEC09B /* Aplite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Aplite; sourceTree = BUILT_PRODUCTS_DIR; };
 		4587C5FB1BC976BE00FEC09B /* Basalt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Basalt; sourceTree = BUILT_PRODUCTS_DIR; };
 		4587C5FC1BC976BE00FEC09B /* Chalk */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Chalk; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -125,6 +128,8 @@
 				457D34DD1BCE469F0057BC11 /* main.c */,
 				457D34CD1BCE469F0057BC11 /* app_message.c */,
 				457D34CE1BCE469F0057BC11 /* app_message.h */,
+				457D34FF1BCE54EB0057BC11 /* app_services.c */,
+				457D35001BCE54EB0057BC11 /* app_services.h */,
 				457D34CF1BCE469F0057BC11 /* app_settings.c */,
 				457D34D01BCE469F0057BC11 /* app_settings.h */,
 				457D34D21BCE469F0057BC11 /* data_favorites.c */,
@@ -385,6 +390,7 @@
 				457D34EF1BCE469F0057BC11 /* selection_layer.c in Sources */,
 				457D34F21BCE469F0057BC11 /* data_favorites.c in Sources */,
 				457D34FA1BCE469F0057BC11 /* window_action_list.c in Sources */,
+				457D35011BCE54EB0057BC11 /* app_services.c in Sources */,
 				457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */,
 				457D34EE1BCE469F0057BC11 /* localize.c in Sources */,
 				457D34F01BCE469F0057BC11 /* app_message.c in Sources */,

@@ -14,17 +14,14 @@ static char* s_curr_locale;
 static bool s_is_fav_on_launch;
 
 void settings_init() {
-    settings_deinit();
-    
     // Get current theme
     s_is_dark_theme = persist_read_bool(SETTING_THEME);
     
     // Get current locale
-    s_curr_locale = calloc(6, sizeof(char));
-    persist_read_string(SETTING_LOCALE, s_curr_locale, 6);
-    char *curr_locale = setlocale(LC_ALL, s_curr_locale);
-    NULL_FREE(s_curr_locale);
-    s_curr_locale = curr_locale;
+    char *curr_locale = calloc(6, sizeof(char));
+    persist_read_string(SETTING_LOCALE, curr_locale, 6);
+    s_curr_locale = setlocale(LC_ALL, curr_locale);
+    NULL_FREE(curr_locale);
     
     // Get is fave on launch
     s_is_fav_on_launch = persist_read_bool(SETTING_IS_FAV_ON_LAUNCH);
