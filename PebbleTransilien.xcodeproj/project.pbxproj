@@ -79,8 +79,9 @@
 		4587C5FA1BC976BE00FEC09B /* Aplite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Aplite; sourceTree = BUILT_PRODUCTS_DIR; };
 		4587C5FB1BC976BE00FEC09B /* Basalt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Basalt; sourceTree = BUILT_PRODUCTS_DIR; };
 		4587C5FC1BC976BE00FEC09B /* Chalk */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Chalk; sourceTree = BUILT_PRODUCTS_DIR; };
-		4587C5FD1BC976BE00FEC09B /* Device */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Device; sourceTree = BUILT_PRODUCTS_DIR; };
+		4587C5FD1BC976BE00FEC09B /* Device Wifi */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Device Wifi"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4587C5FE1BC976BE00FEC09B /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
+		459536851BCFD43C0028235C /* Device BT */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Device BT"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -103,6 +104,7 @@
 				450852001B4FCF61008098D5 /* resources */,
 				457D34C41BCE469F0057BC11 /* src */,
 				4587C5FF1BC976E100FEC09B /* Products */,
+				459536851BCFD43C0028235C /* Device BT */,
 			);
 			sourceTree = "<group>";
 		};
@@ -195,7 +197,7 @@
 				4587C5FA1BC976BE00FEC09B /* Aplite */,
 				4587C5FB1BC976BE00FEC09B /* Basalt */,
 				4587C5FC1BC976BE00FEC09B /* Chalk */,
-				4587C5FD1BC976BE00FEC09B /* Device */,
+				4587C5FD1BC976BE00FEC09B /* Device Wifi */,
 				4587C5FE1BC976BE00FEC09B /* HiddenTarget */,
 			);
 			name = Products;
@@ -219,9 +221,9 @@
 			productReference = 4587C5FA1BC976BE00FEC09B /* Aplite */;
 			productType = "com.apple.product-type.tool";
 		};
-		4517F3401B4C04F90078F1A0 /* Device */ = {
+		4517F3401B4C04F90078F1A0 /* Device Wifi */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4517F3471B4C04F90078F1A0 /* Build configuration list for PBXNativeTarget "Device" */;
+			buildConfigurationList = 4517F3471B4C04F90078F1A0 /* Build configuration list for PBXNativeTarget "Device Wifi" */;
 			buildPhases = (
 				4517F3411B4C04F90078F1A0 /* ShellScript */,
 			);
@@ -229,9 +231,9 @@
 			);
 			dependencies = (
 			);
-			name = Device;
+			name = "Device Wifi";
 			productName = App;
-			productReference = 4587C5FD1BC976BE00FEC09B /* Device */;
+			productReference = 4587C5FD1BC976BE00FEC09B /* Device Wifi */;
 			productType = "com.apple.product-type.tool";
 		};
 		4563F1D11B4BFC0B004709EA /* Basalt */ = {
@@ -247,6 +249,21 @@
 			name = Basalt;
 			productName = App;
 			productReference = 4587C5FB1BC976BE00FEC09B /* Basalt */;
+			productType = "com.apple.product-type.tool";
+		};
+		459536801BCFD43C0028235C /* Device BT */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 459536821BCFD43C0028235C /* Build configuration list for PBXNativeTarget "Device BT" */;
+			buildPhases = (
+				459536811BCFD43C0028235C /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Device BT";
+			productName = App;
+			productReference = 459536851BCFD43C0028235C /* Device BT */;
 			productType = "com.apple.product-type.tool";
 		};
 		45AC6FB91BC7C67000E7BC90 /* Chalk */ = {
@@ -313,7 +330,8 @@
 				4517F3351B4C04DD0078F1A0 /* Aplite */,
 				4563F1D11B4BFC0B004709EA /* Basalt */,
 				45AC6FB91BC7C67000E7BC90 /* Chalk */,
-				4517F3401B4C04F90078F1A0 /* Device */,
+				4517F3401B4C04F90078F1A0 /* Device Wifi */,
+				459536801BCFD43C0028235C /* Device BT */,
 				45EC75511B4C0FFA00524DDA /* HiddenTarget */,
 			);
 		};
@@ -357,7 +375,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PHONE_IP=192.168.1.20\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e \"do script \\\"pebble install --phone $PHONE_IP\\\" in ctx\" -e \"do script \\\"pebble logs --phone ${PHONE_IP}\\\" in ctx\" -e 'end tell'";
+			shellScript = "PHONE_IP=192.168.2.3\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e \"do script \\\"pebble install -v --phone $PHONE_IP --logs\\\" in ctx\" -e \"do script \\\"pebble logs -v --phone ${PHONE_IP}\\\" in ctx\" -e 'end tell'";
+		};
+		459536811BCFD43C0028235C /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "PEBBLE_SN=\"70D6\"\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e \"do script \\\"pebble install --serial '/dev/cu.PebbleTime${PEBBLE_SN}-SerialPo'\\\" in ctx\" -e \"do script \\\"pebble logs --serial '/dev/cu.PebbleTime${PEBBLE_SN}-SerialPo'\\\" in ctx\" -e 'end tell'";
 		};
 		45AC6FBA1BC7C67000E7BC90 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -470,6 +501,22 @@
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = PBL_COLOR;
 				MTL_ENABLE_DEBUG_INFO = NO;
+			};
+			name = Release;
+		};
+		459536831BCFD43C0028235C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		459536841BCFD43C0028235C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -590,7 +637,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4517F3471B4C04F90078F1A0 /* Build configuration list for PBXNativeTarget "Device" */ = {
+		4517F3471B4C04F90078F1A0 /* Build configuration list for PBXNativeTarget "Device Wifi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4517F3481B4C04F90078F1A0 /* Debug */,
@@ -613,6 +660,15 @@
 			buildConfigurations = (
 				4563F1D61B4BFC0B004709EA /* Debug */,
 				4563F1D71B4BFC0B004709EA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		459536821BCFD43C0028235C /* Build configuration list for PBXNativeTarget "Device BT" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				459536831BCFD43C0028235C /* Debug */,
+				459536841BCFD43C0028235C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

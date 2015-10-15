@@ -134,7 +134,7 @@ var next_trains_example = '[\
 "trainDock": "",\
 "trainHour": "22/07/2015 18:31",\
 "trainLane": null,\
-"trainMention": "Retarde",\
+"trainMention": "Retardé",\
 "trainMissionCode": "POBA",\
 "trainNumber": "133758",\
 "trainTerminus": "PSL",\
@@ -144,7 +144,7 @@ var next_trains_example = '[\
 "trainDock": " ",\
 "trainHour": "22/07/2015 18:33",\
 "trainLane": null,\
-"trainMention": "Retarde",\
+"trainMention": "Retardé",\
 "trainMissionCode": "SEBO",\
 "trainNumber": "134657",\
 "trainTerminus": "SNB",\
