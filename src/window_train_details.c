@@ -9,14 +9,6 @@
 #include <pebble.h>
 #include "headers.h"
 
-#if !defined(PBL_PLATFORM_APLITE)
-enum {
-    TRAIN_DETAINS_ACTIONS_TIMETABLE,
-    TRAIN_DETAINS_ACTIONS_FAV,
-    TRAIN_DETAINS_ACTIONS_COUNT
-};
-#endif
-
 static Window *s_window;
 static MenuLayer *s_menu_layer;
 static ClickConfigProvider s_ccp_of_menu_layer;
@@ -51,53 +43,6 @@ static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t
 #if !defined(PBL_PLATFORM_APLITE)
 static void restart_timers();
 static void idle_timer_start();
-#endif
-
-#if !defined(PBL_PLATFORM_APLITE)
-// MARK: Action list callbacks
-
-static size_t action_list_get_num_rows_callback(void) {
-    return TRAIN_DETAINS_ACTIONS_COUNT;
-}
-
-static size_t action_list_get_default_selection_callback(void) {
-    return TRAIN_DETAINS_ACTIONS_TIMETABLE;
-}
-
-static char* action_list_get_title_callback(size_t index) {
-    if (index == TRAIN_DETAINS_ACTIONS_TIMETABLE) {
-        return _("Check Timetable");
-    }
-    return _("Set Favorite");
-}
-
-static bool action_list_is_enabled_callback(size_t index) {
-    if (index == TRAIN_DETAINS_ACTIONS_FAV) {
-        MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-        StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
-        if (s_from_station == selected_station_index) {
-            return !fav_exists((Favorite){selected_station_index, STATION_NON});
-        } else {
-            return !fav_exists((Favorite){s_from_station, selected_station_index});
-        }
-    }
-    return true;
-}
-
-static void action_list_select_callback(Window *action_list_window, size_t index) {
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    StationIndex selected_station_index = s_train_details_list[selected_index.row].station;
-    switch (index) {
-        case TRAIN_DETAINS_ACTIONS_TIMETABLE:
-            window_stack_remove(action_list_window, false);
-            push_window_next_trains((DataModelFromTo){selected_station_index, STATION_NON}, true);
-            break;
-        case TRAIN_DETAINS_ACTIONS_FAV:
-            fav_add(s_from_station, selected_station_index);
-            window_stack_remove(action_list_window, true);
-            break;
-    }
-}
 #endif
 
 // MARK: Message Request callbacks
@@ -300,22 +245,10 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     }
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    if (!s_is_updating && s_train_details_list_count > 0) {
-        action_list_present_with_callbacks((ActionListCallbacks) {
-#ifdef PBL_COLOR
-            .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
-#endif
-            .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
-            .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
-            .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
-            .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
-            .select_click = (ActionListSelectCallback)action_list_select_callback
-        });
-    }
+    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    push_window_next_trains((DataModelFromTo){s_train_details_list[selected_index.row].station, STATION_NON}, true);
 }
-#endif
 
 // MARK: Window callbacks
 
@@ -348,10 +281,10 @@ static void window_load(Window *window) {
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
-        .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback
+        .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
 #if !defined(PBL_PLATFORM_APLITE)
         ,
-        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
