@@ -22,8 +22,10 @@ typedef void    (*ActionListSelectCallback)(Window *action_list_window, size_t i
 typedef struct ActionListCallbacks {
     ActionListGetBackgroundColorCallback get_background_color;
     ActionListGetTextColorCallback get_text_color;
+#ifdef PBL_COLOR
     ActionListGetHighlightTextColorCallback get_highlight_text_color;
     ActionListGetDisabledTextColorCallback get_disabled_text_color;
+#endif
     ActionListGetBarColorCallback get_bar_color;
     ActionListGetNumberOfRowsCallback get_num_rows;
     ActionListGetDefaultSelectionCallback get_default_selection;

@@ -24,16 +24,13 @@ static size_t s_row_height;
 static GColor s_background_color;
 static GColor s_bar_color;
 static GColor s_text_color;
+#ifdef PBL_COLOR
 static GColor s_highlight_text_color;
 static GColor s_disabled_text_color;
+#endif
 
 static Window *s_window;
 static MenuLayer *s_menu_layer;
-
-#ifdef PBL_BW
-static InverterLayer *s_inverter_layer;
-static InverterLayer *s_inverter_layer_for_selected_row;
-#endif
 
 // MARK: Bar Layer
 
@@ -59,34 +56,31 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
-    
-#ifdef PBL_BW
-    if (is_selected) {
-        Layer *inverter_layer_for_row_layer = inverter_layer_get_layer(s_inverter_layer_for_selected_row);
-        
-        GRect row_frame = layer_get_frame(cell_layer);
-        layer_set_frame(inverter_layer_for_row_layer, row_frame);
-    }
-#endif
-    
+    bool is_selected = (menu_layer_get_selected_index(s_menu_layer).row == cell_index->row);
     bool is_enabled = true;
     if (s_callbacks.is_enabled && !s_callbacks.is_enabled(cell_index->row)) {
         is_enabled = false;
     }
+    GRect bounds = layer_get_bounds(cell_layer);
     
-    graphics_context_set_text_color(ctx, is_selected?s_highlight_text_color:(is_enabled?s_text_color:s_disabled_text_color));
-    
-    GFont font;
-#if defined(PBL_PLATFORM_APLITE)
-    font =  fonts_get_system_font(is_selected?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
-#else
-    font =  fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
+#ifdef PBL_BW
+    if (is_selected) {
+        // Selected item's background for BW
+        graphics_context_set_fill_color(ctx, GColorWhite);
+        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+        
+        graphics_context_set_fill_color(ctx, GColorBlack);
+        graphics_fill_rect(ctx, grect_crop(bounds, 4), 4, GCornersAll);
+    }
 #endif
     
-    char *text = s_callbacks.get_title(cell_index->row);
+#ifdef PBL_COLOR
+    graphics_context_set_text_color(ctx, is_selected?s_highlight_text_color:(is_enabled?s_text_color:s_disabled_text_color));
+#endif
     
-    GRect bounds = layer_get_bounds(cell_layer);
+    GFont font = fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
+    
+    char *text = s_callbacks.get_title(cell_index->row);
     
     GRect frame = bounds;
     
@@ -146,21 +140,14 @@ static void window_load(Window *window) {
 #ifdef PBL_COLOR
     menu_layer_set_normal_colors(s_menu_layer, s_background_color, s_text_color);
     menu_layer_set_highlight_colors(s_menu_layer, s_background_color, s_highlight_text_color);
+#else
+    window_set_background_color(window, s_background_color);
 #endif
     
     menu_layer_set_selected_index(s_menu_layer, MenuIndex(0, s_default_selection), MenuRowAlignNone, false);
     
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
-    
-    // Add inverter layer for Aplite
-#ifdef PBL_BW
-    s_inverter_layer = inverter_layer_create(menu_layer_frame);
-    layer_add_child(window_layer, inverter_layer_get_layer(s_inverter_layer));
-    
-    s_inverter_layer_for_selected_row = inverter_layer_create(menu_layer_frame);
-    layer_add_child(menu_layer_get_layer(s_menu_layer), inverter_layer_get_layer(s_inverter_layer_for_selected_row));
-#endif
     
     // Add bar layer
     GRect bar_layer_frame = GRect(window_bounds.origin.x,
@@ -187,11 +174,6 @@ static void window_unload(Window *window) {
     menu_layer_destroy(s_menu_layer);
     window_destroy(s_window);
     s_window = NULL;
-    
-#ifdef PBL_BW
-    inverter_layer_destroy(s_inverter_layer);
-    inverter_layer_destroy(s_inverter_layer_for_selected_row);
-#endif
 }
 
 static void window_appear(Window *window) {
@@ -199,11 +181,7 @@ static void window_appear(Window *window) {
     // BUG FIX: When it appears for the 1st time, the selected row's inverter layer position is incorrect
     menu_layer_reload_data(s_menu_layer);
 #endif
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
-}
-
-static void window_disappear(Window *window) {
-    
+    //    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 // MARK: Entry point
@@ -215,7 +193,6 @@ void action_list_present_with_callbacks(ActionListCallbacks callbacks) {
         window_set_window_handlers(s_window, (WindowHandlers) {
             .load = window_load,
             .appear = window_appear,
-            .disappear = window_disappear,
             .unload = window_unload
         });
     }
@@ -241,35 +218,29 @@ void action_list_present_with_callbacks(ActionListCallbacks callbacks) {
         s_background_color = GColorBlack;
     }
     
+#ifdef PBL_COLOR
     if (s_callbacks.get_text_color) {
         s_text_color = s_callbacks.get_text_color();
     } else {
-#ifdef PBL_COLOR
         s_text_color = GColorLightGray;
-#else
-        s_text_color = GColorBlack;
-#endif
     }
+#else
+    s_text_color = GColorBlack;
+#endif
     
+#ifdef PBL_COLOR
     if (s_callbacks.get_highlight_text_color) {
         s_highlight_text_color = s_callbacks.get_highlight_text_color();
     } else {
-#ifdef PBL_COLOR
         s_highlight_text_color = GColorWhite;
-#else
-        s_highlight_text_color = GColorBlack;
-#endif
     }
     
     if (s_callbacks.get_disabled_text_color) {
         s_disabled_text_color = s_callbacks.get_disabled_text_color();
     } else {
-#ifdef PBL_COLOR
         s_disabled_text_color = GColorDarkGray;
-#else
-        s_disabled_text_color = GColorBlack;
-#endif
     }
+#endif
     
     if (s_callbacks.get_bar_color) {
         s_bar_color = s_callbacks.get_bar_color();
