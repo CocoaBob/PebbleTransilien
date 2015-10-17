@@ -216,11 +216,3 @@ void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, b
     graphics_fill_rect(ctx, frame, 0, GCornerNone);
 }
 #endif
-
-// MARK: Action List Callbacks
-
-#ifdef PBL_COLOR
-GColor action_list_get_bar_color(void) {
-    return GColorCobaltBlue;
-}
-#endif

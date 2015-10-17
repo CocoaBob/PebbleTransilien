@@ -238,14 +238,6 @@ static void panel_update_with_menu_layer_selection() {
 
 // MARK: Action list callbacks
 
-static size_t action_list_get_num_rows_callback(void) {
-    return SEARCH_STATION_ACTIONS_COUNT;
-}
-
-static size_t action_list_get_default_selection_callback(void) {
-    return SEARCH_STATION_ACTIONS_TIMETABLE;
-}
-
 static char* action_list_get_title_callback(size_t index) {
     if (index == SEARCH_STATION_ACTIONS_DESTINATION) {
         return _("Add Destination");
@@ -298,16 +290,25 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 }
 
 static void show_action_list() {
-    action_list_present_with_callbacks((ActionListCallbacks) {
+    ActionListConfig config = (ActionListConfig){
+        .num_rows = SEARCH_STATION_ACTIONS_COUNT,
+        .default_selection = SEARCH_STATION_ACTIONS_TIMETABLE,
 #ifdef PBL_COLOR
-        .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+        .colors = {
+            .background = GColorCobaltBlue,
+            .foreground = GColorBlack,
+            .text = GColorLightGray,
+            .text_selected = GColorWhite,
+            .text_disabled = GColorDarkGray,
+        },
 #endif
-        .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
-        .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
-        .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
-        .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
-        .select_click = (ActionListSelectCallback)action_list_select_callback
-    });
+        .callbacks = {
+            .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+            .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
+            .select_click = (ActionListSelectCallback)action_list_select_callback
+        }
+    };
+    action_list_open(&config);
 }
 
 // MARK: Click Config Provider
@@ -706,7 +707,6 @@ static void window_appear(Window *window) {
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_begin();
 #endif
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

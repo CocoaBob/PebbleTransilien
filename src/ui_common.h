@@ -53,9 +53,3 @@ int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, M
 void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context);
 void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context);
 #endif
-
-// MARK: Action List Callbacks
-
-#ifdef PBL_COLOR
-GColor action_list_get_bar_color(void);
-#endif

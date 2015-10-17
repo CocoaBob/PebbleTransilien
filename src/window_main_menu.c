@@ -60,14 +60,6 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
 
 // MARK: Action list callbacks
 
-static size_t action_list_get_num_rows_callback(void) {
-    return MAIN_MENU_ACTIONS_COUNT;
-}
-
-static size_t action_list_get_default_selection_callback(void) {
-    return MAIN_MENU_ACTIONS_EDIT;
-}
-
 static char* action_list_get_title_callback(size_t index) {
     if (index == MAIN_MENU_ACTIONS_MOVE_UP) {
         return _("Move up");
@@ -245,16 +237,25 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
 
 static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
-        action_list_present_with_callbacks((ActionListCallbacks) {
+        ActionListConfig config = (ActionListConfig){
+            .num_rows = MAIN_MENU_ACTIONS_COUNT,
+            .default_selection = MAIN_MENU_ACTIONS_EDIT,
 #ifdef PBL_COLOR
-            .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+            .colors = {
+                .background = GColorCobaltBlue,
+                .foreground = GColorBlack,
+                .text = GColorLightGray,
+                .text_selected = GColorWhite,
+                .text_disabled = GColorDarkGray,
+            },
 #endif
-            .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
-            .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
-            .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
-            .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
-            .select_click = (ActionListSelectCallback)action_list_select_callback
-        });
+            .callbacks = {
+                .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+                .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
+                .select_click = (ActionListSelectCallback)action_list_select_callback
+            }
+        };
+        action_list_open(&config);
     } else {
         menu_layer_select_callback(s_menu_layer, cell_index, context);
     }
@@ -323,7 +324,6 @@ static void window_appear(Window *window) {
     
     // Show the selected row
     menu_layer_set_selected_index(s_menu_layer, menu_layer_get_selected_index(s_menu_layer), MenuRowAlignCenter, false);
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_unload(Window *window) {

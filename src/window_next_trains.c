@@ -220,14 +220,6 @@ static bool reverse_from_to() {
 
 // MARK: Action list callbacks
 
-static size_t action_list_get_num_rows_callback(void) {
-    return NEXT_TRAINS_ACTIONS_COUNT;
-}
-
-static size_t action_list_get_default_selection_callback(void) {
-    return NEXT_TRAINS_ACTIONS_FAV;
-}
-
 static char* action_list_get_title_callback(size_t index) {
     return _("Set Favorite");
 }
@@ -253,16 +245,25 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 static void window_long_click_handler(ClickRecognizerRef recognizer, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(context);
     if (selected_index.section == NEXT_TRAINS_SECTION_INFO) {
-        action_list_present_with_callbacks((ActionListCallbacks) {
+        ActionListConfig config = (ActionListConfig){
+            .num_rows = NEXT_TRAINS_ACTIONS_COUNT,
+            .default_selection = NEXT_TRAINS_ACTIONS_FAV,
 #ifdef PBL_COLOR
-            .get_bar_color = (ActionListGetBarColorCallback)action_list_get_bar_color,
+            .colors = {
+                .background = GColorCobaltBlue,
+                .foreground = GColorBlack,
+                .text = GColorLightGray,
+                .text_selected = GColorWhite,
+                .text_disabled = GColorDarkGray,
+            },
 #endif
-            .get_num_rows = (ActionListGetNumberOfRowsCallback)action_list_get_num_rows_callback,
-            .get_default_selection = (ActionListGetDefaultSelectionCallback)action_list_get_default_selection_callback,
-            .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
-            .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
-            .select_click = (ActionListSelectCallback)action_list_select_callback
-        });
+            .callbacks = {
+                .get_title = (ActionListGetTitleCallback)action_list_get_title_callback,
+                .is_enabled = (ActionListIsEnabledCallback)action_list_is_enabled_callback,
+                .select_click = (ActionListSelectCallback)action_list_select_callback
+            }
+        };
+        action_list_open(&config);
     }
 }
 
@@ -683,7 +684,6 @@ static void window_appear(Window *window) {
     reload_data_timer_start();
     idle_timer_start();
 #endif
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

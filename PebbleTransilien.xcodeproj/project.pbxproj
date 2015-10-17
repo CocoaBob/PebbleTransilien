@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		453FB2071BD3030E005E86A5 /* window_action_list.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E41BCE469F0057BC11 /* window_action_list.c */; settings = {ASSET_TAGS = (); }; };
 		457D34EE1BCE469F0057BC11 /* localize.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34C81BCE469F0057BC11 /* localize.c */; settings = {ASSET_TAGS = (); }; };
 		457D34EF1BCE469F0057BC11 /* selection_layer.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CB1BCE469F0057BC11 /* selection_layer.c */; settings = {ASSET_TAGS = (); }; };
 		457D34F01BCE469F0057BC11 /* app_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CD1BCE469F0057BC11 /* app_message.c */; settings = {ASSET_TAGS = (); }; };
@@ -18,7 +19,6 @@
 		457D34F61BCE469F0057BC11 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34DD1BCE469F0057BC11 /* main.c */; settings = {ASSET_TAGS = (); }; };
 		457D34F71BCE469F0057BC11 /* ui_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34DE1BCE469F0057BC11 /* ui_common.c */; settings = {ASSET_TAGS = (); }; };
 		457D34F91BCE469F0057BC11 /* ui_setup.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E21BCE469F0057BC11 /* ui_setup.c */; settings = {ASSET_TAGS = (); }; };
-		457D34FA1BCE469F0057BC11 /* window_action_list.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E41BCE469F0057BC11 /* window_action_list.c */; settings = {ASSET_TAGS = (); }; };
 		457D34FB1BCE469F0057BC11 /* window_main_menu.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E61BCE469F0057BC11 /* window_main_menu.c */; settings = {ASSET_TAGS = (); }; };
 		457D34FC1BCE469F0057BC11 /* window_next_trains.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E81BCE469F0057BC11 /* window_next_trains.c */; settings = {ASSET_TAGS = (); }; };
 		457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EA1BCE469F0057BC11 /* window_search_station.c */; settings = {ASSET_TAGS = (); }; };
@@ -415,7 +415,7 @@
 				457D34FC1BCE469F0057BC11 /* window_next_trains.c in Sources */,
 				457D34EF1BCE469F0057BC11 /* selection_layer.c in Sources */,
 				457D34F21BCE469F0057BC11 /* data_favorites.c in Sources */,
-				457D34FA1BCE469F0057BC11 /* window_action_list.c in Sources */,
+				453FB2071BD3030E005E86A5 /* window_action_list.c in Sources */,
 				457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */,
 				457D34EE1BCE469F0057BC11 /* localize.c in Sources */,
 				457D34F01BCE469F0057BC11 /* app_message.c in Sources */,
@@ -467,8 +467,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
+					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -481,8 +481,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 					"$(PEBBLE_SDK_PATH)/Pebble/aplite/include/**",
+					"$(PEBBLE_SDK_PATH)/Pebble/basalt/include/**",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

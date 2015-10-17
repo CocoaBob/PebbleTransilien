@@ -339,7 +339,6 @@ static void window_appear(Window *window) {
     update_time_format_timer_start();
     idle_timer_start();
 #endif
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {
