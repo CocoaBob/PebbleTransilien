@@ -200,18 +200,12 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
-#else
-    GColor text_color = curr_fg_color();
 #endif
     
     if (s_is_updating) {
-        draw_centered_title(ctx, cell_layer, _("Loading..."), NULL,
-#ifdef PBL_COLOR
-                            GColorBlack
-#else
-                            text_color
-#endif
-                            );
+        draw_centered_title(ctx, cell_layer,
+                            _("Loading..."),
+                            NULL);
     } else if (s_train_details_list_count > 0) {
         DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
         
@@ -224,9 +218,11 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         stations_get_name(train_detail.station, str_station, STATION_NAME_MAX_LENGTH);
 
         draw_station(ctx, cell_layer,
-                     text_color,
 #ifdef PBL_COLOR
+                     text_color,
                      is_highlighed,
+#else
+                     false,
 #endif
                      str_time,
                      str_station);
@@ -235,13 +231,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         free(str_time);
         free(str_station);
     } else {
-        draw_centered_title(ctx, cell_layer, _("No train."), NULL,
-#ifdef PBL_COLOR
-                            GColorBlack
-#else
-                            text_color
-#endif
-                            );
+        draw_centered_title(ctx, cell_layer,
+                            _("No train."),
+                            NULL);
     }
 }
 

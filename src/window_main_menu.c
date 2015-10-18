@@ -139,19 +139,17 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
-#else
-    GColor text_color = curr_fg_color();
 #endif
     uint16_t section = cell_index->section;
     uint16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
         draw_from_to(ctx, cell_layer,
-                           favorite,
 #ifdef PBL_COLOR
-                           is_highlighed,
+                     is_highlighed,
+                     text_color,
 #endif
-                           text_color);
+                     favorite);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         /*if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
             menu_cell_basic_draw(ctx, cell_layer, "Nearby...", _("Based on location"), NULL);

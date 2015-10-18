@@ -71,18 +71,23 @@ static void idle_timer_start();
 
 // MARK: Drawing
 
-static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
-                                 GColor text_color,
-                                 bool is_selected,
+static void draw_menu_layer_cell(GContext *ctx,
+                                 Layer *cell_layer,
 #ifdef PBL_COLOR
+                                 GColor text_color,
                                  bool is_highlighed,
 #endif
+                                 bool is_selected,
                                  const char * str_code,
                                  const char * str_time,
                                  const char * str_terminus,
                                  const char * str_platform,
                                  const char * str_mention) {
+#ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, text_color);
+#else
+    graphics_context_set_text_color(ctx, GColorBlack);
+#endif
     GRect bounds = layer_get_bounds(cell_layer);
     
     // Code
@@ -108,7 +113,7 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
 #ifdef PBL_COLOR
         draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
 #else
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
+        draw_image_in_rect(ctx, false, RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
 #endif
         draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14_BOLD, frame_platform, GTextAlignmentCenter);
     } else {
@@ -151,7 +156,11 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
                 frame_mention.size.w += 4;
                 frame_mention.origin.y = NEXT_TRAIN_CELL_SUB_ICON_Y - 1;
                 frame_mention.size.h += 1;
+#ifdef PBL_COLOR
                 graphics_context_set_stroke_color(ctx, text_color);
+#else
+                graphics_context_set_stroke_color(ctx, GColorBlack);
+#endif
                 graphics_draw_round_rect(ctx, frame_mention, 2);
             }
             
@@ -167,7 +176,7 @@ static void draw_menu_layer_cell(GContext *ctx, Layer *cell_layer,
 #ifdef PBL_COLOR
             draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_MENTION_DARK:RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
 #else
-            draw_image_in_rect(ctx, RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
+            draw_image_in_rect(ctx, false, RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
 #endif
         }
     }
@@ -507,27 +516,20 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #ifdef PBL_COLOR
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
-#else
-    GColor text_color = curr_fg_color();
 #endif
     
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
-        draw_from_to(ctx,
-                     cell_layer,
-                     s_from_to,
+        draw_from_to(ctx, cell_layer,
 #ifdef PBL_COLOR
                      is_highlighed,
+                     text_color,
 #endif
-                     text_color);
+                     s_from_to);
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (s_is_updating && s_next_trains_list_count == 0) {
-            draw_centered_title(ctx, cell_layer, _("Loading..."), NULL,
-#ifdef PBL_COLOR
-                                GColorBlack
-#else
-                                text_color
-#endif
-                                );
+            draw_centered_title(ctx, cell_layer,
+                                _("Loading..."),
+                                NULL);
         } else if (s_next_trains_list_count > 0) {
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             
@@ -539,13 +541,12 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             char *str_terminus = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
             stations_get_name(next_train.terminus, str_terminus, STATION_NAME_MAX_LENGTH);
             
-            draw_menu_layer_cell(ctx,
-                                 cell_layer,
-                                 text_color,
-                                 is_selected,
+            draw_menu_layer_cell(ctx, cell_layer,
 #ifdef PBL_COLOR
+                                 text_color,
                                  is_highlighed,
 #endif
+                                 is_selected,
                                  next_train.code,
                                  str_hour,
                                  str_terminus,
@@ -556,13 +557,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             free(str_hour);
             free(str_terminus);
         } else {
-            draw_centered_title(ctx, cell_layer, _("No train."), NULL,
-#ifdef PBL_COLOR
-                                GColorBlack
-#else
-                                text_color
-#endif
-                                );
+            draw_centered_title(ctx, cell_layer,
+                                _("No train."),
+                                NULL);
         }
     }
 }

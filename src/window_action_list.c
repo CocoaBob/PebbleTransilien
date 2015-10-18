@@ -31,11 +31,10 @@ typedef struct {
 // MARK: Bar Layer
 
 static void action_list_bar_layer_proc(Layer *layer, GContext *ctx) {
-    ActionList *action_list = *((ActionList**)layer_get_data(layer));
-    
     GRect bounds = layer_get_bounds(layer);
     
 #ifdef PBL_COLOR
+    ActionList *action_list = *((ActionList**)layer_get_data(layer));
     graphics_context_set_fill_color(ctx, action_list->config->colors.background);
 #else
     graphics_context_set_fill_color(ctx, GColorWhite);

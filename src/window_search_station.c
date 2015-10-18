@@ -67,10 +67,6 @@ static DataModelFromTo s_from_to;
 
 // To deactivate the menu layer
 static uint8_t s_actived_layer_index;
-#ifdef PBL_BW
-static InverterLayer *s_inverter_layer_for_selected_row;
-static Layer *s_inverter_layer_layer_for_selected_row;
-#endif
 
 // MARK: Forward declaration
 
@@ -161,17 +157,14 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     // Draw stations
 #ifdef PBL_COLOR
     GColor text_color = GColorWhite;
-#else
-    GColor text_color = GColorBlack;
 #endif
     
-    draw_from_to(ctx,
-                 layer,
-                 layer_data->from_to,
+    draw_from_to(ctx, layer,
 #ifdef PBL_COLOR
                  true,
+                 text_color,
 #endif
-                 text_color);
+                 layer_data->from_to);
 }
 
 // MARK: Info Panel
@@ -357,8 +350,6 @@ static void search_selection_layer_set_active(bool is_active) {
 static void menu_layer_set_active(bool is_active) {
 #ifdef PBL_COLOR
     set_menu_layer_activated(s_menu_layer, is_active);
-#else
-    set_menu_layer_activated(s_menu_layer, is_active, s_inverter_layer_for_selected_row);
 #endif
     
     if (is_active) {
@@ -520,21 +511,10 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-#ifdef PBL_BW
-    // Set the frame of s_inverter_layer_layer_for_selected_row
-    GRect row_frame = layer_get_frame(cell_layer);
-    if (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER && // Need to hide the highlighted row
-        menu_index_compare(cell_index, &selected_index) == 0) { // It's the highlighted row
-        layer_set_frame(s_inverter_layer_layer_for_selected_row, row_frame);
-    }
-#endif
-
 #ifdef PBL_COLOR
-    bool is_selected = (s_actived_layer_index == SEARCH_STATION_MENU_LAYER)?(menu_index_compare(&selected_index, cell_index) == 0):false;
+    bool is_selected = (s_actived_layer_index == SEARCH_STATION_MENU_LAYER)?(selected_index.row == cell_index->row):false;
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
-#else
-    GColor text_color = curr_fg_color();
 #endif
     
     if (current_search_results_count() > 0) {
@@ -545,9 +525,11 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         stations_get_name(station_index, str_station, STATION_NAME_MAX_LENGTH);
         
         draw_station(ctx, cell_layer,
-                     text_color,
 #ifdef PBL_COLOR
+                     text_color,
                      is_highlighed,
+#else               
+                     (s_actived_layer_index == SEARCH_STATION_SELECTION_LAYER) && (selected_index.row == cell_index->row),
 #endif
                      NULL,
                      str_station);
@@ -555,13 +537,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         // Clean
         free(str_station);
     } else {
-        draw_centered_title(ctx, cell_layer, (s_search_results_index >= 0)?_("Not found."):_("Press UP/DOWN"), NULL,
-#ifdef PBL_COLOR
-                            GColorBlack
-#else
-                            text_color
-#endif
-        );
+        draw_centered_title(ctx, cell_layer,
+                            (s_search_results_index >= 0)?_("Not found."):_("Press UP/DOWN"),
+                            NULL);
     }
 }
 
@@ -669,8 +647,6 @@ static void window_load(Window *window) {
     // Prepare inverter layers for Aplite
 #ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(window_bounds);
-    s_inverter_layer_for_selected_row = inverter_layer_create(window_bounds);
-    s_inverter_layer_layer_for_selected_row = inverter_layer_get_layer(s_inverter_layer_for_selected_row);
     s_inverter_layer_for_panel_layer = inverter_layer_create(window_bounds);
     s_inverter_layer_layer_for_panel_layer = inverter_layer_get_layer(s_inverter_layer_for_panel_layer);
 #endif
@@ -698,7 +674,6 @@ static void window_unload(Window *window) {
     
 #ifdef PBL_BW
     inverter_layer_destroy(s_inverter_layer);
-    inverter_layer_destroy(s_inverter_layer_for_selected_row);
     inverter_layer_destroy(s_inverter_layer_for_panel_layer);
 #endif
 }

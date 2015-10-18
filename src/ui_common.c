@@ -41,12 +41,17 @@ void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color) {
 
 // MARK: Draw images
 
-void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect) {
+void draw_image_in_rect(GContext* ctx,
+#ifdef PBL_BW
+                        bool is_inverted,
+#endif
+                        uint32_t resource_id,
+                        GRect rect) {
     GBitmap *bitmap = gbitmap_create_with_resource(resource_id);
 #ifdef PBL_COLOR
     graphics_context_set_compositing_mode(ctx, GCompOpSet);
 #else
-    graphics_context_set_compositing_mode(ctx, GCompOpAssign);
+    graphics_context_set_compositing_mode(ctx, is_inverted?GCompOpAssignInverted:GCompOpAssign);
 #endif
     graphics_draw_bitmap_in_rect(ctx, bitmap, rect);
     gbitmap_destroy(bitmap);
@@ -54,13 +59,22 @@ void draw_image_in_rect(GContext* ctx, uint32_t resource_id, GRect rect) {
 
 // MARK: Draw cells
 
-void draw_centered_title(GContext* ctx, const Layer *cell_layer, const char *title, const char *font_id, GColor color) {
+void draw_centered_title(GContext* ctx,
+                         const Layer *cell_layer,
+                         const char *title,
+                         const char *font_id) {
     GRect bounds = layer_get_bounds(cell_layer);
     GRect frame = GRect(CELL_MARGIN,
                         (bounds.size.h - 20) / 2 + TEXT_Y_OFFSET,
                         bounds.size.w - CELL_MARGIN_2,
                         18);
-    graphics_context_set_text_color(ctx, color);
+#ifdef PBL_COLOR
+    graphics_context_set_text_color(ctx, GColorBlack);
+#else
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+    graphics_context_set_text_color(ctx, GColorWhite);
+#endif
     draw_text(ctx, title, font_id?font_id:FONT_KEY_GOTHIC_18, frame, GTextAlignmentCenter);
 }
 
@@ -68,12 +82,16 @@ void draw_centered_title(GContext* ctx, const Layer *cell_layer, const char *tit
 
 void draw_from_to(GContext* ctx,
                   const Layer *layer,
-                  DataModelFromTo from_to,
 #ifdef PBL_COLOR
                   bool is_highlighed,
+                  GColor text_color,
 #endif
-                  GColor text_color) {
+                  DataModelFromTo from_to) {
+#ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, text_color);
+#else
+    graphics_context_set_text_color(ctx, GColorBlack);
+#endif
     GRect bounds = layer_get_bounds(layer);
     bool is_from_to = (from_to.to != STATION_NON);
     
@@ -90,9 +108,9 @@ void draw_from_to(GContext* ctx,
     }
 #else
     if (is_from_to) {
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
+        draw_image_in_rect(ctx, false, RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
     } else {
-        draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+        draw_image_in_rect(ctx, false, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
     }
 #endif
     
@@ -134,15 +152,26 @@ void draw_from_to(GContext* ctx,
 // MARK: Draw Station layer, layer hight should be 22
 
 void draw_station(GContext *ctx, Layer *cell_layer,
-                  GColor text_color,
 #ifdef PBL_COLOR
+                  GColor text_color,
                   bool is_highlighed,
+#else
+                  bool is_inverted,
 #endif
                   const char * str_time,
                   const char * str_station) {
-    graphics_context_set_text_color(ctx, text_color);
     GRect bounds = layer_get_bounds(cell_layer);
+#ifdef PBL_COLOR
+    graphics_context_set_text_color(ctx, text_color);
+#else
+    if (is_inverted) {
+        graphics_context_set_fill_color(ctx, GColorBlack);
+        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+    }
+    graphics_context_set_text_color(ctx, is_inverted?GColorWhite:GColorBlack);
+#endif
     
+    // Icon
     GRect frame_icon = GRect(CELL_MARGIN,
                              (CELL_HEIGHT_2 - FROM_TO_ICON_WIDTH) / 2,
                              FROM_TO_ICON_WIDTH,
@@ -150,7 +179,7 @@ void draw_station(GContext *ctx, Layer *cell_layer,
 #ifdef PBL_COLOR
     draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
 #else
-    draw_image_in_rect(ctx, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+    draw_image_in_rect(ctx, is_inverted, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
 #endif
     
     // Time
