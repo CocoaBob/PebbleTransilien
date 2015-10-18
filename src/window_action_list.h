@@ -17,8 +17,8 @@ typedef struct {
     size_t default_selection;
 #ifdef PBL_COLOR
     struct {
-        GColor background; //!< the color of the left column of the ActionMenu
-        GColor foreground; //!< the color of the individual "crumbs" that indicate menu depth
+        GColor background; // Left bar background color
+        GColor foreground; // Left bar level indicator's color
         GColor text;
         GColor text_selected;
         GColor text_disabled;

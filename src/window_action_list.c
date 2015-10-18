@@ -14,7 +14,11 @@
 #define ACTION_LIST_BAR_POINT_X 7
 #define ACTION_LIST_BAR_POINT_Y 10
 #define ACTION_LIST_ROW_HEIGHT_MIN 22
-#define ACTION_LIST_TITLE_MARGIN 6
+#define ACTION_LIST_TEXT_MARGIN 6
+#define ACTION_LIST_TEXT_Y_OFFSET -2
+#ifdef PBL_BW
+#define ACTION_LIST_SELECTION_MARGIN 4
+#endif
 
 typedef struct {
     ActionListConfig *config;
@@ -69,13 +73,13 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     GRect bounds = layer_get_bounds(cell_layer);
     
 #ifdef PBL_BW
+    // Selected item's background for BW
     if (is_selected) {
-        // Selected item's background for BW
         graphics_context_set_fill_color(ctx, GColorWhite);
         graphics_fill_rect(ctx, bounds, 0, GCornerNone);
         
         graphics_context_set_fill_color(ctx, GColorBlack);
-        graphics_fill_rect(ctx, grect_crop(bounds, 4), 4, GCornersAll);
+        graphics_fill_rect(ctx, grect_crop(bounds, ACTION_LIST_SELECTION_MARGIN), 4, GCornersAll);
     }
 #endif
     
@@ -84,20 +88,19 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #endif
     
     GFont font = fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
-    
     char *text = action_list->config->callbacks.get_title(cell_index->row);
+    GRect text_frame = grect_crop(bounds,
+#ifdef PBL_BW
+                                  ACTION_LIST_SELECTION_MARGIN +
+#endif
+                                  ACTION_LIST_TEXT_MARGIN);
+    GSize text_size = graphics_text_layout_get_content_size(text, font, text_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+    text_frame.origin.y += (text_frame.size.h - text_size.h) / 2;
+    text_frame.size.h = text_size.h;
     
-    GRect frame = grect_crop(bounds, 4);
+    text_frame.origin.y += ACTION_LIST_TEXT_Y_OFFSET;
     
-    frame.origin.x += ACTION_LIST_TITLE_MARGIN;
-    frame.size.w -= ACTION_LIST_TITLE_MARGIN << 1;
-    
-    GSize text_size = graphics_text_layout_get_content_size(text, font, frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
-    
-    frame.size.h = text_size.h;
-    frame.origin.y = (bounds.size.h - text_size.h - 8) / 2;
-    
-    graphics_draw_text(ctx, text, font, frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+    graphics_draw_text(ctx, text, font, text_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
