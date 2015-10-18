@@ -321,7 +321,7 @@ static void message_succeeded_callback(DictionaryIterator *received) {
             size_t str_length = 0,offset = 0;
             for (size_t data_index = 0; data_index < NEXT_TRAIN_KEY_COUNT && size_left > 0; ++data_index) {
                 data += offset;
-                str_length = strlen((char *)data);
+                str_length = (data_index == NEXT_TRAIN_KEY_HOUR)?4:strlen((char *)data);
                 offset = str_length + 1;
                 
                 // Interger data
