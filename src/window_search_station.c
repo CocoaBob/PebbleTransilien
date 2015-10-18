@@ -281,6 +281,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 
 static void show_action_list() {
     ActionListConfig config = (ActionListConfig){
+//        .context = main_menu,
         .num_rows = SEARCH_STATION_ACTIONS_COUNT,
         .default_selection = SEARCH_STATION_ACTIONS_TIMETABLE,
 #ifdef PBL_COLOR

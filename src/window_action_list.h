@@ -8,11 +8,12 @@
 
 #pragma once
 
-typedef char*   (*ActionListGetTitleCallback)(size_t index);
-typedef bool    (*ActionListIsEnabledCallback)(size_t index);
-typedef void    (*ActionListSelectCallback)(Window *action_list_window, size_t index);
+typedef char*   (*ActionListGetTitleCallback)(size_t index, void *context);
+typedef bool    (*ActionListIsEnabledCallback)(size_t index, void *context);
+typedef void    (*ActionListSelectCallback)(Window *action_list_window, size_t index, void *context);
 
 typedef struct {
+    void *context;
     size_t num_rows;
     size_t default_selection;
 #ifdef PBL_COLOR

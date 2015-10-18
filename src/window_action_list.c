@@ -51,24 +51,18 @@ static void action_list_bar_layer_proc(Layer *layer, GContext *ctx) {
 
 // MARK: Menu layer callbacks
 
-static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
-    ActionList *action_list = context;
-    
-    return action_list->config->num_rows;
+static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, ActionList *context) {
+    return context->config->num_rows;
 }
 
-static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    ActionList *action_list = context;
-    
-    return action_list->row_height;
+static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, ActionList *context) {
+    return context->row_height;
 }
 
-static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
-    ActionList *action_list = context;
-    
-    bool is_selected = (menu_layer_get_selected_index(action_list->menu_layer).row == cell_index->row);
+static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, ActionList *context) {
+    bool is_selected = (menu_layer_get_selected_index(context->menu_layer).row == cell_index->row);
     bool is_enabled = true;
-    if (action_list->config->callbacks.is_enabled && !action_list->config->callbacks.is_enabled(cell_index->row)) {
+    if (context->config->callbacks.is_enabled && !context->config->callbacks.is_enabled(cell_index->row, context->config->context)) {
         is_enabled = false;
     }
     GRect bounds = layer_get_bounds(cell_layer);
@@ -85,11 +79,11 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 #endif
     
 #ifdef PBL_COLOR
-    graphics_context_set_text_color(ctx, is_selected?action_list->config->colors.text_selected:(is_enabled?action_list->config->colors.text:action_list->config->colors.text_disabled));
+    graphics_context_set_text_color(ctx, is_selected?context->config->colors.text_selected:(is_enabled?context->config->colors.text:context->config->colors.text_disabled));
 #endif
     
     GFont font = fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
-    char *text = action_list->config->callbacks.get_title(cell_index->row);
+    char *text = context->config->callbacks.get_title(cell_index->row, context->config->context);
     GRect text_frame = grect_crop(bounds,
 #ifdef PBL_BW
                                   ACTION_LIST_SELECTION_MARGIN +
@@ -104,11 +98,9 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     graphics_draw_text(ctx, text, font, text_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 }
 
-static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
-    ActionList *action_list = context;
-    
-    if (!action_list->config->callbacks.is_enabled || action_list->config->callbacks.is_enabled(cell_index->row)) {
-        action_list->config->callbacks.select_click(action_list->window, cell_index->row);
+static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, ActionList *context) {
+    if (!context->config->callbacks.is_enabled || context->config->callbacks.is_enabled(cell_index->row, context->config->context)) {
+        context->config->callbacks.select_click(context->window, cell_index->row, context->config->context);
     }
 }
 
@@ -198,9 +190,8 @@ void action_list_open(ActionListConfig *config) {
         return;
     }
     
-    ActionList *action_list = malloc(sizeof(ActionList));
+    ActionList *action_list = calloc(1, sizeof(ActionList));
     if (action_list) {
-        memset(action_list, 0, sizeof(ActionList));
         action_list->config = malloc(sizeof(ActionListConfig));
         memcpy(action_list->config, config, sizeof(ActionListConfig));
         
@@ -215,8 +206,7 @@ void action_list_open(ActionListConfig *config) {
 #ifdef PBL_SDK_2
         window_set_fullscreen(action_list->window, true);
 #endif
+        
+        window_stack_push(action_list->window, true);
     }
-    
-    // Push the window
-    window_stack_push(action_list->window, true);
 }

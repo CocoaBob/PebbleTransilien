@@ -255,6 +255,7 @@ static void window_long_click_handler(ClickRecognizerRef recognizer, void *conte
     MenuIndex selected_index = menu_layer_get_selected_index(context);
     if (selected_index.section == NEXT_TRAINS_SECTION_INFO) {
         ActionListConfig config = (ActionListConfig){
+//            .context = main_menu,
             .num_rows = NEXT_TRAINS_ACTIONS_COUNT,
             .default_selection = NEXT_TRAINS_ACTIONS_FAV,
 #ifdef PBL_COLOR
@@ -279,7 +280,7 @@ static void window_long_click_handler(ClickRecognizerRef recognizer, void *conte
 #if defined(PBL_PLATFORM_APLITE)
 static void window_back_click_handler(ClickRecognizerRef recognizer, void *context) {
     window_stack_pop(true);
-    if (!window_stack_contains_window(get_window_main_menu())) {
+    if (!window_stack_get_top_window()) {
         push_window_main_menu(false);
     }
 }

@@ -43,24 +43,21 @@ enum {
     MAIN_MENU_ACTIONS_COUNT
 };
 
-static Window *s_window;
-static MenuLayer *s_menu_layer;
+typedef struct {
+    Window *window;
+    MenuLayer *menu_layer;
 #if !defined(PBL_PLATFORM_APLITE)
-static StatusBarLayer *s_status_bar;
-static Layer *s_status_bar_background_layer;
+    StatusBarLayer *status_bar;
+    Layer *status_bar_background_layer;
 #endif
-
 #ifdef PBL_BW
-static InverterLayer *s_inverter_layer;
+    InverterLayer *inverter_layer;
 #endif
-
-// MARK: Forward declaration
-
-static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context);
+} MainMenu;
 
 // MARK: Action list callbacks
 
-static char* action_list_get_title_callback(size_t index) {
+static char* action_list_get_title_callback(size_t index, void *context) {
     if (index == MAIN_MENU_ACTIONS_MOVE_UP) {
         return _("Move up");
     } else if (index == MAIN_MENU_ACTIONS_EDIT) {
@@ -70,21 +67,25 @@ static char* action_list_get_title_callback(size_t index) {
     }
 }
 
-static bool action_list_is_enabled_callback(size_t index) {
+static bool action_list_is_enabled_callback(size_t index, void *context) {
+    MainMenu *main_menu = context;
+    
     if (index == MAIN_MENU_ACTIONS_MOVE_UP) {
-        return (fav_get_count() > 1 && menu_layer_get_selected_index(s_menu_layer).row > 0);
+        return (fav_get_count() > 1 && menu_layer_get_selected_index(main_menu->menu_layer).row > 0);
     }
     return true;
 }
 
-static void action_list_select_callback(Window *action_list_window, size_t index) {
-    MenuIndex current_selection = menu_layer_get_selected_index(s_menu_layer);
+static void action_list_select_callback(Window *action_list_window, size_t index, void *context) {
+    MainMenu *main_menu = context;
+    
+    MenuIndex current_selection = menu_layer_get_selected_index(main_menu->menu_layer);
     switch (index) {
         case MAIN_MENU_ACTIONS_MOVE_UP:
         {
             fav_move_up_index(current_selection.row);
             window_stack_remove(action_list_window, true);
-            menu_layer_set_selected_next(s_menu_layer, true, MenuRowAlignCenter, false);
+            menu_layer_set_selected_next(main_menu->menu_layer, true, MenuRowAlignCenter, false);
             break;
         }
         case MAIN_MENU_ACTIONS_EDIT:
@@ -133,9 +134,11 @@ static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_laye
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
+    MainMenu *main_menu = context;
+    
     bool is_fav_on_launch = settings_is_fav_on_launch();
 #ifdef PBL_COLOR
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+    MenuIndex selected_index = menu_layer_get_selected_index(main_menu->menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
@@ -200,6 +203,8 @@ static void menu_layer_draw_header_callback(GContext *ctx, const Layer *cell_lay
 }
 
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+    MainMenu *main_menu = context;
+    
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         Favorite favorite = fav_at_index(cell_index->row);
         push_window_next_trains(favorite, true);
@@ -208,7 +213,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             push_window_search_train(STATION_NON, STATION_NON, true);
 #if defined(PBL_PLATFORM_APLITE)
             // Remove main menu window to reduce memory for Aplite.
-            window_stack_remove(s_window, false);
+            window_stack_remove(main_menu->window, false);
 #endif
         } else {
             // TODO: Nearby stations
@@ -218,26 +223,29 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             // Change theme
             settings_set_theme(!settings_is_dark_theme());
 #ifdef PBL_COLOR
-            ui_setup_theme(s_window, s_menu_layer);
+            ui_setup_theme(main_menu->window, main_menu->menu_layer);
 #else
-            ui_setup_theme(s_window, s_inverter_layer);
+            ui_setup_theme(main_menu->window, main_menu->inverter_layer);
 #endif
             
 #if !defined(PBL_PLATFORM_APLITE)
-            status_bar_set_colors(s_status_bar);
+            status_bar_set_colors(main_menu->status_bar);
 #endif
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             settings_toggle_locale();
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_ON_LAUNCH) {
             settings_toggle_is_fav_on_launch();
         }
-        menu_layer_reload_data(s_menu_layer);
+        menu_layer_reload_data(main_menu->menu_layer);
     }
 }
 
 static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+    MainMenu *main_menu = context;
+    
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         ActionListConfig config = (ActionListConfig){
+            .context = main_menu,
             .num_rows = MAIN_MENU_ACTIONS_COUNT,
             .default_selection = MAIN_MENU_ACTIONS_EDIT,
 #ifdef PBL_COLOR
@@ -257,19 +265,21 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
         };
         action_list_open(&config);
     } else {
-        menu_layer_select_callback(s_menu_layer, cell_index, context);
+        menu_layer_select_callback(main_menu->menu_layer, cell_index, context);
     }
 }
 
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
-    Layer *window_layer = window_get_root_layer(window);
+    MainMenu *main_menu = window_get_user_data(window);
+    
+    Layer *window_layer = window_get_root_layer(main_menu->window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
 #if !defined(PBL_PLATFORM_APLITE)
-    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
+    window_add_status_bar(window_layer, &main_menu->status_bar, &main_menu->status_bar_background_layer);
 #endif
     
     // Add menu layer
@@ -281,9 +291,9 @@ static void window_load(Window *window) {
                                    window_bounds.origin.y + status_bar_height,
                                    window_bounds.size.w,
                                    window_bounds.size.h - status_bar_height);
-    s_menu_layer = menu_layer_create(menu_layer_frame);
-    layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
-    menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
+    main_menu->menu_layer = menu_layer_create(menu_layer_frame);
+    layer_add_child(window_layer, menu_layer_get_layer(main_menu->menu_layer));
+    menu_layer_set_callbacks(main_menu->menu_layer, main_menu, (MenuLayerCallbacks) {
         .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)menu_layer_get_num_sections_callback,
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
@@ -301,59 +311,61 @@ static void window_load(Window *window) {
     });
     
     // Setup Click Config Providers
-    menu_layer_set_click_config_onto_window(s_menu_layer, window);
+    menu_layer_set_click_config_onto_window(main_menu->menu_layer, main_menu->window);
     
     // Add inverter layer for Aplite
 #ifdef PBL_BW
-    s_inverter_layer = inverter_layer_create(window_bounds);
+    main_menu->inverter_layer = inverter_layer_create(window_bounds);
 #endif
     
     // Setup theme
 #ifdef PBL_COLOR
-    ui_setup_theme(s_window, s_menu_layer);
+    ui_setup_theme(main_menu->window, main_menu->menu_layer);
 #else
-    ui_setup_theme(s_window, s_inverter_layer);
+    ui_setup_theme(main_menu->window, main_menu->inverter_layer);
 #endif
 }
 
 static void window_appear(Window *window) {
+    MainMenu *main_menu = window_get_user_data(window);
+    
     // BUG FIX:
     // Fixed the wrong menu layer origin when returning to main menu window after adding a favorite
     // Reload the layer to fix it
-    menu_layer_reload_data(s_menu_layer);
+    menu_layer_reload_data(main_menu->menu_layer);
     
     // Show the selected row
-    menu_layer_set_selected_index(s_menu_layer, menu_layer_get_selected_index(s_menu_layer), MenuRowAlignCenter, false);
+    menu_layer_set_selected_index(main_menu->menu_layer, menu_layer_get_selected_index(main_menu->menu_layer), MenuRowAlignCenter, false);
 }
 
 static void window_unload(Window *window) {
-    menu_layer_destroy(s_menu_layer);
-#if !defined(PBL_PLATFORM_APLITE)
-    layer_destroy(s_status_bar_background_layer);
-    status_bar_layer_destroy(s_status_bar);
-#endif
+    MainMenu *main_menu = window_get_user_data(window);
     
-#ifdef PBL_BW
-    inverter_layer_destroy(s_inverter_layer);
+    menu_layer_destroy(main_menu->menu_layer);
+#if !defined(PBL_PLATFORM_APLITE)
+    layer_destroy(main_menu->status_bar_background_layer);
+    status_bar_layer_destroy(main_menu->status_bar);
 #endif
-    window_destroy(s_window);
-    s_window = NULL;
+#ifdef PBL_BW
+    inverter_layer_destroy(main_menu->inverter_layer);
+#endif
+    window_destroy(main_menu->window);
+    
+    free(main_menu);
 }
 
 // MARK: Entry point
 
 void push_window_main_menu(bool animated) {
-    if(!s_window) {
-        s_window = window_create();
-        window_set_window_handlers(s_window, (WindowHandlers) {
+    MainMenu *main_menu = calloc(1, sizeof(MainMenu));
+    if (main_menu) {
+        main_menu->window = window_create();
+        window_set_user_data(main_menu->window, main_menu);
+        window_set_window_handlers(main_menu->window, (WindowHandlers) {
             .load = window_load,
             .appear = window_appear,
-            .unload = window_unload,
+            .unload = window_unload
         });
+        window_stack_push(main_menu->window, animated);
     }
-    window_stack_push(s_window, animated);
-}
-
-Window *get_window_main_menu() {
-    return s_window;
 }
