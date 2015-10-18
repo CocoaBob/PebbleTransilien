@@ -574,10 +574,10 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
         }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (!s_is_updating && s_next_trains_list_count > 0) {
-#if defined(PBL_PLATFORM_APLITE)
+//#if defined(PBL_PLATFORM_APLITE)
             // Remove SearchStation window to reduce RAM footprint for Aplite.
-            window_stack_remove(get_window_search_train(), false);
-#endif
+//            window_stack_remove(get_window_search_train(), false);
+//#endif
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             push_window_train_details(next_train.number, s_from_to.from, true);
         }
