@@ -49,8 +49,6 @@ static Layer *s_status_bar_background_layer;
 
 #ifdef PBL_BW
 static InverterLayer *s_inverter_layer;
-static InverterLayer *s_inverter_layer_for_panel_layer; // To highlight the panel layer
-static Layer *s_inverter_layer_layer_for_panel_layer;
 #endif
 
 // Searching
@@ -123,8 +121,8 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     PanelData *layer_data = layer_get_data(s_panel_layer);
     
-    // Background or Highlight
 #ifdef PBL_COLOR
+    // Background or Highlight
     if (layer_data->is_active) {
         graphics_context_set_fill_color(ctx, GColorCobaltBlue);
         graphics_fill_rect(ctx, bounds, 0, GCornerNone);
@@ -139,18 +137,15 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_stroke_color(ctx, curr_fg_color());
     graphics_draw_line(ctx, GPoint(0, 0), GPoint(bounds.size.w, 0));
 #else
+    // Background or Highlight
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     if (layer_data->is_active) {
-        if (!layer_get_window(s_inverter_layer_layer_for_panel_layer)) {
-            layer_set_frame(s_inverter_layer_layer_for_panel_layer, bounds);
-            layer_add_child(s_panel_layer, s_inverter_layer_layer_for_panel_layer);
-        }
+        graphics_context_set_stroke_color(ctx, GColorWhite);
+        graphics_draw_rect(ctx, grect_crop(bounds, 1));
     } else {
-        graphics_context_set_stroke_color(ctx, GColorBlack);
-        graphics_draw_rect(ctx, bounds);
-        graphics_draw_round_rect(ctx, bounds, 4);
-        if (layer_get_window(s_inverter_layer_layer_for_panel_layer)) {
-            layer_remove_from_parent(s_inverter_layer_layer_for_panel_layer);
-        }
+        graphics_context_set_fill_color(ctx, GColorWhite);
+        graphics_fill_rect(ctx, grect_crop(bounds, 1), 0, GCornerNone);
     }
 #endif
     
@@ -163,6 +158,8 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
 #ifdef PBL_COLOR
                  true,
                  text_color,
+#else
+                 layer_data->is_active,
 #endif
                  layer_data->from_to);
 }
@@ -647,8 +644,6 @@ static void window_load(Window *window) {
     // Prepare inverter layers for Aplite
 #ifdef PBL_BW
     s_inverter_layer = inverter_layer_create(window_bounds);
-    s_inverter_layer_for_panel_layer = inverter_layer_create(window_bounds);
-    s_inverter_layer_layer_for_panel_layer = inverter_layer_get_layer(s_inverter_layer_for_panel_layer);
 #endif
     
     // Setup theme
@@ -674,7 +669,6 @@ static void window_unload(Window *window) {
     
 #ifdef PBL_BW
     inverter_layer_destroy(s_inverter_layer);
-    inverter_layer_destroy(s_inverter_layer_for_panel_layer);
 #endif
 }
 

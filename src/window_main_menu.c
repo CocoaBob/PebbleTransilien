@@ -148,6 +148,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #ifdef PBL_COLOR
                      is_highlighed,
                      text_color,
+#else
+                     false,
 #endif
                      favorite);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {

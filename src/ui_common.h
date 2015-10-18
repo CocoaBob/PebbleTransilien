@@ -39,6 +39,8 @@ void draw_from_to(GContext* ctx,
 #ifdef PBL_COLOR
                   bool is_highlighed,
                   GColor text_color,
+#else
+                  bool is_inverted,
 #endif
                   DataModelFromTo from_to);
 

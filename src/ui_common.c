@@ -85,12 +85,14 @@ void draw_from_to(GContext* ctx,
 #ifdef PBL_COLOR
                   bool is_highlighed,
                   GColor text_color,
+#else
+                  bool is_inverted,
 #endif
                   DataModelFromTo from_to) {
 #ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, text_color);
 #else
-    graphics_context_set_text_color(ctx, GColorBlack);
+    graphics_context_set_text_color(ctx, is_inverted?GColorWhite:GColorBlack);
 #endif
     GRect bounds = layer_get_bounds(layer);
     bool is_from_to = (from_to.to != STATION_NON);
@@ -108,9 +110,9 @@ void draw_from_to(GContext* ctx,
     }
 #else
     if (is_from_to) {
-        draw_image_in_rect(ctx, false, RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
+        draw_image_in_rect(ctx, is_inverted, RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
     } else {
-        draw_image_in_rect(ctx, false, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+        draw_image_in_rect(ctx, is_inverted, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
     }
 #endif
     

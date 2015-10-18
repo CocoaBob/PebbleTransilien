@@ -523,6 +523,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #ifdef PBL_COLOR
                      is_highlighed,
                      text_color,
+#else
+                     false,
 #endif
                      s_from_to);
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
