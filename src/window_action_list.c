@@ -54,11 +54,13 @@ static void action_list_bar_layer_proc(Layer *layer, GContext *ctx) {
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
     ActionList *action_list = context;
+    
     return action_list->config->num_rows;
 }
 
 static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     ActionList *action_list = context;
+    
     return action_list->row_height;
 }
 
@@ -105,6 +107,7 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     ActionList *action_list = context;
+    
     if (!action_list->config->callbacks.is_enabled || action_list->config->callbacks.is_enabled(cell_index->row)) {
         action_list->config->callbacks.select_click(action_list->window, cell_index->row);
     }
@@ -150,8 +153,6 @@ static void window_load(Window *window) {
     window_set_background_color(window, GColorBlack);
 #endif
     
-    menu_layer_set_selected_index(action_list->menu_layer, MenuIndex(0, action_list->config->default_selection), MenuRowAlignNone, false);
-    
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(action_list->menu_layer, window);
     
@@ -186,11 +187,9 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
-#ifdef PBL_SDK_2
     ActionList *action_list = window_get_user_data(window);
-    // BUG FIX: When it appears for the 1st time, the selected row's inverter layer position is incorrect
-    menu_layer_reload_data(action_list->menu_layer);
-#endif
+    
+    menu_layer_set_selected_index(action_list->menu_layer, MenuIndex(0, action_list->config->default_selection), MenuRowAlignNone, false);
 }
 
 // MARK: Entry point
