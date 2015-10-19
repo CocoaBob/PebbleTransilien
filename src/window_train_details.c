@@ -22,10 +22,8 @@ static InverterLayer *s_inverter_layer;
 #endif
 
 #if !defined(PBL_PLATFORM_APLITE)
-#define UPDATE_TIME_FORMAT_INTERVAL 3750 // 3.75 seconds
+#define UPDATE_TIME_FORMAT_INTERVAL 3000 // 3 seconds
 static AppTimer *s_update_time_format_timer;
-#define IDLE_TIMEOUT 300000 // 5 minutes
-static AppTimer *s_idle_timer;
 #endif
 
 static char* s_train_number;
@@ -42,7 +40,6 @@ static bool s_show_relative_time;
 static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context);
 #if !defined(PBL_PLATFORM_APLITE)
 static void restart_timers();
-static void idle_timer_start();
 #endif
 
 // MARK: Message Request callbacks
@@ -92,6 +89,7 @@ static void message_succeeded_callback(DictionaryIterator *received) {
 #endif
     s_show_relative_time = false;
     menu_layer_reload_data(s_menu_layer);
+    vibes_short_pulse();
 }
 
 static void message_failed_callback(void) {
@@ -129,7 +127,7 @@ static void request_train_details() {
 }
 
 #if !defined(PBL_PLATFORM_APLITE)
-// MARK: Timer
+// MARK: Timers
 
 static void update_time_format_timer_callback(void *context);
 
@@ -154,23 +152,13 @@ static void restart_timers() {
     update_time_format_timer_stop();
     update_time_format_timer_start();
 }
-
-static void idle_timer_callback(void *context) {
-    window_stack_pop(false); // Pop to NextTrain window
-    window_stack_pop(true); // Pop to Main window
-}
-
-static void idle_timer_start() {
-    app_timer_register(IDLE_TIMEOUT, idle_timer_callback, NULL);
-}
-
-static void idle_timer_stop() {
-    if(s_idle_timer) {
-        app_timer_cancel(s_idle_timer);
-        s_idle_timer = NULL;
-    }
-}
 #endif
+
+// MARK: Accel Tap Service
+
+static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
+    request_train_details();
+}
 
 // MARK: Click Config Provider
 
@@ -331,8 +319,11 @@ static void window_appear(Window *window) {
 #if !defined(PBL_PLATFORM_APLITE)
     // Start timer
     update_time_format_timer_start();
-    idle_timer_start();
 #endif
+    
+    // Subscribe tap service
+    accel_tap_service_subscribe(accel_tap_handler);
+    
 //    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
@@ -342,8 +333,10 @@ static void window_disappear(Window *window) {
 #if !defined(PBL_PLATFORM_APLITE)
     // Stop timer
     update_time_format_timer_stop();
-    idle_timer_stop();
 #endif
+    
+    // Unsubscribe tap service
+    accel_tap_service_unsubscribe();
 }
 
 // MARK: Entry point
