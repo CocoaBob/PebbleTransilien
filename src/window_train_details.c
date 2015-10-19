@@ -183,18 +183,27 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
-#ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
-    bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+    bool is_selected = selected_index.row == cell_index->row;
+#ifdef PBL_COLOR
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
 #endif
     
     if (s_is_updating) {
+#ifdef PBL_COLOR
+        set_menu_layer_activated(s_menu_layer, false);
+#endif
         draw_centered_title(ctx, cell_layer,
+#ifdef PBL_BW
+                            is_selected,
+#endif
                             _("Loading..."),
                             NULL);
     } else if (s_train_details_list_count > 0) {
+#ifdef PBL_COLOR
+        set_menu_layer_activated(s_menu_layer, true);
+#endif
         DataModelTrainDetail train_detail = s_train_details_list[cell_index->row];
         
         // Time
@@ -219,7 +228,13 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         free(str_time);
         free(str_station);
     } else {
+#ifdef PBL_COLOR
+        set_menu_layer_activated(s_menu_layer, false);
+#endif
         draw_centered_title(ctx, cell_layer,
+#ifdef PBL_BW
+                            is_selected,
+#endif
                             _("No train."),
                             NULL);
     }

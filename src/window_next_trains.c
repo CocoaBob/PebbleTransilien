@@ -485,6 +485,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (s_is_updating && s_next_trains_list_count == 0) {
             draw_centered_title(ctx, cell_layer,
+#ifdef PBL_BW
+                                is_selected,
+#endif
                                 _("Loading..."),
                                 NULL);
         } else if (s_next_trains_list_count > 0) {
@@ -515,6 +518,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             free(str_terminus);
         } else {
             draw_centered_title(ctx, cell_layer,
+#ifdef PBL_BW
+                                is_selected,
+#endif
                                 _("No train."),
                                 NULL);
         }

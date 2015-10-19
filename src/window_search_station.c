@@ -490,8 +490,8 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, SearchStation *user_info) {
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-#ifdef PBL_COLOR
     bool is_selected = (user_info->actived_layer_index == SEARCH_STATION_MENU_LAYER)?(selected_index.row == cell_index->row):false;
+#ifdef PBL_COLOR
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
 #endif
@@ -517,6 +517,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         free(str_station);
     } else {
         draw_centered_title(ctx, cell_layer,
+#ifdef PBL_BW
+                            is_selected,
+#endif
                             (user_info->search_results_index >= 0)?_("Not found."):_("Press UP/DOWN"),
                             NULL);
     }
