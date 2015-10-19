@@ -75,28 +75,16 @@ static bool action_list_is_enabled_callback(size_t index, MainMenu *user_info) {
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index, MainMenu *user_info) {
+    window_stack_remove(action_list_window, true);
     MenuIndex current_selection = menu_layer_get_selected_index(user_info->menu_layer);
-    switch (index) {
-        case MAIN_MENU_ACTIONS_MOVE_UP:
-        {
-            fav_move_up_index(current_selection.row);
-            window_stack_remove(action_list_window, true);
-            menu_layer_set_selected_next(user_info->menu_layer, true, MenuRowAlignCenter, false);
-            break;
-        }
-        case MAIN_MENU_ACTIONS_EDIT:
-        {
-            Favorite favorite = fav_at_index(current_selection.row);
-            window_stack_remove(action_list_window, false);
-            push_window_search_train(favorite.from, favorite.to, true);
-            break;
-        }
-        case MAIN_MENU_ACTIONS_DELETE:
-        {
-            fav_delete_at_index(current_selection.row);
-            window_stack_remove(action_list_window, true);
-            break;
-        }
+    if (index == MAIN_MENU_ACTIONS_MOVE_UP) {
+        fav_move_up_index(current_selection.row);
+        menu_layer_set_selected_next(user_info->menu_layer, true, MenuRowAlignCenter, false);
+    } else if (index == MAIN_MENU_ACTIONS_DELETE) {
+        fav_delete_at_index(current_selection.row);
+    } else { // MAIN_MENU_ACTIONS_EDIT
+        Favorite favorite = fav_at_index(current_selection.row);
+        push_window_search_train(favorite.from, favorite.to, true);
     }
 }
 
@@ -203,10 +191,6 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
             push_window_search_train(STATION_NON, STATION_NON, true);
-//#if defined(PBL_PLATFORM_APLITE)
-//            // Remove main menu window to reduce memory for Aplite.
-//            window_stack_remove(user_info->window, false);
-//#endif
         } else {
             // TODO: Nearby stations
         }
@@ -326,6 +310,7 @@ static void window_appear(Window *window) {
     
     // Show the selected row
     menu_layer_set_selected_index(user_info->menu_layer, menu_layer_get_selected_index(user_info->menu_layer), MenuRowAlignCenter, false);
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_unload(Window *window) {

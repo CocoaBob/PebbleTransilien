@@ -277,24 +277,11 @@ static void window_long_click_handler(ClickRecognizerRef recognizer, void *conte
     }
 }
 
-#if defined(PBL_PLATFORM_APLITE)
-static void window_back_click_handler(ClickRecognizerRef recognizer, void *context) {
-    window_stack_pop(true);
-    if (!window_stack_get_top_window()) {
-        push_window_main_menu(false);
-    }
-}
-#endif
-
 static void click_config_provider(void *context) {
     s_last_ccp(context);
     window_long_click_subscribe(BUTTON_ID_SELECT, 0, window_long_click_handler, NULL);
     window_single_repeating_click_subscribe(BUTTON_ID_UP, 30, menu_layer_button_up_handler);
     window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 30, menu_layer_button_down_handler);
-    
-#if defined(PBL_PLATFORM_APLITE)
-    window_single_click_subscribe(BUTTON_ID_BACK, window_back_click_handler);
-#endif
 }
 
 // MARK: Message Request callbacks
@@ -472,8 +459,7 @@ static void restart_timers() {
 }
 
 static void idle_timer_callback(void *context) {
-    window_stack_pop_all(false);
-    push_window_main_menu(false);
+    window_stack_pop(true); // Pop to Main window
 }
 
 static void idle_timer_start() {
@@ -574,10 +560,6 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
         }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (!s_is_updating && s_next_trains_list_count > 0) {
-//#if defined(PBL_PLATFORM_APLITE)
-            // Remove SearchStation window to reduce RAM footprint for Aplite.
-//            window_stack_remove(get_window_search_train(), false);
-//#endif
             DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
             push_window_train_details(next_train.number, s_from_to.from, true);
         }
@@ -684,6 +666,7 @@ static void window_appear(Window *window) {
     reload_data_timer_start();
     idle_timer_start();
 #endif
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

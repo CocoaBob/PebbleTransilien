@@ -156,8 +156,8 @@ static void restart_timers() {
 }
 
 static void idle_timer_callback(void *context) {
-    window_stack_pop_all(false);
-    push_window_main_menu(false);
+    window_stack_pop(false); // Pop to NextTrain window
+    window_stack_pop(true); // Pop to Main window
 }
 
 static void idle_timer_start() {
@@ -237,10 +237,12 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     }
 }
 
+#if !defined(PBL_PLATFORM_APLITE)
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
     MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
     push_window_next_trains((DataModelFromTo){s_train_details_list[selected_index.row].station, STATION_NON}, true);
 }
+#endif
 
 // MARK: Window callbacks
 
@@ -273,10 +275,10 @@ static void window_load(Window *window) {
     menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
-        .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
+        .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback
 #if !defined(PBL_PLATFORM_APLITE)
         ,
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
@@ -331,6 +333,7 @@ static void window_appear(Window *window) {
     update_time_format_timer_start();
     idle_timer_start();
 #endif
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

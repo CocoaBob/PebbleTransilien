@@ -245,34 +245,22 @@ static bool action_list_is_enabled_callback(size_t index, SearchStation *user_in
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index, SearchStation *user_info) {
+    window_stack_remove(action_list_window, true);
     DataModelFromTo from_to = user_info->from_to;
     confirm_from_to(&from_to, user_info);
-    switch (index) {
-        case SEARCH_STATION_ACTIONS_DESTINATION:
-        {
-            user_info->from_to = from_to;
-            if (user_info->from_to.to != STATION_NON) {
-                user_info->from_to.from = user_info->from_to.to;
-                user_info->from_to.to = STATION_NON;
-            }
-            panel_update(user_info->from_to, user_info);
-            move_focus_to_selection_layer(user_info);
-            reset_search_results(user_info);
-            window_stack_remove(action_list_window, true);
-            break;
+    if (index == SEARCH_STATION_ACTIONS_DESTINATION) {
+        user_info->from_to = from_to;
+        if (user_info->from_to.to != STATION_NON) {
+            user_info->from_to.from = user_info->from_to.to;
+            user_info->from_to.to = STATION_NON;
         }
-        case SEARCH_STATION_ACTIONS_TIMETABLE:
-        {
-            window_stack_remove(action_list_window, false);
-            push_window_next_trains(from_to, true);
-            break;
-        }
-        case SEARCH_STATION_ACTIONS_FAV:
-        {
-            fav_add(from_to.from, from_to.to);
-            window_stack_remove(action_list_window, true);
-            break;
-        }
+        panel_update(user_info->from_to, user_info);
+        move_focus_to_selection_layer(user_info);
+        reset_search_results(user_info);
+    } else if (index == SEARCH_STATION_ACTIONS_FAV) {
+        fav_add(from_to.from, from_to.to);
+    } else { // SEARCH_STATION_ACTIONS_TIMETABLE
+        push_window_next_trains(from_to, true);
     }
 }
 
@@ -419,13 +407,7 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
     if (!is_forward) {
         // Return to the main menu window
         if (old_index == 0) {
-//#if defined(PBL_PLATFORM_APLITE)
-//            // Remove main menu window to reduce memory for Aplite.
-//            window_stack_remove(user_info->window, true);
-//            push_window_main_menu(false);
-//#else
             window_stack_pop(true);
-//#endif
         }
         // Clear all indexes behind
         else {
@@ -569,7 +551,6 @@ static void window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(user_info->window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
-    
     // Add status bar
     int16_t status_bar_height = 0;
 #if !defined(PBL_PLATFORM_APLITE)
@@ -678,6 +659,7 @@ static void window_appear(Window *window) {
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_begin();
 #endif
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

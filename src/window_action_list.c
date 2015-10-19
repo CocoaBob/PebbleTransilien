@@ -181,6 +181,7 @@ static void window_appear(Window *window) {
     ActionList *user_info = window_get_user_data(window);
     
     menu_layer_set_selected_index(user_info->menu_layer, MenuIndex(0, user_info->config->default_selection), MenuRowAlignNone, false);
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 // MARK: Entry point
