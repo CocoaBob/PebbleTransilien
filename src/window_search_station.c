@@ -276,9 +276,9 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     }
 }
 
-static void show_action_list() {
+static void show_action_list(SearchStation *user_info) {
     ActionListConfig config = (ActionListConfig){
-//        .context = main_menu,
+        .context = user_info,
         .num_rows = SEARCH_STATION_ACTIONS_COUNT,
         .default_selection = SEARCH_STATION_ACTIONS_TIMETABLE,
 #ifdef PBL_COLOR
@@ -303,26 +303,33 @@ static void show_action_list() {
 
 // Menu layer
 static void button_back_handler_for_menu_layer(ClickRecognizerRef recognizer, void *context) {
-    move_focus_to_selection_layer(context);
+    MenuLayer *menu_layer = context;
+    SearchStation *user_info = window_get_user_data(layer_get_window(menu_layer_get_layer(menu_layer)));
+    move_focus_to_selection_layer(user_info);
 }
 
 static void click_config_provider_for_menu_layer(void *context) {
-    SearchStation *user_info = context;
+    MenuLayer *menu_layer = context;
+    SearchStation *user_info = window_get_user_data(layer_get_window(menu_layer_get_layer(menu_layer)));
     user_info->last_ccp(user_info->menu_layer);
     window_single_click_subscribe(BUTTON_ID_BACK, button_back_handler_for_menu_layer);
 }
 
 // Panel layer
 static void button_back_handler_for_panel_layer(ClickRecognizerRef recognizer, void *context) {
-    if (current_search_results_count(context) > 0) {
-        move_focus_to_menu_layer(context);
+    MenuLayer *menu_layer = context;
+    SearchStation *user_info = window_get_user_data(layer_get_window(menu_layer_get_layer(menu_layer)));
+    if (current_search_results_count(user_info) > 0) {
+        move_focus_to_menu_layer(user_info);
     } else {
-        move_focus_to_selection_layer(context);
+        move_focus_to_selection_layer(user_info);
     }
 }
 
 static void button_select_handler_for_panel_layer(ClickRecognizerRef recognizer, void *context) {
-    show_action_list();
+    MenuLayer *menu_layer = context;
+    SearchStation *user_info = window_get_user_data(layer_get_window(menu_layer_get_layer(menu_layer)));
+    show_action_list(user_info);
 }
 
 static void click_config_provider_for_panel_layer(void *context) {
@@ -388,7 +395,7 @@ static void move_focus_to_menu_layer(SearchStation *user_info) {
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(user_info->menu_layer, user_info->window);
     user_info->last_ccp = window_get_click_config_provider(user_info->window);
-    window_set_click_config_provider_with_context(user_info->window, click_config_provider_for_menu_layer, user_info);
+    window_set_click_config_provider_with_context(user_info->window, click_config_provider_for_menu_layer, user_info->menu_layer);
 }
 
 static void move_focus_to_panel(SearchStation *user_info) {
@@ -399,7 +406,7 @@ static void move_focus_to_panel(SearchStation *user_info) {
     panel_layer_set_active(true, user_info);
     
     // Setup Click Config Providers
-    window_set_click_config_provider_with_context(user_info->window, click_config_provider_for_panel_layer, user_info);
+    window_set_click_config_provider_with_context(user_info->window, click_config_provider_for_panel_layer, user_info->panel_layer);
 }
 
 // MARK: Selection layer callbacks
@@ -412,13 +419,13 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
     if (!is_forward) {
         // Return to the main menu window
         if (old_index == 0) {
-#if defined(PBL_PLATFORM_APLITE)
-            // Remove main menu window to reduce memory for Aplite.
-            window_stack_remove(user_info->window, true);
-            push_window_main_menu(false);
-#else
+//#if defined(PBL_PLATFORM_APLITE)
+//            // Remove main menu window to reduce memory for Aplite.
+//            window_stack_remove(user_info->window, true);
+//            push_window_main_menu(false);
+//#else
             window_stack_pop(true);
-#endif
+//#endif
         }
         // Clear all indexes behind
         else {
@@ -535,7 +542,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, SearchStation *user_info) {
     if (current_search_results_count(user_info) > 0) {
-        show_action_list();
+        show_action_list(user_info);
     }
 }
 
@@ -543,7 +550,7 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
     if (panel_is_visible(user_info)) {
         move_focus_to_panel(user_info);
     } else {
-        show_action_list();
+        show_action_list(user_info);
     }
 }
 
