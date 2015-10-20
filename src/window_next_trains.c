@@ -20,37 +20,36 @@ enum {
     NEXT_TRAINS_ACTIONS_COUNT
 };
 
-static Window *s_window;
-static MenuLayer *s_menu_layer;
-static ClickConfigProvider s_last_ccp;
+typedef struct {
+    Window *window;
+    MenuLayer *menu_layer;
+    ClickConfigProvider last_ccp;
 #if !defined(PBL_PLATFORM_APLITE)
-static StatusBarLayer *s_status_bar;
-static Layer *s_status_bar_background_layer;
+    StatusBarLayer *status_bar;
+    Layer *status_bar_background_layer;
 #endif
-
 #ifdef PBL_BW
-static InverterLayer *s_inverter_layer;
+    InverterLayer *inverter_layer;
 #endif
-
 #if !defined(PBL_PLATFORM_APLITE)
 #define UPDATE_TIME_FORMAT_INTERVAL 3000 // 3 seconds
-static AppTimer *s_update_time_format_timer;
+    AppTimer *format_timer;
 #endif
-
-static DataModelFromTo s_from_to;
-static char *s_str_from;
-static char *s_str_to;
-
-static size_t s_next_trains_list_count;
-static DataModelNextTrain *s_next_trains_list;
-static bool s_is_updating;
-
-static bool s_show_relative_time;
+    DataModelFromTo from_to;
+    char *str_from;
+    char *str_to;
+    
+    size_t next_trains_list_count;
+    DataModelNextTrain *next_trains_list;
+    bool is_updating;
+    
+    bool show_relative_time;
+} NextTrains;
 
 // Forward declaration
 
 #if !defined(PBL_PLATFORM_APLITE)
-static void restart_timers();
+static void restart_timers(NextTrains *user_info);
 #endif
 
 // MARK: Constants
@@ -185,60 +184,60 @@ static void draw_menu_layer_cell(GContext *ctx,
 
 // MARK: Data
 
-static void release_next_trains_list() {
-    for (size_t idx = 0; idx < s_next_trains_list_count; ++idx) {
-        NULL_FREE(s_next_trains_list[idx].code);
-        NULL_FREE(s_next_trains_list[idx].platform);
-        NULL_FREE(s_next_trains_list[idx].number);
-        NULL_FREE(s_next_trains_list[idx].mention);
+static void release_next_trains_list(NextTrains *user_info) {
+    for (size_t idx = 0; idx < user_info->next_trains_list_count; ++idx) {
+        NULL_FREE(user_info->next_trains_list[idx].code);
+        NULL_FREE(user_info->next_trains_list[idx].platform);
+        NULL_FREE(user_info->next_trains_list[idx].number);
+        NULL_FREE(user_info->next_trains_list[idx].mention);
     }
-    NULL_FREE(s_next_trains_list);
-    s_next_trains_list_count = 0;
+    NULL_FREE(user_info->next_trains_list);
+    user_info->next_trains_list_count = 0;
 }
 
-static void set_from_to(StationIndex from, StationIndex to) {
-    s_from_to.from = from;
-    s_from_to.to = to;
+static void set_from_to(StationIndex from, StationIndex to, NextTrains *user_info) {
+    user_info->from_to.from = from;
+    user_info->from_to.to = to;
     
-    NULL_FREE(s_str_from);
-    NULL_FREE(s_str_to);
+    NULL_FREE(user_info->str_from);
+    NULL_FREE(user_info->str_to);
     
-    s_str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-    stations_get_name(s_from_to.from, s_str_from, STATION_NAME_MAX_LENGTH);
-    if (s_from_to.to != STATION_NON) {
-        s_str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-        stations_get_name(s_from_to.to, s_str_to, STATION_NAME_MAX_LENGTH);
+    user_info->str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+    stations_get_name(user_info->from_to.from, user_info->str_from, STATION_NAME_MAX_LENGTH);
+    if (user_info->from_to.to != STATION_NON) {
+        user_info->str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
+        stations_get_name(user_info->from_to.to, user_info->str_to, STATION_NAME_MAX_LENGTH);
     }
     
-    release_next_trains_list();
+    release_next_trains_list(user_info);
 }
 
-static bool reverse_from_to() {
-    if (s_from_to.to == STATION_NON) {
+static bool reverse_from_to(NextTrains *user_info) {
+    if (user_info->from_to.to == STATION_NON) {
         return false;
     } else {
-        set_from_to(s_from_to.to, s_from_to.from);
+        set_from_to(user_info->from_to.to, user_info->from_to.from, user_info);
         return true;
     }
 }
 
 // MARK: Action list callbacks
 
-static char* action_list_get_title_callback(size_t index) {
+static char* action_list_get_title_callback(size_t index, NextTrains *user_info) {
     return _("Set Favorite");
 }
 
-static bool action_list_is_enabled_callback(size_t index) {
+static bool action_list_is_enabled_callback(size_t index, NextTrains *user_info) {
     if (index == NEXT_TRAINS_ACTIONS_FAV) {
-        return !fav_exists(s_from_to);
+        return !fav_exists(user_info->from_to);
     }
     return true;
 }
 
-static void action_list_select_callback(Window *action_list_window, size_t index) {
+static void action_list_select_callback(Window *action_list_window, size_t index, NextTrains *user_info) {
     switch (index) {
         case NEXT_TRAINS_ACTIONS_FAV:
-            fav_add(s_from_to.from, s_from_to.to);
+            fav_add(user_info->from_to.from, user_info->from_to.to);
             window_stack_remove(action_list_window, true);
             break;
     }
@@ -247,10 +246,11 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 // MARK: Click Config Provider
 
 static void window_long_click_handler(ClickRecognizerRef recognizer, void *context) {
-    MenuIndex selected_index = menu_layer_get_selected_index(context);
+    MenuLayer *menu_layer = context;
+    MenuIndex selected_index = menu_layer_get_selected_index(menu_layer);
     if (selected_index.section == NEXT_TRAINS_SECTION_INFO) {
         ActionListConfig config = (ActionListConfig){
-//            .context = main_menu,
+            .context = menu_layer,
             .num_rows = NEXT_TRAINS_ACTIONS_COUNT,
             .default_selection = NEXT_TRAINS_ACTIONS_FAV,
 #ifdef PBL_COLOR
@@ -273,7 +273,11 @@ static void window_long_click_handler(ClickRecognizerRef recognizer, void *conte
 }
 
 static void click_config_provider(void *context) {
-    s_last_ccp(context);
+    MenuLayer *menu_layer = context;
+    NextTrains *user_info = window_get_user_data(layer_get_window(menu_layer_get_layer(menu_layer)));
+    
+    user_info->last_ccp(user_info->menu_layer);
+    
     window_long_click_subscribe(BUTTON_ID_SELECT, 0, window_long_click_handler, NULL);
     window_single_repeating_click_subscribe(BUTTON_ID_UP, 30, menu_layer_button_up_handler);
     window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 30, menu_layer_button_down_handler);
@@ -281,7 +285,7 @@ static void click_config_provider(void *context) {
 
 // MARK: Message Request callbacks
 
-static void message_succeeded_callback(DictionaryIterator *received) {
+static void message_succeeded_callback(DictionaryIterator *received, NextTrains *user_info) {
     Tuple *tuple_type = dict_find(received, MESSAGE_KEY_RESPONSE_TYPE);
     if (tuple_type->value->int8 != MESSAGE_TYPE_NEXT_TRAINS) {
         return;
@@ -289,10 +293,10 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     Tuple *tuple_payload_count = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT);
     size_t count = tuple_payload_count->value->int16;
     
-    release_next_trains_list();
-    s_next_trains_list_count = count;
-    if (s_next_trains_list_count > 0) {
-        s_next_trains_list = malloc(sizeof(DataModelNextTrain) * s_next_trains_list_count);
+    release_next_trains_list(user_info);
+    user_info->next_trains_list_count = count;
+    if (user_info->next_trains_list_count > 0) {
+        user_info->next_trains_list = malloc(sizeof(DataModelNextTrain) * user_info->next_trains_list_count);
     }
     
     for (size_t idx = 0; idx < count; ++idx) {
@@ -314,9 +318,9 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                         temp_int += data[i] << (8 * (str_length - i - 1));
                     }
                     if (data_index == NEXT_TRAIN_KEY_HOUR) {
-                        s_next_trains_list[idx].hour = temp_int;
+                        user_info->next_trains_list[idx].hour = temp_int;
                     } else if (data_index == NEXT_TRAIN_KEY_TERMINUS) {
-                        s_next_trains_list[idx].terminus = temp_int;
+                        user_info->next_trains_list[idx].terminus = temp_int;
                     }
                 }
                 // C string data
@@ -324,13 +328,13 @@ static void message_succeeded_callback(DictionaryIterator *received) {
                     char *temp_string = calloc(offset, sizeof(char));
                     strncpy(temp_string, (char *)data, offset);
                     if (data_index == NEXT_TRAIN_KEY_CODE) {
-                        s_next_trains_list[idx].code = temp_string;
+                        user_info->next_trains_list[idx].code = temp_string;
                     } else if (data_index == NEXT_TRAIN_KEY_PLATFORM) {
-                        s_next_trains_list[idx].platform = temp_string;
+                        user_info->next_trains_list[idx].platform = temp_string;
                     } else if (data_index == NEXT_TRAIN_KEY_NUMBER) {
-                        s_next_trains_list[idx].number = temp_string;
+                        user_info->next_trains_list[idx].number = temp_string;
                     } else if (data_index == NEXT_TRAIN_KEY_MENTION) {
-                        s_next_trains_list[idx].mention = temp_string;
+                        user_info->next_trains_list[idx].mention = temp_string;
                     }
                 }
                 
@@ -340,32 +344,32 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     }
     
     // Update UI
-    s_is_updating = false;
+    user_info->is_updating = false;
 #if !defined(PBL_PLATFORM_APLITE)
-    restart_timers();
+    restart_timers(user_info);
 #endif
-    s_show_relative_time = false;
-    menu_layer_reload_data(s_menu_layer);
+    user_info->show_relative_time = false;
+    menu_layer_reload_data(user_info->menu_layer);
     vibes_short_pulse();
 }
 
-static void message_failed_callback(void) {
+static void message_failed_callback(NextTrains *user_info) {
     // TODO: Cancel loading...
 }
 
-static void request_next_stations() {
+static void request_next_stations(NextTrains *user_info) {
     // Update UI
-    s_is_updating = true;
-    menu_layer_reload_data(s_menu_layer);
+    user_info->is_updating = true;
+    menu_layer_reload_data(user_info->menu_layer);
     
     // Prepare parameters
     DictionaryIterator parameters;
     
     size_t tuple_count = 1;
-    if (s_from_to.from != STATION_NON) {
+    if (user_info->from_to.from != STATION_NON) {
         ++tuple_count;
     }
-    if (s_from_to.to != STATION_NON) {
+    if (user_info->from_to.to != STATION_NON) {
         ++tuple_count;
     }
     uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), STATION_CODE_LENGTH * (tuple_count - 1));
@@ -374,9 +378,9 @@ static void request_next_stations() {
     
     dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_NEXT_TRAINS);
     
-    if (s_from_to.from != STATION_NON) {
+    if (user_info->from_to.from != STATION_NON) {
         char *data = malloc(STATION_CODE_LENGTH);
-        stations_get_code(s_from_to.from, data, STATION_CODE_LENGTH);
+        stations_get_code(user_info->from_to.from, data, STATION_CODE_LENGTH);
         size_t length = strlen(data);
         if (length > STATION_CODE_LENGTH) {
             length = STATION_CODE_LENGTH;
@@ -384,9 +388,9 @@ static void request_next_stations() {
         dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_FROM, (uint8_t *)data, length);
         free(data);
     }
-    if (s_from_to.to != STATION_NON) {
+    if (user_info->from_to.to != STATION_NON) {
         char *data = malloc(STATION_CODE_LENGTH);
-        stations_get_code(s_from_to.to, data, STATION_CODE_LENGTH);
+        stations_get_code(user_info->from_to.to, data, STATION_CODE_LENGTH);
         size_t length = strlen(data);
         if (length > STATION_CODE_LENGTH) {
             length = STATION_CODE_LENGTH;
@@ -400,9 +404,10 @@ static void request_next_stations() {
     // Send message
     message_send(&parameters,
                  (MessageCallbacks){
-                     .message_succeeded_callback = message_succeeded_callback,
-                     .message_failed_callback = message_failed_callback
-                 });
+                     .message_succeeded_callback = (MessageSucceededCallback)message_succeeded_callback,
+                     .message_failed_callback = (MessageFailedCallback)message_failed_callback
+                 },
+                 user_info);
     
     free(dict_buffer);
 }
@@ -410,63 +415,63 @@ static void request_next_stations() {
 #if !defined(PBL_PLATFORM_APLITE)
 // MARK: Timers
 
-static void update_time_format_timer_callback(void *context);
+static void format_timer_callback(NextTrains *user_info);
 
-static void update_time_format_timer_start() {
-    s_update_time_format_timer = app_timer_register(UPDATE_TIME_FORMAT_INTERVAL, update_time_format_timer_callback, NULL);
+static void format_timer_start(NextTrains *user_info) {
+    user_info->format_timer = app_timer_register(UPDATE_TIME_FORMAT_INTERVAL, (AppTimerCallback)format_timer_callback, user_info);
 }
 
-static void update_time_format_timer_stop() {
-    if(s_update_time_format_timer) {
-        app_timer_cancel(s_update_time_format_timer);
-        s_update_time_format_timer = NULL;
+static void format_timer_stop(NextTrains *user_info) {
+    if(user_info->format_timer) {
+        app_timer_cancel(user_info->format_timer);
+        user_info->format_timer = NULL;
     }
 }
 
-static void update_time_format_timer_callback(void *context) {
-    s_show_relative_time = !s_show_relative_time;
-    menu_layer_reload_data(s_menu_layer);
-    update_time_format_timer_start();
+static void format_timer_callback(NextTrains *user_info) {
+    user_info->show_relative_time = !user_info->show_relative_time;
+    menu_layer_reload_data(user_info->menu_layer);
+    format_timer_start(user_info);
 }
 
-static void restart_timers() {
-    update_time_format_timer_stop();
-    update_time_format_timer_start();
+static void restart_timers(NextTrains *user_info) {
+    format_timer_stop(user_info);
+    format_timer_start(user_info);
 }
 
 #endif
 
 // MARK: Accel Tap Service
 
-static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
-    request_next_stations();
-}
+//static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
+//    request_next_stations(user_info);
+//}
 
 // MARK: Menu layer callbacks
 
-static uint16_t menu_layer_get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
+static uint16_t menu_layer_get_num_sections_callback(struct MenuLayer *menu_layer, NextTrains *user_info) {
     return NEXT_TRAINS_SECTION_COUNT;
 }
 
-static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
+static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, NextTrains *user_info) {
     if (section_index == NEXT_TRAINS_SECTION_INFO) {
         return 1;
     } else if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
-        if (s_is_updating && s_next_trains_list_count == 0) {
+        if (user_info->is_updating && user_info->next_trains_list_count == 0) {
             return 1;
         } else {
-            return (s_next_trains_list_count > 0)?s_next_trains_list_count:1;
+            return (user_info->next_trains_list_count > 0)?user_info->next_trains_list_count:1;
         }
     }
     return 0;
 }
 
-static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, NextTrains *user_info) {
     return CELL_HEIGHT;
 }
 
-static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *context) {
-    MenuIndex selected_index = menu_layer_get_selected_index(s_menu_layer);
+static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, NextTrains *user_info) {
+    MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
 #ifdef PBL_COLOR
     bool is_highlighed = settings_is_dark_theme() || is_selected;
@@ -481,21 +486,21 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #else
                      false,
 #endif
-                     s_from_to);
+                     user_info->from_to);
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
-        if (s_is_updating && s_next_trains_list_count == 0) {
+        if (user_info->is_updating && user_info->next_trains_list_count == 0) {
             draw_centered_title(ctx, cell_layer,
 #ifdef PBL_BW
                                 is_selected,
 #endif
                                 _("Loading..."),
                                 NULL);
-        } else if (s_next_trains_list_count > 0) {
-            DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
+        } else if (user_info->next_trains_list_count > 0) {
+            DataModelNextTrain next_train = user_info->next_trains_list[cell_index->row];
             
             // Hour
             char *str_hour = calloc(TIME_STRING_LENGTH, sizeof(char));
-            time_2_str(next_train.hour, str_hour, TIME_STRING_LENGTH, s_show_relative_time);
+            time_2_str(next_train.hour, str_hour, TIME_STRING_LENGTH, user_info->show_relative_time);
             
             // Terminus
             char *str_terminus = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
@@ -527,23 +532,23 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     }
 }
 
-static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
+static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, NextTrains *user_info) {
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
-        if (reverse_from_to()) {
-            request_next_stations();
+        if (reverse_from_to(user_info)) {
+            request_next_stations(user_info);
         }
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
-        if (!s_is_updating && s_next_trains_list_count > 0) {
-            DataModelNextTrain next_train = s_next_trains_list[cell_index->row];
-            push_window_train_details(next_train.number, s_from_to.from, true);
+        if (!user_info->is_updating && user_info->next_trains_list_count > 0) {
+            DataModelNextTrain next_train = user_info->next_trains_list[cell_index->row];
+            push_window_train_details(next_train.number, user_info->from_to.from, true);
         }
     }
 }
 
 #if !defined(PBL_PLATFORM_APLITE)
 
-static void menu_layer_selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, void *callback_context) {
-    if (new_index->section == NEXT_TRAINS_SECTION_TRAINS && s_next_trains_list_count == 0) {
+static void menu_layer_selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, NextTrains *user_info) {
+    if (new_index->section == NEXT_TRAINS_SECTION_TRAINS && user_info->next_trains_list_count == 0) {
         *new_index = old_index;
     }
 }
@@ -553,13 +558,15 @@ static void menu_layer_selection_will_change_callback(struct MenuLayer *menu_lay
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
+    NextTrains *user_info = window_get_user_data(window);
+    
     // Window
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
 #if !defined(PBL_PLATFORM_APLITE)
-    window_add_status_bar(window_layer, &s_status_bar, &s_status_bar_background_layer);
+    window_add_status_bar(window_layer, &user_info->status_bar, &user_info->status_bar_background_layer);
 #endif
     
     // Add menu layer
@@ -571,11 +578,11 @@ static void window_load(Window *window) {
                                    window_bounds.origin.y + status_bar_height,
                                    window_bounds.size.w,
                                    window_bounds.size.h - status_bar_height);
-    s_menu_layer = menu_layer_create(menu_layer_frame);
-    layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
+    user_info->menu_layer = menu_layer_create(menu_layer_frame);
+    layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer
-    menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
+    menu_layer_set_callbacks(user_info->menu_layer, user_info, (MenuLayerCallbacks) {
         .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)menu_layer_get_num_sections_callback,
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
@@ -591,56 +598,63 @@ static void window_load(Window *window) {
     });
     
     // Setup Click Config Providers
-    menu_layer_set_click_config_onto_window(s_menu_layer, window);
-    s_last_ccp = window_get_click_config_provider(window);
-    window_set_click_config_provider_with_context(window, click_config_provider, s_menu_layer);
+    menu_layer_set_click_config_onto_window(user_info->menu_layer, window);
+    user_info->last_ccp = window_get_click_config_provider(window);
+    window_set_click_config_provider_with_context(window, click_config_provider, user_info->menu_layer);
     
     // Add inverter layer for Aplite
 #ifdef PBL_BW
-    s_inverter_layer = inverter_layer_create(window_bounds);
+    user_info->inverter_layer = inverter_layer_create(window_bounds);
 #endif
     
     // Setup theme
 #ifdef PBL_COLOR
-    ui_setup_theme(s_window, s_menu_layer);
+    ui_setup_theme(user_info->window, user_info->menu_layer);
 #else
-    ui_setup_theme(s_window, s_inverter_layer);
+    ui_setup_theme(user_info->window, user_info->inverter_layer);
 #endif
 }
 
 static void window_unload(Window *window) {
+    NextTrains *user_info = window_get_user_data(window);
+    
     // Data
-    NULL_FREE(s_str_from);
-    NULL_FREE(s_str_to);
-    release_next_trains_list();
+    NULL_FREE(user_info->str_from);
+    NULL_FREE(user_info->str_to);
+    release_next_trains_list(user_info);
     
     // Window
-    menu_layer_destroy(s_menu_layer);
-    window_destroy(s_window);
-    s_window = NULL;
+    menu_layer_destroy(user_info->menu_layer);
+    window_destroy(user_info->window);
+    user_info->window = NULL;
     
 #if !defined(PBL_PLATFORM_APLITE)
-    layer_destroy(s_status_bar_background_layer);
-    status_bar_layer_destroy(s_status_bar);
+    layer_destroy(user_info->status_bar_background_layer);
+    status_bar_layer_destroy(user_info->status_bar);
 #endif
     
 #ifdef PBL_BW
-    inverter_layer_destroy(s_inverter_layer);
+    inverter_layer_destroy(user_info->inverter_layer);
 #endif
 }
 
 static void window_appear(Window *window) {
-    if (s_next_trains_list == NULL) {
-        request_next_stations();
+    // Discard formerly sent requests
+    message_clear_callbacks();
+    
+    NextTrains *user_info = window_get_user_data(window);
+    
+    if (user_info->next_trains_list == NULL) {
+        request_next_stations(user_info);
     }
     
     // Start timer
 #if !defined(PBL_PLATFORM_APLITE)
-    update_time_format_timer_start();
+    format_timer_start(user_info);
 #endif
     
     // Subscribe tap service
-    accel_tap_service_subscribe(accel_tap_handler);
+//    accel_tap_service_subscribe(accel_tap_handler);
     
 //    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
@@ -648,35 +662,39 @@ static void window_appear(Window *window) {
 static void window_disappear(Window *window) {
     message_clear_callbacks();
     
+    NextTrains *user_info = window_get_user_data(window);
+    
 #if !defined(PBL_PLATFORM_APLITE)
     // Stop timer
-    update_time_format_timer_stop();
+    format_timer_stop(user_info);
 #endif
     
     // Unsubscribe tap service
-    accel_tap_service_unsubscribe();
+//    accel_tap_service_unsubscribe();
 }
 
 // MARK: Entry point
 
 void push_window_next_trains(DataModelFromTo from_to, bool animated) {
-    if(!s_window) {
-        s_window = window_create();
-        window_set_window_handlers(s_window, (WindowHandlers) {
+    NextTrains *user_info = calloc(1, sizeof(NextTrains));
+    if (user_info) {
+        user_info->window = window_create();
+        window_set_user_data(user_info->window, user_info);
+        window_set_window_handlers(user_info->window, (WindowHandlers) {
             .load = window_load,
             .appear = window_appear,
             .disappear = window_disappear,
             .unload = window_unload,
         });
+        
+        // Reset data
+        set_from_to(from_to.from, from_to.to, user_info);
+        user_info->is_updating = false;
+        
+        // Reset some status
+        user_info->show_relative_time = false;
+        
+        // Push window
+        window_stack_push(user_info->window, animated);
     }
-    
-    // Reset data
-    set_from_to(from_to.from, from_to.to);
-    s_is_updating = false;
-    
-    // Reset some status
-    s_show_relative_time = false;
-    
-    // Push window
-    window_stack_push(s_window, animated);
 }

@@ -23,7 +23,7 @@ static InverterLayer *s_inverter_layer;
 
 #if !defined(PBL_PLATFORM_APLITE)
 #define UPDATE_TIME_FORMAT_INTERVAL 3000 // 3 seconds
-static AppTimer *s_update_time_format_timer;
+static AppTimer *s_format_timer;
 #endif
 
 static char* s_train_number;
@@ -44,7 +44,7 @@ static void restart_timers();
 
 // MARK: Message Request callbacks
 
-static void message_succeeded_callback(DictionaryIterator *received) {
+static void message_succeeded_callback(DictionaryIterator *received, void *context) {
     Tuple *tuple_type = dict_find(received, MESSAGE_KEY_RESPONSE_TYPE);
     if (tuple_type->value->int8 != MESSAGE_TYPE_TRAIN_DETAILS) {
         return;
@@ -92,7 +92,7 @@ static void message_succeeded_callback(DictionaryIterator *received) {
     vibes_short_pulse();
 }
 
-static void message_failed_callback(void) {
+static void message_failed_callback(void *context) {
     // TODO: Cancel loading...
 }
 
@@ -121,7 +121,8 @@ static void request_train_details() {
                  (MessageCallbacks){
                      .message_succeeded_callback = message_succeeded_callback,
                      .message_failed_callback = message_failed_callback
-                 });
+                 },
+                 NULL);
     
     free(dict_buffer);
 }
@@ -129,28 +130,28 @@ static void request_train_details() {
 #if !defined(PBL_PLATFORM_APLITE)
 // MARK: Timers
 
-static void update_time_format_timer_callback(void *context);
+static void format_timer_callback(void *context);
 
-static void update_time_format_timer_start() {
-    s_update_time_format_timer = app_timer_register(UPDATE_TIME_FORMAT_INTERVAL, update_time_format_timer_callback, NULL);
+static void format_timer_start() {
+    s_format_timer = app_timer_register(UPDATE_TIME_FORMAT_INTERVAL, format_timer_callback, NULL);
 }
 
-static void update_time_format_timer_stop() {
-    if(s_update_time_format_timer) {
-        app_timer_cancel(s_update_time_format_timer);
-        s_update_time_format_timer = NULL;
+static void format_timer_stop() {
+    if(s_format_timer) {
+        app_timer_cancel(s_format_timer);
+        s_format_timer = NULL;
     }
 }
 
-static void update_time_format_timer_callback(void *context) {
+static void format_timer_callback(void *context) {
     s_show_relative_time = !s_show_relative_time;
     menu_layer_reload_data(s_menu_layer);
-    update_time_format_timer_start();
+    format_timer_start();
 }
 
 static void restart_timers() {
-    update_time_format_timer_stop();
-    update_time_format_timer_start();
+    format_timer_stop();
+    format_timer_start();
 }
 #endif
 
@@ -327,19 +328,22 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
+    // Discard formerly sent requests
+    message_clear_callbacks();
+    
     if (s_train_details_list == NULL) {
         request_train_details();
     }
     
 #if !defined(PBL_PLATFORM_APLITE)
     // Start timer
-    update_time_format_timer_start();
+    format_timer_start();
 #endif
     
     // Subscribe tap service
     accel_tap_service_subscribe(accel_tap_handler);
     
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+////    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {
@@ -347,7 +351,7 @@ static void window_disappear(Window *window) {
     
 #if !defined(PBL_PLATFORM_APLITE)
     // Stop timer
-    update_time_format_timer_stop();
+    format_timer_stop();
 #endif
     
     // Unsubscribe tap service

@@ -10,25 +10,26 @@
 #include "headers.h"
 
 static MessageCallbacks s_callbacks;
+static void *s_context;
 
 // Called when a message is received from PebbleKitJS
 static void in_received_handler(DictionaryIterator *received, void *context) {
     if (s_callbacks.message_succeeded_callback != NULL) {
-        s_callbacks.message_succeeded_callback(received);
+        s_callbacks.message_succeeded_callback(received, s_context);
     }
 }
 
 // Called when an incoming message from PebbleKitJS is dropped
 static void in_dropped_handler(AppMessageResult reason, void *context) {
     if (s_callbacks.message_failed_callback != NULL) {
-        s_callbacks.message_failed_callback();
+        s_callbacks.message_failed_callback(s_context);
     }
 }
 
 // Called when PebbleKitJS does not acknowledge receipt of a message
 static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
     if (s_callbacks.message_failed_callback != NULL) {
-        s_callbacks.message_failed_callback();
+        s_callbacks.message_failed_callback(s_context);
     }
 }
 
@@ -48,8 +49,10 @@ void message_deinit() {
 }
 
 void message_send(DictionaryIterator *parameters,
-                  MessageCallbacks callbacks) {
+                  MessageCallbacks callbacks,
+                  void *context) {
     s_callbacks = callbacks;
+    s_context = context;
     
     DictionaryIterator *iter;
     app_message_outbox_begin(&iter);

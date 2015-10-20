@@ -662,7 +662,7 @@ static void window_appear(Window *window) {
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_begin();
 #endif
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+////    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {
