@@ -362,6 +362,19 @@ static void message_failed_callback(NextTrains *user_info) {
     // TODO: Cancel loading...
 }
 
+static void write_request_dict(DictionaryIterator *parameters, StationIndex station_index, MESSAGE_KEY message_key) {
+    if (station_index != STATION_NON) {
+        char *data = malloc(STATION_CODE_LENGTH);
+        stations_get_code(station_index, data, STATION_CODE_LENGTH);
+        size_t length = strlen(data);
+        if (length > STATION_CODE_LENGTH) {
+            length = STATION_CODE_LENGTH;
+        }
+        dict_write_data(parameters, message_key, (uint8_t *)data, length);
+        free(data);
+    }
+}
+
 static void request_next_stations(NextTrains *user_info) {
     // Update UI
     user_info->is_updating = true;
@@ -379,31 +392,11 @@ static void request_next_stations(NextTrains *user_info) {
     }
     uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), STATION_CODE_LENGTH * (tuple_count - 1));
     uint8_t *dict_buffer = malloc(dict_size);
+    
     dict_write_begin(&parameters, dict_buffer, dict_size);
-    
     dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_NEXT_TRAINS);
-    
-    if (user_info->from_to.from != STATION_NON) {
-        char *data = malloc(STATION_CODE_LENGTH);
-        stations_get_code(user_info->from_to.from, data, STATION_CODE_LENGTH);
-        size_t length = strlen(data);
-        if (length > STATION_CODE_LENGTH) {
-            length = STATION_CODE_LENGTH;
-        }
-        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_FROM, (uint8_t *)data, length);
-        free(data);
-    }
-    if (user_info->from_to.to != STATION_NON) {
-        char *data = malloc(STATION_CODE_LENGTH);
-        stations_get_code(user_info->from_to.to, data, STATION_CODE_LENGTH);
-        size_t length = strlen(data);
-        if (length > STATION_CODE_LENGTH) {
-            length = STATION_CODE_LENGTH;
-        }
-        dict_write_data(&parameters, MESSAGE_KEY_REQUEST_CODE_TO, (uint8_t *)data, length);
-        free(data);
-    }
-    
+    write_request_dict(&parameters, user_info->from_to.from, MESSAGE_KEY_REQUEST_CODE_FROM);
+    write_request_dict(&parameters, user_info->from_to.to, MESSAGE_KEY_REQUEST_CODE_TO);
     dict_write_end(&parameters);
     
     // Send message
