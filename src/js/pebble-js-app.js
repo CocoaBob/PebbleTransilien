@@ -305,7 +305,7 @@ function parseTrainHour(str) {
                         0);                     // Millisecond
     }
     
-    return new Date(0);
+    return null;
 }
 
 function abortLastRequest() {
@@ -344,16 +344,23 @@ function sendAppMessageForNextTrains(responseText) {
         var trainMissionCode = nextTrainDict["trainMissionCode"];
         itemData = itemData.concat(str2bin(trainMissionCode));
         // Train hour
-        var trainHourStr = nextTrainDict["trainHour"];
-        trainHourStr = parseTrainHour(trainHourStr);
-        if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
-            trainHourStr = trainHourStr.getTime() / 1000;
+        var trainHour = nextTrainDict["trainHour"];
+        trainHour = parseTrainHour(trainHour);
+        if (trainHour != null) {
+            if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
+                trainHour = trainHour.getTime() / 1000;
+            } else {
+                trainHour = trainHour.getTime() / 1000 - trainHour.getTimezoneOffset() * 60;
+            }
+            trainHour = int322bin(trainHour);
         } else {
-            trainHourStr = trainHourStr.getTime() / 1000 - trainHourStr.getTimezoneOffset() * 60;
+            trainHour = [];
         }
-        trainHourStr = int322bin(trainHourStr);
-        trainHourStr = makeCString(trainHourStr);
-        itemData = itemData.concat(trainHourStr);
+        // trainHour must be 5 bytes
+        while (trainHour.length < 5) {
+            trainHour.push(0);
+        }
+        itemData = itemData.concat(trainHour);
         // Train platform
         var trainLane = nextTrainDict["trainLane"];
         var trainDock = nextTrainDict["trainDock"];
@@ -427,13 +434,17 @@ function sendAppMessageForTrainDetails(responseText) {
         // Time
         var time = nextTrainDict["time"];
         time = parseTrainHour(time);
-        if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
-            time = time.getTime() / 1000;
+        if (time != null) {
+            if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
+                time = time.getTime() / 1000;
+            } else {
+                time = time.getTime() / 1000 - time.getTimezoneOffset() * 60;
+            }
+            time = int322bin(time);
         } else {
-            time = time.getTime() / 1000 - time.getTimezoneOffset() * 60;
+            time = [];
         }
-        time = int322bin(time);
-        // Time must be 5 bytes
+        // time must be 5 bytes
         while (time.length < 5) {
             time.push(0);
         }
