@@ -110,7 +110,6 @@ bool fav_delete_at_index(size_t index) {
     s_favorites = realloc(s_favorites, sizeof(Favorite) * new_fav_count);
     storage_set_favorites(s_favorites, new_fav_count);
     return true;
-    return false;
 }
 
 bool fav_move_up_index(size_t index) {

@@ -67,9 +67,11 @@ static void message_succeeded_callback(DictionaryIterator *received, TrainDetail
     Tuple *tuple_payload_count = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT);
     size_t count = tuple_payload_count->value->int16;
     
-    user_info->train_details_list_count = count;
     NULL_FREE(user_info->train_details_list);
-    user_info->train_details_list = malloc(sizeof(DataModelTrainDetail) * user_info->train_details_list_count);
+    user_info->train_details_list_count = count;
+    if (user_info->train_details_list_count > 0) {
+        user_info->train_details_list = malloc(sizeof(DataModelTrainDetail) * user_info->train_details_list_count);
+    }
     
     for (size_t idx = 0; idx < count; ++idx) {
         Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + idx);
@@ -115,6 +117,7 @@ static void request_train_details(TrainDetails *user_info) {
     // Update UI
     user_info->is_updating = true;
     user_info->train_details_list_count = 0;
+    NULL_FREE(user_info->train_details_list);
     menu_layer_reload_data(user_info->menu_layer);
     
     // Prepare parameters
@@ -124,6 +127,7 @@ static void request_train_details(TrainDetails *user_info) {
     size_t tuple_count = 2;
     uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), train_number_length);
     uint8_t *dict_buffer = malloc(dict_size);
+    
     dict_write_begin(&parameters, dict_buffer, dict_size);
     
     dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_TRAIN_DETAILS);
@@ -324,7 +328,6 @@ static void window_unload(Window *window) {
     // Window
     menu_layer_destroy(user_info->menu_layer);
     window_destroy(user_info->window);
-    user_info->window = NULL;
     
 #if !defined(PBL_PLATFORM_APLITE)
     layer_destroy(user_info->status_bar_background_layer);
@@ -356,7 +359,7 @@ static void window_appear(Window *window) {
     // Subscribe tap service
     accel_tap_service_init(accel_tap_service_handler, user_info);
     
-////    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

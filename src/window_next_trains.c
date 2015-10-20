@@ -330,16 +330,16 @@ static void message_succeeded_callback(DictionaryIterator *received, NextTrains 
                 }
                 // C string data
                 else {
-                    char *temp_string = calloc(offset, sizeof(char));
-                    strncpy(temp_string, (char *)data, offset);
+                    char *string = calloc(offset, sizeof(char));
+                    strncpy(string, (char *)data, offset);
                     if (data_index == NEXT_TRAIN_KEY_CODE) {
-                        user_info->next_trains_list[idx].code = temp_string;
+                        user_info->next_trains_list[idx].code = string;
                     } else if (data_index == NEXT_TRAIN_KEY_PLATFORM) {
-                        user_info->next_trains_list[idx].platform = temp_string;
+                        user_info->next_trains_list[idx].platform = string;
                     } else if (data_index == NEXT_TRAIN_KEY_NUMBER) {
-                        user_info->next_trains_list[idx].number = temp_string;
+                        user_info->next_trains_list[idx].number = string;
                     } else if (data_index == NEXT_TRAIN_KEY_MENTION) {
-                        user_info->next_trains_list[idx].mention = temp_string;
+                        user_info->next_trains_list[idx].mention = string;
                     }
                 }
                 
@@ -631,7 +631,6 @@ static void window_unload(Window *window) {
     // Window
     menu_layer_destroy(user_info->menu_layer);
     window_destroy(user_info->window);
-    user_info->window = NULL;
     
 #if !defined(PBL_PLATFORM_APLITE)
     layer_destroy(user_info->status_bar_background_layer);

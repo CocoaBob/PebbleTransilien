@@ -17,8 +17,6 @@ static void pebble_js_is_ready_callback(DictionaryIterator *received, void *cont
 }
 
 void handle_init(void) {
-//    persist_delete(200);
-//    persist_delete(201);
     settings_init();
     locale_init();
     stations_init();
