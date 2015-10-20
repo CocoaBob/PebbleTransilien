@@ -23,18 +23,23 @@ enum {
 typedef struct {
     Window *window;
     MenuLayer *menu_layer;
+    
     ClickConfigProvider last_ccp;
+    
 #if !defined(PBL_PLATFORM_APLITE)
     StatusBarLayer *status_bar;
     Layer *status_bar_background_layer;
 #endif
+    
 #ifdef PBL_BW
     InverterLayer *inverter_layer;
 #endif
+    
 #if !defined(PBL_PLATFORM_APLITE)
 #define UPDATE_TIME_FORMAT_INTERVAL 3000 // 3 seconds
     AppTimer *format_timer;
 #endif
+    
     DataModelFromTo from_to;
     char *str_from;
     char *str_to;
@@ -453,7 +458,7 @@ static uint16_t menu_layer_get_num_sections_callback(struct MenuLayer *menu_laye
     return NEXT_TRAINS_SECTION_COUNT;
 }
 
-static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, NextTrains *user_info) {
+static uint16_t menu_layer_get_num_rows_callback(struct MenuLayer *menu_layer, uint16_t section_index, NextTrains *user_info) {
     if (section_index == NEXT_TRAINS_SECTION_INFO) {
         return 1;
     } else if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
@@ -636,6 +641,8 @@ static void window_unload(Window *window) {
 #ifdef PBL_BW
     inverter_layer_destroy(user_info->inverter_layer);
 #endif
+    
+    NULL_FREE(user_info);
 }
 
 static void window_appear(Window *window) {
@@ -660,8 +667,6 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
-    message_clear_callbacks();
-    
     NextTrains *user_info = window_get_user_data(window);
     
 #if !defined(PBL_PLATFORM_APLITE)
