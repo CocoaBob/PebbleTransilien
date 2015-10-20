@@ -172,9 +172,9 @@ static void restart_timers(TrainDetails *user_info) {
 
 // MARK: Accel Tap Service
 
-//static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
-//    request_train_details();
-//}
+static void accel_tap_service_handler(AccelAxisType axis, int32_t direction, void *context) {
+    request_train_details(context);
+}
 
 // MARK: Menu layer callbacks
 
@@ -354,21 +354,20 @@ static void window_appear(Window *window) {
 #endif
     
     // Subscribe tap service
-//    accel_tap_service_subscribe(accel_tap_handler);
+    accel_tap_service_init(accel_tap_service_handler, user_info);
     
 ////    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {
-    TrainDetails *user_info = window_get_user_data(window);
-    
 #if !defined(PBL_PLATFORM_APLITE)
+    TrainDetails *user_info = window_get_user_data(window);
     // Stop timer
     format_timer_stop(user_info);
 #endif
     
     // Unsubscribe tap service
-//    accel_tap_service_unsubscribe();
+    accel_tap_service_deinit();
 }
 
 // MARK: Entry point
