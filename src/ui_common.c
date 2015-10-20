@@ -61,9 +61,7 @@ void draw_image_in_rect(GContext* ctx,
 
 void draw_centered_title(GContext* ctx,
                          const Layer *cell_layer,
-#ifdef PBL_BW
                          bool is_inverted,
-#endif
                          const char *title,
                          const char *font_id) {
     GRect bounds = layer_get_bounds(cell_layer);
@@ -72,13 +70,17 @@ void draw_centered_title(GContext* ctx,
                         bounds.size.w - CELL_MARGIN_2,
                         18);
 #ifdef PBL_COLOR
+    if (is_inverted) {
+        graphics_context_set_fill_color(ctx, curr_bg_color());
+        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+    }
     graphics_context_set_text_color(ctx, GColorBlack);
 #else
     graphics_context_set_fill_color(ctx, is_inverted?GColorBlack:GColorWhite);
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     graphics_context_set_text_color(ctx, is_inverted?GColorWhite:GColorBlack);
 #endif
-    draw_text(ctx, title, font_id?font_id:FONT_KEY_GOTHIC_18, frame, GTextAlignmentCenter);
+    draw_text(ctx, title, font_id?font_id:FONT_KEY_GOTHIC_18_BOLD, frame, GTextAlignmentCenter);
 }
 
 // MARK: Draw From To Layer, layer height should be 44

@@ -31,9 +31,7 @@ void draw_image_in_rect(GContext* ctx,
 
 void draw_centered_title(GContext* ctx,
                          const Layer *cell_layer,
-#ifdef PBL_BW
                          bool is_inverted,
-#endif
                          const char *title,
                          const char *font_id);
 

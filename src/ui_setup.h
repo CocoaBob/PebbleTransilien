@@ -24,9 +24,3 @@ void ui_setup_theme(Window *window_layer, MenuLayer *menu_layer);
 #else
 void ui_setup_theme(Window *window_layer, InverterLayer *inverter_layer);
 #endif
-
-#ifdef PBL_COLOR
-void set_menu_layer_activated(MenuLayer *menu_layer, bool activated);
-#else
-void set_menu_layer_activated(MenuLayer *menu_layer, bool activated, InverterLayer *inverter_layer_for_row);
-#endif

@@ -340,7 +340,9 @@ static void search_selection_layer_set_active(bool is_active, SearchStation *use
 
 static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
 #ifdef PBL_COLOR
-    set_menu_layer_activated(user_info->menu_layer, is_active);
+    menu_layer_set_highlight_colors(user_info->menu_layer,
+                                    is_active ? GColorCobaltBlue : curr_bg_color(),
+                                    is_active ? GColorWhite      : curr_fg_color());
 #endif
     
     if (is_active) {
@@ -517,9 +519,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         free(str_station);
     } else {
         draw_centered_title(ctx, cell_layer,
-#ifdef PBL_BW
                             is_selected,
-#endif
                             (user_info->search_results_index >= 0)?_("Not found."):_("Press UP/DOWN"),
                             NULL);
     }

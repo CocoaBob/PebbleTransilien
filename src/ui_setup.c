@@ -72,15 +72,3 @@ void ui_setup_theme(Window *window, InverterLayer *inverter_layer) {
     }
 }
 #endif
-
-// MARK: Deactivate menu layer
-
-#ifdef PBL_COLOR
-void set_menu_layer_activated(MenuLayer *menu_layer, bool activated) {
-    if (activated) {
-        menu_layer_set_highlight_colors(menu_layer, GColorCobaltBlue, GColorWhite);
-    } else {
-        menu_layer_set_highlight_colors(menu_layer, curr_bg_color(), curr_fg_color());
-    }
-}
-#endif
