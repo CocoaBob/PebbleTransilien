@@ -368,9 +368,13 @@ function sendAppMessageForNextTrains(responseText) {
         itemData = itemData.concat(str2bin(trainPlatform.substr(0,2)));
         // Train terminus
         var trainTerminus = nextTrainDict["trainTerminus"];
-        trainTerminus = stationCode2Index(trainTerminus);
-        trainTerminus = int162bin(trainTerminus)
-        trainTerminus = makeCString(trainTerminus);
+        if (trainTerminus != null) {
+            trainTerminus = stationCode2Index(trainTerminus);
+            trainTerminus = int162bin(trainTerminus)
+            trainTerminus = makeCString(trainTerminus);
+        } else {
+            trainTerminus = "";
+        }
         itemData = itemData.concat(trainTerminus);
         // Train number
         var trainNumber = nextTrainDict["trainNumber"];
