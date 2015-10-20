@@ -45,10 +45,7 @@ typedef struct {
     MenuLayer *menu_layer;
     Layer *panel_layer;
     ClickConfigProvider last_ccp;
-#if !defined(PBL_PLATFORM_APLITE)
-    StatusBarLayer *status_bar;
-    Layer *status_bar_background_layer;
-#endif
+    Layer *status_bar_layer;
 #ifdef PBL_BW
     InverterLayer *inverter_layer;
 #endif
@@ -555,11 +552,7 @@ static void window_load(Window *window) {
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
-    int16_t status_bar_height = 0;
-#if !defined(PBL_PLATFORM_APLITE)
-    status_bar_height = STATUS_BAR_LAYER_HEIGHT;
-    window_add_status_bar(window_layer, &user_info->status_bar, &user_info->status_bar_background_layer);
-#endif
+    window_add_status_bar(window_layer, &user_info->status_bar_layer);
     
     // Add separator between selection layer and menu layer
     // To save memory, we just change the window background's color
@@ -574,9 +567,9 @@ static void window_load(Window *window) {
     uint8_t separator_height = 1;
 #endif
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
-                                   window_bounds.origin.y + status_bar_height + SELECTION_LAYER_HEIGHT + separator_height,
+                                   window_bounds.origin.y + STATUS_BAR_LAYER_HEIGHT + SELECTION_LAYER_HEIGHT + separator_height,
                                    window_bounds.size.w,
-                                   window_bounds.size.h - status_bar_height - SELECTION_LAYER_HEIGHT - separator_height);
+                                   window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT - SELECTION_LAYER_HEIGHT - separator_height);
     
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
@@ -606,7 +599,7 @@ static void window_load(Window *window) {
     layer_set_update_proc(user_info->panel_layer, panel_layer_proc);
     
     // Add selection layer
-    user_info->selection_layer = selection_layer_create(GRect(0, status_bar_height, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);
+    user_info->selection_layer = selection_layer_create(GRect(0, STATUS_BAR_LAYER_HEIGHT, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);
     int selection_layer_cell_width = window_bounds.size.w / SELECTION_LAYER_CELL_COUNT;
     for (int i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
         selection_layer_set_cell_width(user_info->selection_layer, i, selection_layer_cell_width);
@@ -644,12 +637,8 @@ static void window_unload(Window *window) {
     
     // Window
     menu_layer_destroy(user_info->menu_layer);
+    layer_destroy(user_info->status_bar_layer);
     window_destroy(user_info->window);
-    
-#if !defined(PBL_PLATFORM_APLITE)
-    layer_destroy(user_info->status_bar_background_layer);
-    status_bar_layer_destroy(user_info->status_bar);
-#endif
     
 #ifdef PBL_BW
     inverter_layer_destroy(user_info->inverter_layer);
@@ -684,6 +673,11 @@ void push_window_search_train(StationIndex from, StationIndex to, bool animated)
             .disappear = window_disappear,
             .unload = window_unload,
         });
+        
+#ifdef PBL_SDK_2
+        // Fullscreen
+        window_set_fullscreen(user_info->window, true);
+#endif
         
         window_stack_push(user_info->window, animated);
         

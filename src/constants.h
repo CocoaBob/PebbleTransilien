@@ -8,6 +8,10 @@
 
 #pragma once
 
+#ifndef STATUS_BAR_LAYER_HEIGHT
+#define STATUS_BAR_LAYER_HEIGHT 16
+#endif
+
 #define STATION_DATA_VERSION 1
 
 #define SETTING_KEY_STATION_DATA_VERSION 0

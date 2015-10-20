@@ -205,6 +205,7 @@ void action_list_open(ActionListConfig *config) {
         });
         
 #ifdef PBL_SDK_2
+        // Fullscreen
         window_set_fullscreen(user_info->window, true);
 #endif
         

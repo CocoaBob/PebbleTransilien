@@ -46,10 +46,7 @@ enum {
 typedef struct {
     Window *window;
     MenuLayer *menu_layer;
-#if !defined(PBL_PLATFORM_APLITE)
-    StatusBarLayer *status_bar;
-    Layer *status_bar_background_layer;
-#endif
+    Layer *status_bar_layer;
 #ifdef PBL_BW
     InverterLayer *inverter_layer;
 #endif
@@ -203,10 +200,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
 #else
             ui_setup_theme(user_info->window, user_info->inverter_layer);
 #endif
-            
-#if !defined(PBL_PLATFORM_APLITE)
-            status_bar_set_colors(user_info->status_bar);
-#endif
+            layer_mark_dirty(user_info->status_bar_layer);
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             settings_toggle_locale();
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_ON_LAUNCH) {
@@ -252,19 +246,13 @@ static void window_load(Window *window) {
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
-#if !defined(PBL_PLATFORM_APLITE)
-    window_add_status_bar(window_layer, &user_info->status_bar, &user_info->status_bar_background_layer);
-#endif
+    window_add_status_bar(window_layer, &user_info->status_bar_layer);
     
     // Add menu layer
-    int16_t status_bar_height = 0;
-#if !defined(PBL_PLATFORM_APLITE)
-    status_bar_height = STATUS_BAR_LAYER_HEIGHT;
-#endif
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
-                                   window_bounds.origin.y + status_bar_height,
+                                   window_bounds.origin.y + STATUS_BAR_LAYER_HEIGHT,
                                    window_bounds.size.w,
-                                   window_bounds.size.h - status_bar_height);
+                                   window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT);
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     menu_layer_set_callbacks(user_info->menu_layer, user_info, (MenuLayerCallbacks) {
@@ -317,10 +305,7 @@ static void window_unload(Window *window) {
     MainMenu *user_info = window_get_user_data(window);
     
     menu_layer_destroy(user_info->menu_layer);
-#if !defined(PBL_PLATFORM_APLITE)
-    layer_destroy(user_info->status_bar_background_layer);
-    status_bar_layer_destroy(user_info->status_bar);
-#endif
+    layer_destroy(user_info->status_bar_layer);
 #ifdef PBL_BW
     inverter_layer_destroy(user_info->inverter_layer);
 #endif
@@ -341,6 +326,12 @@ void push_window_main_menu(bool animated) {
             .appear = window_appear,
             .unload = window_unload
         });
+        
+#ifdef PBL_SDK_2
+        // Fullscreen
+        window_set_fullscreen(user_info->window, true);
+#endif
+        
         window_stack_push(user_info->window, animated);
     }
 }
