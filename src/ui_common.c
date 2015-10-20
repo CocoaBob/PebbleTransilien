@@ -74,11 +74,11 @@ void draw_centered_title(GContext* ctx,
         graphics_context_set_fill_color(ctx, curr_bg_color());
         graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     }
-    graphics_context_set_text_color(ctx, GColorBlack);
+    graphics_context_set_text_color(ctx, curr_fg_color());
 #else
-    graphics_context_set_fill_color(ctx, is_inverted?GColorBlack:GColorWhite);
+    graphics_context_set_fill_color(ctx, is_inverted?curr_fg_color():curr_bg_color());
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-    graphics_context_set_text_color(ctx, is_inverted?GColorWhite:GColorBlack);
+    graphics_context_set_text_color(ctx, is_inverted?curr_bg_color():curr_fg_color());
 #endif
     draw_text(ctx, title, font_id?font_id:FONT_KEY_GOTHIC_18_BOLD, frame, GTextAlignmentCenter);
 }

@@ -516,7 +516,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         free(str_station);
     } else {
         draw_centered_title(ctx, cell_layer,
-                            is_selected,
+                            (user_info->actived_layer_index != SEARCH_STATION_MENU_LAYER) || (selected_index.row == cell_index->row),
                             (user_info->search_results_index >= 0)?_("Not found."):_("Press UP/DOWN"),
                             NULL);
     }
