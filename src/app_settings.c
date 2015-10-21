@@ -11,7 +11,6 @@
 
 static bool s_is_dark_theme;
 static char* s_curr_locale;
-static bool s_is_fav_on_launch;
 
 void settings_init() {
     // Compare the version of station data
@@ -32,9 +31,6 @@ void settings_init() {
     persist_read_string(SETTING_KEY_LOCALE, curr_locale, 6);
     s_curr_locale = setlocale(LC_ALL, curr_locale);
     NULL_FREE(curr_locale);
-    
-    // Get is fave on launch
-    s_is_fav_on_launch = persist_read_bool(SETTING_KEY_IS_FAV_ON_LAUNCH);
 }
 
 void settings_deinit() {
@@ -54,15 +50,6 @@ void settings_toggle_locale() {
     persist_write_string(SETTING_KEY_LOCALE, s_curr_locale);
     locale_deinit();
     locale_init();
-}
-
-bool settings_is_fav_on_launch() {
-    return s_is_fav_on_launch;
-}
-
-void settings_toggle_is_fav_on_launch() {
-    s_is_fav_on_launch = !s_is_fav_on_launch;
-    persist_write_bool(SETTING_KEY_IS_FAV_ON_LAUNCH, s_is_fav_on_launch);
 }
 
 GColor curr_fg_color() {

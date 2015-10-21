@@ -11,6 +11,8 @@
 
 static MessageCallbacks s_callbacks;
 
+// MARK: Handlers
+
 // Called when a message is received from PebbleKitJS
 static void in_received_handler(DictionaryIterator *received, void *context) {
     if (s_callbacks.message_succeeded_callback != NULL) {
@@ -32,9 +34,9 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
     }
 }
 
-void message_init(MessageCallbacks callbacks) {
-    s_callbacks = callbacks;
-    
+// MARK: Setup
+
+void message_init() {
     // Register AppMessage handlers
     app_message_register_inbox_received(in_received_handler);
     app_message_register_inbox_dropped(in_dropped_handler);

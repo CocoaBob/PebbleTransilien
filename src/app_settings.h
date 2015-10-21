@@ -16,8 +16,5 @@ void settings_set_theme(bool is_dark);
 
 void settings_toggle_locale();
 
-bool settings_is_fav_on_launch();
-void settings_toggle_is_fav_on_launch();
-
 GColor curr_fg_color();
 GColor curr_bg_color();
