@@ -28,19 +28,23 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_fill_color(ctx, fg_color);
     graphics_context_set_text_color(ctx, fg_color);
     
-    // Draw connection indicators
+    // Draw signal indicators
     bool is_connected = connection_service_peek_pebble_app_connection();
-    size_t y_indicator = STATUS_BAR_LAYER_HEIGHT / 2 - 1;
-    size_t x_indicator = 8; // Origin X
-    size_t d_indicator = 7; // X delta
-    for (int i = 0; i < 3; ++i) {
-        GPoint position = GPoint(8 + 7 * i, y_indicator);
-        if (is_connected) {
-            graphics_fill_circle(ctx, position, 2);
-        } else {
-            graphics_draw_circle(ctx, position, 2);
-        }
+    size_t y_signal = (STATUS_BAR_LAYER_HEIGHT - 10) / 2;
+    GRect frame_signal = GRect(4, y_signal, 11, 10);
+#ifdef PBL_COLOR
+    if (is_connected) {
+        draw_image_in_rect(ctx, settings_is_dark_theme()?RESOURCE_ID_IMG_SIGNAL_YES_DARK:RESOURCE_ID_IMG_SIGNAL_YES_LIGHT, frame_signal);
+    } else {
+        draw_image_in_rect(ctx, settings_is_dark_theme()?RESOURCE_ID_IMG_SIGNAL_NO_DARK:RESOURCE_ID_IMG_SIGNAL_NO_LIGHT, frame_signal);
     }
+#else
+    if (is_connected) {
+        draw_image_in_rect(ctx, settings_is_dark_theme(), RESOURCE_ID_IMG_SIGNAL_YES_LIGHT, frame_signal);
+    } else {
+        draw_image_in_rect(ctx, settings_is_dark_theme(), RESOURCE_ID_IMG_SIGNAL_NO_LIGHT, frame_signal);
+    }
+#endif
     
     // Hour:Minute
     char time_buffer[16];

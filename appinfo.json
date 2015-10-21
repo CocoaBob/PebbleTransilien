@@ -63,6 +63,26 @@
         "file": "images/img_mention_light.png"
       },
       {
+        "type": "png",
+        "name": "IMG_SIGNAL_NO_DARK",
+        "file": "images/img_signal_no_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_SIGNAL_NO_LIGHT",
+        "file": "images/img_signal_no_light.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_SIGNAL_YES_DARK",
+        "file": "images/img_signal_yes_dark.png"
+      },
+      {
+        "type": "png",
+        "name": "IMG_SIGNAL_YES_LIGHT",
+        "file": "images/img_signal_yes_light.png"
+      },
+      {
         "type": "raw",
         "name": "STATION_CODE",
         "file": "data/station_code.bin"
