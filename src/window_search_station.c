@@ -477,6 +477,12 @@ static void selection_handle_dec(int index, uint8_t clicks, SearchStation *user_
     selection_change(index, false, user_info);
 }
 
+// MARK: Tick Timer Service
+
+static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed, SearchStation *user_info) {
+    layer_mark_dirty(user_info->status_bar_layer);
+}
+
 // MARK: Menu layer callbacks
 
 static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, SearchStation *user_info) {
@@ -552,7 +558,7 @@ static void window_load(Window *window) {
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
-    window_add_status_bar(window_layer, &user_info->status_bar_layer);
+    ui_setup_status_bar(window_layer, &user_info->status_bar_layer);
     
     // Add separator between selection layer and menu layer
     // To save memory, we just change the window background's color
@@ -648,6 +654,11 @@ static void window_unload(Window *window) {
 }
 
 static void window_appear(Window *window) {
+    SearchStation *user_info = window_get_user_data(window);
+    
+    // Subscribe services
+    tick_timer_service_init((TickTimerServiceHandler)tick_timer_service_handler, user_info);
+    
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_begin();
 #endif
@@ -655,6 +666,11 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
+    // Unsubscribe services
+    accel_tap_service_deinit();
+    tick_timer_service_deinit();
+    
+    // Release memory for searching
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_end();
 #endif

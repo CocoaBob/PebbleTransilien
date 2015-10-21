@@ -419,7 +419,6 @@ static void format_timer_start(NextTrains *user_info) {
 static void format_timer_stop(NextTrains *user_info) {
     if(user_info->format_timer) {
         app_timer_cancel(user_info->format_timer);
-        user_info->format_timer = NULL;
     }
 }
 
@@ -440,6 +439,12 @@ static void restart_timers(NextTrains *user_info) {
 
 static void accel_tap_service_handler(AccelAxisType axis, int32_t direction, void *context) {
     request_next_stations(context);
+}
+
+// MARK: Tick Timer Service
+
+static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed, NextTrains *user_info) {
+    layer_mark_dirty(user_info->status_bar_layer);
 }
 
 // MARK: Menu layer callbacks
@@ -556,7 +561,7 @@ static void window_load(Window *window) {
     GRect window_bounds = layer_get_bounds(window_layer);
     
     // Add status bar
-    window_add_status_bar(window_layer, &user_info->status_bar_layer);
+    ui_setup_status_bar(window_layer, &user_info->status_bar_layer);
     
     // Add menu layer
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
@@ -625,30 +630,33 @@ static void window_appear(Window *window) {
     
     NextTrains *user_info = window_get_user_data(window);
     
+    // Subscribe services
+    accel_tap_service_init(accel_tap_service_handler, user_info);
+    tick_timer_service_init((TickTimerServiceHandler)tick_timer_service_handler, user_info);
+    
+    // Request data
     if (user_info->next_trains_list == NULL) {
         request_next_stations(user_info);
     }
     
-    // Start timer
+    // Start UI timer
 #if !defined(PBL_PLATFORM_APLITE)
     format_timer_start(user_info);
 #endif
-    
-    // Subscribe tap service
-    accel_tap_service_init(accel_tap_service_handler, user_info);
     
 //    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {
+    // Unsubscribe services
+    accel_tap_service_deinit();
+    tick_timer_service_deinit();
+    
+    // Stop UI timer
 #if !defined(PBL_PLATFORM_APLITE)
-    // Stop timer
     NextTrains *user_info = window_get_user_data(window);
     format_timer_stop(user_info);
 #endif
-    
-    // Unsubscribe tap service
-    accel_tap_service_deinit();
 }
 
 // MARK: Entry point

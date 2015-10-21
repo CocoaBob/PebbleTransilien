@@ -12,7 +12,7 @@
 
 // MARK: Status bar layer
 
-void window_add_status_bar(Layer *window_layer, Layer **status_bar_layer);
+void ui_setup_status_bar(Layer *window_layer, Layer **status_bar_layer);
 
 // MARK: Theme
 
