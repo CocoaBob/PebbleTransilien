@@ -23,6 +23,7 @@
 		457D34FC1BCE469F0057BC11 /* window_next_trains.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E81BCE469F0057BC11 /* window_next_trains.c */; settings = {ASSET_TAGS = (); }; };
 		457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EA1BCE469F0057BC11 /* window_search_station.c */; settings = {ASSET_TAGS = (); }; };
 		457D34FE1BCE469F0057BC11 /* window_train_details.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EC1BCE469F0057BC11 /* window_train_details.c */; settings = {ASSET_TAGS = (); }; };
+		45B585691BD7958800DBBC82 /* ui_status_bar.c in Sources */ = {isa = PBXBuildFile; fileRef = 45B585671BD7958800DBBC82 /* ui_status_bar.c */; settings = {ASSET_TAGS = (); }; };
 		45EAAF321BD64FB600445244 /* app_services.c in Sources */ = {isa = PBXBuildFile; fileRef = 45EAAF301BD64FB600445244 /* app_services.c */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
@@ -84,6 +85,8 @@
 		4587C5FE1BC976BE00FEC09B /* HiddenTarget */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HiddenTarget; sourceTree = BUILT_PRODUCTS_DIR; };
 		459536851BCFD43C0028235C /* Device BT */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Device BT"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
+		45B585671BD7958800DBBC82 /* ui_status_bar.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ui_status_bar.c; sourceTree = "<group>"; };
+		45B585681BD7958800DBBC82 /* ui_status_bar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_status_bar.h; sourceTree = "<group>"; };
 		45EAAF301BD64FB600445244 /* app_services.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = app_services.c; sourceTree = "<group>"; };
 		45EAAF311BD64FB600445244 /* app_services.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = app_services.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -146,6 +149,8 @@
 				457D34DF1BCE469F0057BC11 /* ui_common.h */,
 				457D34E21BCE469F0057BC11 /* ui_setup.c */,
 				457D34E31BCE469F0057BC11 /* ui_setup.h */,
+				45B585671BD7958800DBBC82 /* ui_status_bar.c */,
+				45B585681BD7958800DBBC82 /* ui_status_bar.h */,
 				457D34E41BCE469F0057BC11 /* window_action_list.c */,
 				457D34E51BCE469F0057BC11 /* window_action_list.h */,
 				457D34E61BCE469F0057BC11 /* window_main_menu.c */,
@@ -426,6 +431,7 @@
 				457D34EE1BCE469F0057BC11 /* localize.c in Sources */,
 				457D34F01BCE469F0057BC11 /* app_message.c in Sources */,
 				457D34F61BCE469F0057BC11 /* main.c in Sources */,
+				45B585691BD7958800DBBC82 /* ui_status_bar.c in Sources */,
 				457D34FE1BCE469F0057BC11 /* window_train_details.c in Sources */,
 				457D34FB1BCE469F0057BC11 /* window_main_menu.c in Sources */,
 				457D34F41BCE469F0057BC11 /* data_process.c in Sources */,

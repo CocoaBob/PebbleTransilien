@@ -45,7 +45,6 @@ typedef struct {
     MenuLayer *menu_layer;
     Layer *panel_layer;
     ClickConfigProvider last_ccp;
-    Layer *status_bar_layer;
 #ifdef PBL_BW
     InverterLayer *inverter_layer;
 #endif
@@ -480,7 +479,7 @@ static void selection_handle_dec(int index, uint8_t clicks, SearchStation *user_
 // MARK: Tick Timer Service
 
 static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed, SearchStation *user_info) {
-    layer_mark_dirty(user_info->status_bar_layer);
+    status_bar_update();
 }
 
 // MARK: Menu layer callbacks
@@ -556,9 +555,6 @@ static void window_load(Window *window) {
     // Window
     Layer *window_layer = window_get_root_layer(user_info->window);
     GRect window_bounds = layer_get_bounds(window_layer);
-    
-    // Add status bar
-    ui_setup_status_bar(window_layer, &user_info->status_bar_layer);
     
     // Add separator between selection layer and menu layer
     // To save memory, we just change the window background's color
@@ -643,7 +639,6 @@ static void window_unload(Window *window) {
     
     // Window
     menu_layer_destroy(user_info->menu_layer);
-    layer_destroy(user_info->status_bar_layer);
     window_destroy(user_info->window);
     
 #ifdef PBL_BW
@@ -655,6 +650,9 @@ static void window_unload(Window *window) {
 
 static void window_appear(Window *window) {
     SearchStation *user_info = window_get_user_data(window);
+    
+    // Add status bar
+    ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
     // Subscribe services
     tick_timer_service_init((TickTimerServiceHandler)tick_timer_service_handler, user_info);

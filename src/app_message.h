@@ -48,9 +48,11 @@ typedef struct MessageCallbacks {
     MessageFailedCallback message_failed_callback;
 } MessageCallbacks;
 
+// MARK: Setup
 void message_init();
 void message_deinit();
 
+// MARK: Send with callbacks
 void message_send(DictionaryIterator *parameters,
                   MessageCallbacks callbacks,
                   void *context);

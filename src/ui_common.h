@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <pebble.h>
-
 // MARK: Darwing
 
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment);
@@ -59,7 +57,6 @@ void draw_station(GContext *ctx, Layer *cell_layer,
 
 void menu_layer_button_up_handler(ClickRecognizerRef recognizer, void *context);
 void menu_layer_button_down_handler(ClickRecognizerRef recognizer, void *context);
-
 
 #if !defined(PBL_PLATFORM_APLITE)
 int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context);

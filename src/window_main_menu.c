@@ -45,7 +45,6 @@ enum {
 typedef struct {
     Window *window;
     MenuLayer *menu_layer;
-    Layer *status_bar_layer;
 #ifdef PBL_BW
     InverterLayer *inverter_layer;
 #endif
@@ -87,7 +86,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
 // MARK: Tick Timer Service
 
 static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed, MainMenu *user_info) {
-    layer_mark_dirty(user_info->status_bar_layer);
+    status_bar_update();
 }
 
 // MARK: Menu layer callbacks
@@ -202,7 +201,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
 #else
             ui_setup_theme(user_info->window, user_info->inverter_layer);
 #endif
-            layer_mark_dirty(user_info->status_bar_layer);
+            status_bar_update();
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             settings_toggle_locale();
         }
@@ -244,9 +243,6 @@ static void window_load(Window *window) {
     
     Layer *window_layer = window_get_root_layer(user_info->window);
     GRect window_bounds = layer_get_bounds(window_layer);
-    
-    // Add status bar
-    ui_setup_status_bar(window_layer, &user_info->status_bar_layer);
     
     // Add menu layer
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
@@ -291,6 +287,9 @@ static void window_load(Window *window) {
 static void window_appear(Window *window) {
     MainMenu *user_info = window_get_user_data(window);
     
+    // Add status bar
+    ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
+    
     // Subscribe services
     tick_timer_service_init((TickTimerServiceHandler)tick_timer_service_handler, user_info);
     
@@ -314,7 +313,6 @@ static void window_unload(Window *window) {
     MainMenu *user_info = window_get_user_data(window);
     
     menu_layer_destroy(user_info->menu_layer);
-    layer_destroy(user_info->status_bar_layer);
 #ifdef PBL_BW
     inverter_layer_destroy(user_info->inverter_layer);
 #endif

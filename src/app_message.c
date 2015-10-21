@@ -50,6 +50,8 @@ void message_deinit() {
     app_message_deregister_callbacks();
 }
 
+// MARK: Send with callbacks
+
 void message_send(DictionaryIterator *parameters,
                   MessageCallbacks callbacks,
                   void *context) {

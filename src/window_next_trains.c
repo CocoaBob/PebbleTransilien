@@ -26,8 +26,6 @@ typedef struct {
     
     ClickConfigProvider last_ccp;
     
-    Layer *status_bar_layer;
-    
 #ifdef PBL_BW
     InverterLayer *inverter_layer;
 #endif
@@ -444,7 +442,7 @@ static void accel_tap_service_handler(AccelAxisType axis, int32_t direction, voi
 // MARK: Tick Timer Service
 
 static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed, NextTrains *user_info) {
-    layer_mark_dirty(user_info->status_bar_layer);
+    status_bar_update();
 }
 
 // MARK: Menu layer callbacks
@@ -560,9 +558,6 @@ static void window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(window);
     GRect window_bounds = layer_get_bounds(window_layer);
     
-    // Add status bar
-    ui_setup_status_bar(window_layer, &user_info->status_bar_layer);
-    
     // Add menu layer
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
                                    window_bounds.origin.y + STATUS_BAR_LAYER_HEIGHT,
@@ -615,7 +610,6 @@ static void window_unload(Window *window) {
     
     // Window
     menu_layer_destroy(user_info->menu_layer);
-    layer_destroy(user_info->status_bar_layer);
 #ifdef PBL_BW
     inverter_layer_destroy(user_info->inverter_layer);
 #endif
@@ -629,6 +623,9 @@ static void window_appear(Window *window) {
     message_clear_callbacks();
     
     NextTrains *user_info = window_get_user_data(window);
+    
+    // Add status bar
+    ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
     // Subscribe services
     accel_tap_service_init(accel_tap_service_handler, user_info);

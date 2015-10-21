@@ -8,11 +8,9 @@
 
 #pragma once
 
-#include <pebble.h>
-
 // MARK: Status bar layer
 
-void ui_setup_status_bar(Layer *window_layer, Layer **status_bar_layer);
+void ui_setup_status_bar(Layer *window_layer, Layer *sibling_layer);
 
 // MARK: Theme
 

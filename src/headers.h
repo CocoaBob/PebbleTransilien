@@ -22,8 +22,9 @@
 #include "data_model.h"
 #include "data_stations.h"
 
-#include "ui_setup.h"
 #include "ui_common.h"
+#include "ui_setup.h"
+#include "ui_status_bar.h"
 
 #include "window_action_list.h"
 

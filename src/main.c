@@ -21,6 +21,7 @@ void handle_init(void) {
 }
 
 void handle_deinit(void) {
+    status_bar_deinit();
     favorites_deinit();
     stations_deinit();
     locale_deinit();
