@@ -11,6 +11,8 @@
 
 static Layer *s_status_bar_layer;
 
+// MARK: Draw status_bar
+
 static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     
@@ -25,6 +27,20 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_stroke_color(ctx, fg_color);
     graphics_context_set_fill_color(ctx, fg_color);
     graphics_context_set_text_color(ctx, fg_color);
+    
+    // Draw connection indicators
+    bool is_connected = connection_service_peek_pebble_app_connection();
+    size_t y_indicator = STATUS_BAR_LAYER_HEIGHT / 2 - 1;
+    size_t x_indicator = 8; // Origin X
+    size_t d_indicator = 7; // X delta
+    for (int i = 0; i < 3; ++i) {
+        GPoint position = GPoint(8 + 7 * i, y_indicator);
+        if (is_connected) {
+            graphics_fill_circle(ctx, position, 2);
+        } else {
+            graphics_draw_circle(ctx, position, 2);
+        }
+    }
     
     // Hour:Minute
     char time_buffer[16];
@@ -48,11 +64,15 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
     graphics_draw_line(ctx, GPoint(0, bounds.size.h - 1), GPoint(bounds.size.w, bounds.size.h - 1));
 }
 
+// MARK: Connection Service handler
+
+static void connection_service_handler(bool connected) {
+    status_bar_update();
+}
+
+// MARK: Get status_bar, Update status_bar
+
 Layer *status_bar(GRect frame) {
-    if (!s_status_bar_layer) {
-        s_status_bar_layer = layer_create(frame);
-        layer_set_update_proc(s_status_bar_layer, status_bar_background_layer_proc);
-    }
     layer_set_frame(s_status_bar_layer, frame);
     return s_status_bar_layer;
 }
@@ -63,6 +83,17 @@ void status_bar_update() {
 
 // MARK: Setup
 
+void status_bar_init() {
+    s_status_bar_layer = layer_create(GRect(0, 0, 144, STATUS_BAR_LAYER_HEIGHT));
+    layer_set_update_proc(s_status_bar_layer, status_bar_background_layer_proc);
+    
+    connection_service_subscribe((ConnectionHandlers) {
+        .pebble_app_connection_handler = connection_service_handler
+    });
+}
+
 void status_bar_deinit() {
-    NULL_FREE(s_status_bar_layer);
+    connection_service_unsubscribe();
+    
+    layer_destroy(s_status_bar_layer);
 }

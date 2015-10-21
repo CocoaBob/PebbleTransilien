@@ -10,6 +10,7 @@
 #include "headers.h"
 
 void handle_init(void) {
+    status_bar_init();
     settings_init();
     locale_init();
     stations_init();

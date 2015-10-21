@@ -12,5 +12,7 @@ Layer *status_bar(GRect frame);
 
 void status_bar_update();
 
+// Setup Connection Service
+void status_bar_init();
 // Free the memory of the shared status bar
 void status_bar_deinit();
