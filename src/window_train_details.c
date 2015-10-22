@@ -174,12 +174,6 @@ static void accel_tap_service_handler(AccelAxisType axis, int32_t direction, voi
     request_train_details(context);
 }
 
-// MARK: Tick Timer Service
-
-static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed, TrainDetails *user_info) {
-    status_bar_update();
-}
-
 // MARK: Menu layer callbacks
 
 static uint16_t menu_layer_get_num_rows_callback(struct MenuLayer *menu_layer, uint16_t section_index, TrainDetails *user_info) {
@@ -325,7 +319,6 @@ static void window_appear(Window *window) {
     
     // Subscribe services
     accel_tap_service_init(accel_tap_service_handler, user_info);
-    tick_timer_service_init((TickTimerServiceHandler)tick_timer_service_handler, user_info);
     
     // Request data
     if (user_info->train_details_list == NULL) {
@@ -343,7 +336,6 @@ static void window_appear(Window *window) {
 static void window_disappear(Window *window) {
     // Unsubscribe services
     accel_tap_service_deinit();
-    tick_timer_service_deinit();
     
 #if !defined(PBL_PLATFORM_APLITE)
     TrainDetails *user_info = window_get_user_data(window);

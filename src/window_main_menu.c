@@ -83,12 +83,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     }
 }
 
-// MARK: Tick Timer Service
-
-static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed, MainMenu *user_info) {
-    status_bar_update();
-}
-
 // MARK: Menu layer callbacks
 
 static uint16_t menu_layer_get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
@@ -290,9 +284,6 @@ static void window_appear(Window *window) {
     // Add status bar
     ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
-    // Subscribe services
-    tick_timer_service_init((TickTimerServiceHandler)tick_timer_service_handler, user_info);
-    
 //    // BUG FIX:
 //    // Fixed the wrong menu layer origin when returning to main menu window after adding a favorite
 //    // Reload the layer to fix it
@@ -302,11 +293,6 @@ static void window_appear(Window *window) {
 //    menu_layer_set_selected_index(user_info->menu_layer, menu_layer_get_selected_index(user_info->menu_layer), MenuRowAlignCenter, false);
     
 //    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
-}
-
-static void window_disappear(Window *window) {
-    // Unsubscribe services
-    tick_timer_service_deinit();
 }
 
 static void window_unload(Window *window) {
@@ -331,7 +317,6 @@ void push_window_main_menu(bool animated) {
         window_set_window_handlers(user_info->window, (WindowHandlers) {
             .load = window_load,
             .appear = window_appear,
-            .disappear = window_disappear,
             .unload = window_unload
         });
         

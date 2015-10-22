@@ -96,6 +96,12 @@ static void connection_service_handler(bool connected) {
     status_bar_update();
 }
 
+// MARK: Tick Timer Service handler
+
+static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed) {
+    status_bar_update();
+}
+
 // MARK: Get status_bar, Update status_bar
 
 Layer *status_bar(GRect frame) {
@@ -116,9 +122,13 @@ void status_bar_init() {
     connection_service_subscribe((ConnectionHandlers) {
         .pebble_app_connection_handler = connection_service_handler
     });
+    
+    tick_timer_service_subscribe(HOUR_UNIT | MINUTE_UNIT, tick_timer_service_handler);
 }
 
 void status_bar_deinit() {
+    tick_timer_service_unsubscribe();
+    
     connection_service_unsubscribe();
     
     layer_destroy(s_status_bar_layer);

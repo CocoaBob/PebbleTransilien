@@ -476,12 +476,6 @@ static void selection_handle_dec(int index, uint8_t clicks, SearchStation *user_
     selection_change(index, false, user_info);
 }
 
-// MARK: Tick Timer Service
-
-static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed, SearchStation *user_info) {
-    status_bar_update();
-}
-
 // MARK: Menu layer callbacks
 
 static uint16_t menu_layer_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, SearchStation *user_info) {
@@ -654,9 +648,6 @@ static void window_appear(Window *window) {
     // Add status bar
     ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
-    // Subscribe services
-    tick_timer_service_init((TickTimerServiceHandler)tick_timer_service_handler, user_info);
-    
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_begin();
 #endif
@@ -664,10 +655,6 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
-    // Unsubscribe services
-    accel_tap_service_deinit();
-    tick_timer_service_deinit();
-    
     // Release memory for searching
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_end();

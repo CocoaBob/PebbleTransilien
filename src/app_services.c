@@ -29,22 +29,3 @@ void accel_tap_service_deinit() {
     s_accel_tap_service_handler = NULL;
     s_accel_tap_service_context = NULL;
 }
-
-// MARK: TickTimerService
-
-static TickTimerServiceHandler s_tick_timer_service_handler;
-static void *s_tick_timer_service_context;
-
-static void tick_timer_service_handler(struct tm *tick_time, TimeUnits units_changed) {
-    s_tick_timer_service_handler(tick_time, units_changed, s_tick_timer_service_context);
-}
-
-void tick_timer_service_init(TickTimerServiceHandler handler, void *context) {
-    s_tick_timer_service_handler = handler;
-    s_tick_timer_service_context = context;
-    tick_timer_service_subscribe(HOUR_UNIT | MINUTE_UNIT, tick_timer_service_handler);
-}
-
-void tick_timer_service_deinit() {
-    tick_timer_service_unsubscribe();
-}
