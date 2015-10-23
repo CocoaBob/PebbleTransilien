@@ -130,11 +130,7 @@ static void draw_menu_layer_cell(GContext *ctx,
                                         CELL_HEIGHT_2 + TEXT_Y_OFFSET + NEXT_TRAIN_CELL_MENTION_Y_OFFSET,
                                         bounds.size.w - CELL_MARGIN_2 - NEXT_TRAIN_CELL_MENTION_RIGHT_MARGIN,
                                         14);
-            GSize mention_size = graphics_text_layout_get_content_size(str_mention,
-                                                                       fonts_get_system_font(FONT_KEY_GOTHIC_14),
-                                                                       frame_mention,
-                                                                       GTextOverflowModeTrailingEllipsis,
-                                                                       GTextAlignmentRight);
+            GSize mention_size = size_of_text(str_mention, FONT_KEY_GOTHIC_14, frame_mention);
             if (mention_size.w > 0) {
                 frame_mention.size.w = mention_size.w;
                 frame_terminus.size.w -= CELL_MARGIN + mention_size.w + NEXT_TRAIN_CELL_MENTION_RIGHT_MARGIN;
@@ -178,7 +174,7 @@ static void draw_menu_layer_cell(GContext *ctx,
     
     // Draw text, considering the scrolling index
     draw_text(ctx,
-              is_selected?text_scroll_text(str_terminus, FONT_KEY_GOTHIC_18, frame_terminus):str_terminus,
+              is_selected?text_scroll_text(str_terminus, FONT_KEY_GOTHIC_18, frame_terminus, true):str_terminus,
               FONT_KEY_GOTHIC_18,
               frame_terminus,
               GTextAlignmentLeft);
@@ -479,6 +475,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
         draw_from_to(ctx, cell_layer,
+                     menu_layer_get_layer(user_info->menu_layer), is_selected,
 #ifdef PBL_COLOR
                      is_highlighed,
                      text_color,

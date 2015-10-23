@@ -113,9 +113,9 @@ static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_laye
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, MainMenu *user_info) {
-#ifdef PBL_COLOR
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+#ifdef PBL_COLOR
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
 #endif
@@ -124,6 +124,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
         draw_from_to(ctx, cell_layer,
+                     menu_layer_get_layer(user_info->menu_layer), is_selected,
 #ifdef PBL_COLOR
                      is_highlighed,
                      text_color,
@@ -230,6 +231,10 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
     }
 }
 
+static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
+    text_scroll_end();
+}
+
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
@@ -253,7 +258,8 @@ static void window_load(Window *window) {
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
         .draw_header = (MenuLayerDrawHeaderCallback)menu_layer_draw_header_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
-        .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback
+        .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback,
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
 #if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
@@ -284,15 +290,20 @@ static void window_appear(Window *window) {
     // Add status bar
     ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
-//    // BUG FIX:
-//    // Fixed the wrong menu layer origin when returning to main menu window after adding a favorite
-//    // Reload the layer to fix it
-//    menu_layer_reload_data(user_info->menu_layer);
-//    
-//    // Show the selected row
-//    menu_layer_set_selected_index(user_info->menu_layer, menu_layer_get_selected_index(user_info->menu_layer), MenuRowAlignCenter, false);
+    // BUG FIX:
+    // Fixed the wrong menu layer origin when returning to main menu window after adding a favorite
+    // Reload the layer to fix it
+    menu_layer_reload_data(user_info->menu_layer);
+    
+    // Show the selected row
+    menu_layer_set_selected_index(user_info->menu_layer, menu_layer_get_selected_index(user_info->menu_layer), MenuRowAlignCenter, false);
     
 //    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+}
+
+static void window_disappear(Window *window) {
+    // Stop scrolling text
+    text_scroll_end();
 }
 
 static void window_unload(Window *window) {
@@ -317,6 +328,7 @@ void push_window_main_menu(bool animated) {
         window_set_window_handlers(user_info->window, (WindowHandlers) {
             .load = window_load,
             .appear = window_appear,
+            .disappear = window_disappear,
             .unload = window_unload
         });
         

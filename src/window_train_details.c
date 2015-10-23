@@ -213,7 +213,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         stations_get_name(train_detail.station, str_station, STATION_NAME_MAX_LENGTH);
 
         draw_station(ctx, cell_layer,
-                     user_info->menu_layer, is_selected,
+                     menu_layer_get_layer(user_info->menu_layer), is_selected,
 #ifdef PBL_COLOR
                      text_color,
                      is_highlighed,

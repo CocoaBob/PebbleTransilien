@@ -8,6 +8,10 @@
 
 #pragma once
 
+// MARK: Routines
+
+GSize size_of_text(const char *text, const char *font_key, GRect frame);
+
 // MARK: Darwing
 
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment);
@@ -33,8 +37,8 @@ void draw_centered_title(GContext* ctx,
                          const char *title,
                          const char *font_id);
 
-void draw_from_to(GContext* ctx,
-                  const Layer *layer,
+void draw_from_to(GContext* ctx, Layer *drawing_layer,
+                  Layer *redraw_layer, bool is_selected,
 #ifdef PBL_COLOR
                   bool is_highlighed,
                   GColor text_color,
@@ -43,8 +47,8 @@ void draw_from_to(GContext* ctx,
 #endif
                   DataModelFromTo from_to);
 
-void draw_station(GContext *ctx, Layer *cell_layer,
-                  MenuLayer *menu_layer, bool is_selected,
+void draw_station(GContext *ctx, Layer *drawing_layer,
+                  Layer *redraw_layer, bool is_selected,
 #ifdef PBL_COLOR
                   GColor text_color,
                   bool is_highlighed,
@@ -69,4 +73,5 @@ void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, b
 
 void text_scroll_begin(Layer *menu_layer, const char* text, size_t const text_length, const char * font_key, const GRect text_frame);
 void text_scroll_end();
-char *text_scroll_text(char* text, const char * font_key, const GRect text_frame);
+bool text_scroll_is_on();
+char *text_scroll_text(char* text, const char * font_key, const GRect text_frame, bool jump_accent);

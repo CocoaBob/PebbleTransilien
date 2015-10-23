@@ -9,6 +9,12 @@
 #include <pebble.h>
 #include "headers.h"
 
+// MARK: Routines
+
+GSize size_of_text(const char *text, const char *font_key, GRect frame) {
+    return graphics_text_layout_get_content_size(text, fonts_get_system_font(font_key), frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+}
+
 // MARK: Darw Basics
 
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment) {
@@ -85,8 +91,8 @@ void draw_centered_title(GContext* ctx,
 
 // MARK: Draw From To Layer, layer height should be 44
 
-void draw_from_to(GContext* ctx,
-                  const Layer *layer,
+void draw_from_to(GContext* ctx, Layer *display_layer,
+                  Layer *redraw_layer, bool is_selected,
 #ifdef PBL_COLOR
                   bool is_highlighed,
                   GColor text_color,
@@ -99,7 +105,7 @@ void draw_from_to(GContext* ctx,
 #else
     graphics_context_set_text_color(ctx, is_inverted?GColorWhite:GColorBlack);
 #endif
-    GRect bounds = layer_get_bounds(layer);
+    GRect bounds = layer_get_bounds(display_layer);
     bool is_from_to = (from_to.to != STATION_NON);
     
     // Draw left icon
@@ -121,45 +127,77 @@ void draw_from_to(GContext* ctx,
     }
 #endif
     
-    // Draw lines
-    char *str_from = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
-    stations_get_name(from_to.from, str_from, STATION_NAME_MAX_LENGTH);
+    // Draw stations
+    char *str_from = calloc(1, sizeof(char) * STATION_NAME_MAX_LENGTH);
+    char *str_to = calloc(1, sizeof(char) * STATION_NAME_MAX_LENGTH);
     
-    GRect frame_line_1 = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
-                               TEXT_Y_OFFSET + 2, // +2 to get the two lines closer
-                               bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3,
-                               CELL_HEIGHT_2);
+    stations_get_name(from_to.from, str_from, STATION_NAME_MAX_LENGTH);
+    GRect frame_from = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
+                             TEXT_Y_OFFSET + 2, // +2 to get the two station names closer
+                             bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3,
+                             CELL_HEIGHT_2);
+    GRect frame_to = frame_from;
     if (is_from_to) {
-        draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
-        
-        GRect frame_line_2 = frame_line_1;
-        frame_line_2.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to get the two lines closer
-        
-        char *str_to = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
         stations_get_name(from_to.to, str_to, STATION_NAME_MAX_LENGTH);
-        
-        draw_text(ctx, str_to, FONT_KEY_GOTHIC_18_BOLD, frame_line_2, GTextAlignmentLeft);
-        
-        free(str_to);
+        frame_to.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to get the two station names closer
     } else {
-        frame_line_1.size.h = bounds.size.h;
-        GSize text_size = graphics_text_layout_get_content_size(str_from,
-                                                                fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
-                                                                frame_line_1,
-                                                                GTextOverflowModeTrailingEllipsis,
-                                                                GTextAlignmentLeft);
-        frame_line_1.size.h = text_size.h;
-        
-        draw_text(ctx, str_from, FONT_KEY_GOTHIC_18_BOLD, frame_line_1, GTextAlignmentLeft);
+        frame_from.size.h = bounds.size.h;
+        GSize text_size = size_of_text(str_from, FONT_KEY_GOTHIC_18_BOLD, frame_from);
+        frame_from.size.h = text_size.h;
     }
     
+    // Scroll texts
+    if (is_selected) {
+        GRect frame_test = GRect(0, 0, INT16_MAX, frame_from.size.h);
+
+        int16_t w_from = size_of_text(str_from, FONT_KEY_GOTHIC_18_BOLD, frame_test).w;
+        int16_t w_to = size_of_text(str_to, FONT_KEY_GOTHIC_18_BOLD, frame_test).w;
+        
+        size_t len_from = strlen(str_from);
+        size_t len_to = strlen(str_to);
+        
+        if (!text_scroll_is_on()) {
+            char *str_scroll;
+            size_t len_scroll;
+            GRect frame_scroll;
+            if (w_from > w_to) {
+                str_scroll = str_from;
+                len_scroll = len_from;
+                frame_scroll = frame_from;
+            } else {
+                str_scroll = str_to;
+                len_scroll = len_to;
+                frame_scroll = frame_to;
+            }
+            text_scroll_begin(redraw_layer, str_scroll, len_scroll, FONT_KEY_GOTHIC_18_BOLD, frame_scroll);
+        }
+    }
+    
+    // Draw texts
+    if (from_to.from != STATION_NON) {
+        draw_text(ctx,
+                  is_selected?text_scroll_text(str_from, FONT_KEY_GOTHIC_18_BOLD, frame_from, false):str_from,
+                  FONT_KEY_GOTHIC_18_BOLD,
+                  frame_from,
+                  GTextAlignmentLeft);
+    }
+    if (from_to.to != STATION_NON) {
+        draw_text(ctx,
+                  is_selected?text_scroll_text(str_to, FONT_KEY_GOTHIC_18_BOLD, frame_from, false):str_to,
+                  FONT_KEY_GOTHIC_18_BOLD,
+                  frame_to,
+                  GTextAlignmentLeft);
+    }
+    
+    // Free memory
     free(str_from);
+    free(str_to);
 }
 
 // MARK: Draw Station layer, layer hight should be 22
 
-void draw_station(GContext *ctx, Layer *cell_layer,
-                  MenuLayer *menu_layer, bool is_selected,
+void draw_station(GContext *ctx, Layer *drawing_layer,
+                  Layer *redraw_layer, bool is_selected,
 #ifdef PBL_COLOR
                   GColor text_color,
                   bool is_highlighed,
@@ -168,7 +206,7 @@ void draw_station(GContext *ctx, Layer *cell_layer,
 #endif
                   char * str_time,
                   char * str_station) {
-    GRect bounds = layer_get_bounds(cell_layer);
+    GRect bounds = layer_get_bounds(drawing_layer);
 #ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, text_color);
 #else
@@ -197,11 +235,7 @@ void draw_station(GContext *ctx, Layer *cell_layer,
                              CELL_HEIGHT_2);
     
     if (str_time && str_time[0] != '\0') {
-        GSize time_size = graphics_text_layout_get_content_size(str_time,
-                                                                fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
-                                                                frame_time,
-                                                                GTextOverflowModeTrailingEllipsis,
-                                                                GTextAlignmentRight);
+        GSize time_size = size_of_text(str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time);
         frame_time.origin.x = bounds.size.w - CELL_MARGIN - time_size.w;
         frame_time.size.w = time_size.w;
         draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
@@ -216,14 +250,14 @@ void draw_station(GContext *ctx, Layer *cell_layer,
                                 CELL_HEIGHT_2);
     
     draw_text(ctx,
-              is_selected?text_scroll_text(str_station, FONT_KEY_GOTHIC_18, frame_station):str_station,
+              is_selected?text_scroll_text(str_station, FONT_KEY_GOTHIC_18, frame_station, true):str_station,
               FONT_KEY_GOTHIC_18,
               frame_station,
               GTextAlignmentLeft);
     
     // Scroll texts
     if (is_selected) {
-        text_scroll_begin(menu_layer_get_layer(menu_layer), str_station, strlen(str_station), FONT_KEY_GOTHIC_18, frame_station);
+        text_scroll_begin(redraw_layer, str_station, strlen(str_station), FONT_KEY_GOTHIC_18, frame_station);
     }
 }
 
@@ -267,7 +301,7 @@ void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, b
 // MARK: Scroll texts
 
 #define TEXT_SCROLL_INTERVAL 300
-#define TEXT_PAUSE_INTERVAL 600
+#define TEXT_PAUSE_INTERVAL 1000
 
 static size_t s_text_scroll_index;
 static size_t s_text_scroll_reset_index;
@@ -282,24 +316,26 @@ static void text_scroll_timer_callback(Layer *layer) {
     
     layer_mark_dirty(layer);
     
-    s_text_scroll_timer = app_timer_register((s_text_scroll_index >= s_text_scroll_reset_index)?TEXT_PAUSE_INTERVAL:TEXT_SCROLL_INTERVAL, (AppTimerCallback)text_scroll_timer_callback, layer);
+    // Pause at the beginning or end
+    uint32_t timeout_ms = (s_text_scroll_index == 0 || s_text_scroll_index >= s_text_scroll_reset_index)?TEXT_PAUSE_INTERVAL:TEXT_SCROLL_INTERVAL;
+    s_text_scroll_timer = app_timer_register(timeout_ms, (AppTimerCallback)text_scroll_timer_callback, layer);
 }
 
-void text_scroll_begin(Layer *menu_layer, const char* text, size_t const text_length, const char * font_key, const GRect text_frame) {
-    if (s_text_scroll_timer) {
+void text_scroll_begin(Layer *redraw_layer, const char* text, size_t const text_length, const char * font_key, const GRect text_frame) {
+    if (text_scroll_is_on()) {
         return;
     }
     
     s_text_scroll_index = s_text_scroll_reset_index = 0;
     GRect frame_test = GRect(0, 0, INT16_MAX, text_frame.size.h);
-    GSize text_size = graphics_text_layout_get_content_size(text+s_text_scroll_reset_index, fonts_get_system_font(font_key), frame_test, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+    GSize text_size = size_of_text(text+s_text_scroll_reset_index, font_key, frame_test);
     while (s_text_scroll_reset_index < text_length &&
            (text_size.w > text_frame.size.w || text_size.w == 0)) {
         ++s_text_scroll_reset_index;
-        text_size = graphics_text_layout_get_content_size(text+s_text_scroll_reset_index, fonts_get_system_font(font_key), frame_test, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+        text_size = size_of_text(text+s_text_scroll_reset_index, font_key, frame_test);
     }
     if (s_text_scroll_reset_index > 0) {
-        s_text_scroll_timer = app_timer_register(TEXT_SCROLL_INTERVAL, (AppTimerCallback)text_scroll_timer_callback, menu_layer);
+        s_text_scroll_timer = app_timer_register(TEXT_SCROLL_INTERVAL, (AppTimerCallback)text_scroll_timer_callback, redraw_layer);
     }
 }
 
@@ -310,18 +346,20 @@ void text_scroll_end() {
     }
 }
 
-size_t text_scroll_index() {
-    return s_text_scroll_index;
+bool text_scroll_is_on() {
+    return s_text_scroll_timer != NULL;
 }
 
-char *text_scroll_text(char* text, const char * font_key, const GRect text_frame) {
-    char *drawing_text = text + text_scroll_index();
+char *text_scroll_text(char* text, const char * font_key, const GRect text_frame, bool jump_accent) {
+    char *drawing_text = text + MIN(strlen(text) - 1, s_text_scroll_index);
     GRect frame_test = GRect(0, 0, INT16_MAX, text_frame.size.h);
-    GSize text_size = graphics_text_layout_get_content_size(drawing_text, fonts_get_system_font(FONT_KEY_GOTHIC_18), frame_test, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
-    // In case of accent letters like é, à, we have to jump 2 digits
+    GSize text_size = size_of_text(drawing_text, FONT_KEY_GOTHIC_18, frame_test);
+    // In case of accent letters like é/è/à, we have to jump 2 digits
     if (text_size.w == 0) {
         drawing_text += 1;
-        ++s_text_scroll_index;
+        if (jump_accent) {
+            ++s_text_scroll_index;
+        }
     }
     return drawing_text;
 }

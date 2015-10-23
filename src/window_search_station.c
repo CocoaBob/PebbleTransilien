@@ -148,6 +148,7 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
 #endif
     
     draw_from_to(ctx, layer,
+                 layer, layer_data->is_active,
 #ifdef PBL_COLOR
                  true,
                  text_color,
@@ -326,6 +327,9 @@ static void click_config_provider_for_panel_layer(void *context) {
 // MARK: Move focus
 
 static void search_selection_layer_set_active(bool is_active, SearchStation *user_info) {
+    menu_layer_set_selected_index(user_info->menu_layer, (MenuIndex){0,0}, MenuRowAlignCenter, false);
+    
+    // Update selection layer
     selection_layer_set_active(user_info->selection_layer, is_active);
     
     if (is_active) {
@@ -335,6 +339,7 @@ static void search_selection_layer_set_active(bool is_active, SearchStation *use
 }
 
 static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
+    // Update menu layer
 #ifdef PBL_COLOR
     menu_layer_set_highlight_colors(user_info->menu_layer,
                                     is_active ? GColorCobaltBlue : curr_bg_color(),
@@ -355,12 +360,17 @@ static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
 
 
 static void panel_layer_set_active(bool is_active, SearchStation *user_info) {
+    // Stop scrolling text
+    text_scroll_end();
+    
+    // Update panel
     PanelData *layer_data = layer_get_data(user_info->panel_layer);
     layer_data->is_active = is_active;
     layer_mark_dirty(user_info->panel_layer);
 }
 
 static void move_focus_to_selection_layer(SearchStation *user_info) {
+    // Move
     user_info->actived_layer_index = SEARCH_STATION_SELECTION_LAYER;
     
     search_selection_layer_set_active(true, user_info);
@@ -372,6 +382,7 @@ static void move_focus_to_selection_layer(SearchStation *user_info) {
 }
 
 static void move_focus_to_menu_layer(SearchStation *user_info) {
+    // Move
     user_info->actived_layer_index = SEARCH_STATION_MENU_LAYER;
     
     search_selection_layer_set_active(false, user_info);
@@ -385,6 +396,7 @@ static void move_focus_to_menu_layer(SearchStation *user_info) {
 }
 
 static void move_focus_to_panel(SearchStation *user_info) {
+    // Move
     user_info->actived_layer_index = SEARCH_STATION_PANEL_LAYER;
     
     search_selection_layer_set_active(false, user_info);
@@ -502,7 +514,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         stations_get_name(station_index, str_station, STATION_NAME_MAX_LENGTH);
         
         draw_station(ctx, cell_layer,
-                     user_info->menu_layer, is_selected,
+                     menu_layer_get_layer(user_info->menu_layer), is_selected,
 #ifdef PBL_COLOR
                      text_color,
                      is_highlighed,
