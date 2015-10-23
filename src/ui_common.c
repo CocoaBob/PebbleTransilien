@@ -332,13 +332,14 @@ void text_scroll_begin(Layer *redraw_layer, char** string_pointers, size_t text_
     for (size_t i = 0; i < s_text_scroll_reset_indexes_count; ++i) {
         s_text_scroll_reset_indexes[i] = (size_t *)calloc(1, sizeof(size_t));
     }
-    GRect frame_test = GRect(0, 0, INT16_MAX, text_frame.size.h);
+    GRect frame_test = GRect(0, 0, text_frame.size.w, INT16_MAX);
     for (size_t i = 0; i < s_text_scroll_reset_indexes_count; ++i) {
         GSize text_size = size_of_text((char *)string_pointers[i] + *((size_t*)s_text_scroll_reset_indexes[i]), font_key, frame_test);
         while (*((size_t*)s_text_scroll_reset_indexes[i]) < strlen((char *)string_pointers[i]) &&
-               (text_size.w > text_frame.size.w || text_size.w == 0)) {
+               (text_size.h > text_frame.size.h || text_size.w == 0)) {
             ++*((size_t*)s_text_scroll_reset_indexes[i]);
             text_size = size_of_text((char *)string_pointers[i] + *((size_t*)s_text_scroll_reset_indexes[i]), font_key, frame_test);
+            
         }
         s_text_scroll_reset_index_max = MAX(s_text_scroll_reset_index_max, *((size_t*)s_text_scroll_reset_indexes[i]));
     }
