@@ -174,14 +174,17 @@ static void draw_menu_layer_cell(GContext *ctx,
     
     // Draw text, considering the scrolling index
     draw_text(ctx,
-              is_selected?text_scroll_text(str_terminus, FONT_KEY_GOTHIC_18, frame_terminus, true):str_terminus,
+              is_selected?text_scroll_text(str_terminus, 0,FONT_KEY_GOTHIC_18, frame_terminus, true):str_terminus,
               FONT_KEY_GOTHIC_18,
               frame_terminus,
               GTextAlignmentLeft);
     
     // Scroll texts
     if (is_selected) {
-        text_scroll_begin(menu_layer_get_layer(user_info->menu_layer), str_terminus, strlen(str_terminus), FONT_KEY_GOTHIC_18, frame_terminus);
+        char **string_pointers = calloc(1, sizeof(char *));
+        string_pointers[0] = str_terminus;
+        text_scroll_begin(menu_layer_get_layer(user_info->menu_layer), string_pointers, 1, FONT_KEY_GOTHIC_18, frame_terminus);
+        free(string_pointers);
     }
 }
 

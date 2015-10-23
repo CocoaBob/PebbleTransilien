@@ -153,37 +153,32 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
         int16_t w_from = size_of_text(str_from, FONT_KEY_GOTHIC_18_BOLD, frame_test).w;
         int16_t w_to = size_of_text(str_to, FONT_KEY_GOTHIC_18_BOLD, frame_test).w;
         
-        size_t len_from = strlen(str_from);
-        size_t len_to = strlen(str_to);
-        
         if (!text_scroll_is_on()) {
-            char *str_scroll;
-            size_t len_scroll;
             GRect frame_scroll;
             if (w_from > w_to) {
-                str_scroll = str_from;
-                len_scroll = len_from;
                 frame_scroll = frame_from;
             } else {
-                str_scroll = str_to;
-                len_scroll = len_to;
                 frame_scroll = frame_to;
             }
-            text_scroll_begin(redraw_layer, str_scroll, len_scroll, FONT_KEY_GOTHIC_18_BOLD, frame_scroll);
+            char **string_pointers = calloc(2, sizeof(char *));
+            string_pointers[0] = str_from;
+            string_pointers[1] = str_to;
+            text_scroll_begin(redraw_layer, string_pointers, 2, FONT_KEY_GOTHIC_18_BOLD, frame_scroll);
+            free(string_pointers);
         }
     }
     
     // Draw texts
     if (from_to.from != STATION_NON) {
         draw_text(ctx,
-                  is_selected?text_scroll_text(str_from, FONT_KEY_GOTHIC_18_BOLD, frame_from, false):str_from,
+                  is_selected?text_scroll_text(str_from, 0, FONT_KEY_GOTHIC_18_BOLD, frame_from, false):str_from,
                   FONT_KEY_GOTHIC_18_BOLD,
                   frame_from,
                   GTextAlignmentLeft);
     }
     if (from_to.to != STATION_NON) {
         draw_text(ctx,
-                  is_selected?text_scroll_text(str_to, FONT_KEY_GOTHIC_18_BOLD, frame_from, false):str_to,
+                  is_selected?text_scroll_text(str_to, 1,FONT_KEY_GOTHIC_18_BOLD, frame_from, false):str_to,
                   FONT_KEY_GOTHIC_18_BOLD,
                   frame_to,
                   GTextAlignmentLeft);
@@ -250,14 +245,17 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
                                 CELL_HEIGHT_2);
     
     draw_text(ctx,
-              is_selected?text_scroll_text(str_station, FONT_KEY_GOTHIC_18, frame_station, true):str_station,
+              is_selected?text_scroll_text(str_station, 0,FONT_KEY_GOTHIC_18, frame_station, true):str_station,
               FONT_KEY_GOTHIC_18,
               frame_station,
               GTextAlignmentLeft);
     
     // Scroll texts
     if (is_selected) {
-        text_scroll_begin(redraw_layer, str_station, strlen(str_station), FONT_KEY_GOTHIC_18, frame_station);
+        char **string_pointers = calloc(1, sizeof(char *));
+        string_pointers[0] = str_station;
+        text_scroll_begin(redraw_layer, string_pointers, 1, FONT_KEY_GOTHIC_18, frame_station);
+        free(string_pointers);
     }
 }
 
@@ -304,11 +302,13 @@ void common_menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_l
 #define TEXT_PAUSE_INTERVAL 1000
 
 static size_t s_text_scroll_index;
-static size_t s_text_scroll_reset_index;
+static size_t s_text_scroll_reset_index_max;
+static size_t** s_text_scroll_reset_indexes;
+static size_t s_text_scroll_reset_indexes_count;
 static AppTimer *s_text_scroll_timer;
 
 static void text_scroll_timer_callback(Layer *layer) {
-    if (s_text_scroll_index >= s_text_scroll_reset_index) {
+    if (s_text_scroll_index >= s_text_scroll_reset_index_max) {
         s_text_scroll_index = 0;
     } else {
         s_text_scroll_index += 1;
@@ -317,29 +317,46 @@ static void text_scroll_timer_callback(Layer *layer) {
     layer_mark_dirty(layer);
     
     // Pause at the beginning or end
-    uint32_t timeout_ms = (s_text_scroll_index == 0 || s_text_scroll_index >= s_text_scroll_reset_index)?TEXT_PAUSE_INTERVAL:TEXT_SCROLL_INTERVAL;
+    uint32_t timeout_ms = (s_text_scroll_index == 0 || s_text_scroll_index >= s_text_scroll_reset_index_max)?TEXT_PAUSE_INTERVAL:TEXT_SCROLL_INTERVAL;
     s_text_scroll_timer = app_timer_register(timeout_ms, (AppTimerCallback)text_scroll_timer_callback, layer);
 }
 
-void text_scroll_begin(Layer *redraw_layer, const char* text, size_t const text_length, const char * font_key, const GRect text_frame) {
+void text_scroll_begin(Layer *redraw_layer, char** string_pointers, size_t text_count, const char * font_key, const GRect text_frame) {
     if (text_scroll_is_on()) {
         return;
     }
+    s_text_scroll_reset_indexes_count = text_count;
     
-    s_text_scroll_index = s_text_scroll_reset_index = 0;
-    GRect frame_test = GRect(0, 0, INT16_MAX, text_frame.size.h);
-    GSize text_size = size_of_text(text+s_text_scroll_reset_index, font_key, frame_test);
-    while (s_text_scroll_reset_index < text_length &&
-           (text_size.w > text_frame.size.w || text_size.w == 0)) {
-        ++s_text_scroll_reset_index;
-        text_size = size_of_text(text+s_text_scroll_reset_index, font_key, frame_test);
+    s_text_scroll_index = s_text_scroll_reset_index_max = 0;
+    s_text_scroll_reset_indexes = calloc(s_text_scroll_reset_indexes_count, sizeof(size_t*));
+    for (size_t i = 0; i < s_text_scroll_reset_indexes_count; ++i) {
+        s_text_scroll_reset_indexes[i] = (size_t *)calloc(1, sizeof(size_t));
     }
-    if (s_text_scroll_reset_index > 0) {
-        s_text_scroll_timer = app_timer_register(TEXT_SCROLL_INTERVAL, (AppTimerCallback)text_scroll_timer_callback, redraw_layer);
+    GRect frame_test = GRect(0, 0, INT16_MAX, text_frame.size.h);
+    for (size_t i = 0; i < s_text_scroll_reset_indexes_count; ++i) {
+        GSize text_size = size_of_text((char *)string_pointers[i] + *((size_t*)s_text_scroll_reset_indexes[i]), font_key, frame_test);
+        while (*((size_t*)s_text_scroll_reset_indexes[i]) < strlen((char *)string_pointers[i]) &&
+               (text_size.w > text_frame.size.w || text_size.w == 0)) {
+            ++*((size_t*)s_text_scroll_reset_indexes[i]);
+            text_size = size_of_text((char *)string_pointers[i] + *((size_t*)s_text_scroll_reset_indexes[i]), font_key, frame_test);
+        }
+        s_text_scroll_reset_index_max = MAX(s_text_scroll_reset_index_max, *((size_t*)s_text_scroll_reset_indexes[i]));
+    }
+    for (size_t i = 0; i < s_text_scroll_reset_indexes_count; ++i) {
+        if (*((size_t*)s_text_scroll_reset_indexes[i]) > 0) {
+            s_text_scroll_timer = app_timer_register(TEXT_SCROLL_INTERVAL, (AppTimerCallback)text_scroll_timer_callback, redraw_layer);
+            break;
+        }
     }
 }
 
 void text_scroll_end() {
+    if (s_text_scroll_reset_indexes != NULL) {
+        for (size_t i = 0; i < s_text_scroll_reset_indexes_count; ++i) {
+            NULL_FREE(s_text_scroll_reset_indexes[i]);
+        }
+        NULL_FREE(s_text_scroll_reset_indexes);
+    }
     if (s_text_scroll_timer) {
         app_timer_cancel(s_text_scroll_timer);
         s_text_scroll_timer = NULL;
@@ -350,8 +367,11 @@ bool text_scroll_is_on() {
     return s_text_scroll_timer != NULL;
 }
 
-char *text_scroll_text(char* text, const char * font_key, const GRect text_frame, bool jump_accent) {
-    char *drawing_text = text + MIN(strlen(text) - 1, s_text_scroll_index);
+char *text_scroll_text(char* text, size_t text_index, const char * font_key, const GRect text_frame, bool jump_accent) {
+    if (!s_text_scroll_reset_indexes) {
+        return text;
+    }
+    char *drawing_text = text + MIN(*((size_t*)s_text_scroll_reset_indexes[text_index]), s_text_scroll_index);
     GRect frame_test = GRect(0, 0, INT16_MAX, text_frame.size.h);
     GSize text_size = size_of_text(drawing_text, FONT_KEY_GOTHIC_18, frame_test);
     // In case of accent letters like é/è/à, we have to jump 2 digits

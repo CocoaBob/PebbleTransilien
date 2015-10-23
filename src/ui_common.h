@@ -70,7 +70,7 @@ void common_menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_l
 #endif
 
 // MARK: Scroll Texts
-void text_scroll_begin(Layer *menu_layer, const char* text, size_t const text_length, const char * font_key, const GRect text_frame);
+void text_scroll_begin(Layer *redraw_layer, char** string_pointers, size_t text_count, const char * font_key, const GRect text_frame);
 void text_scroll_end();
 bool text_scroll_is_on();
-char *text_scroll_text(char* text, const char * font_key, const GRect text_frame, bool jump_accent);
+char *text_scroll_text(char* text, size_t text_index, const char * font_key, const GRect text_frame, bool jump_accent);
