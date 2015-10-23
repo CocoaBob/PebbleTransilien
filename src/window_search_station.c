@@ -594,9 +594,9 @@ static void window_load(Window *window) {
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback
 #if !defined(PBL_PLATFORM_APLITE)
         ,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
-        .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
+        .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
 #endif
     });
     

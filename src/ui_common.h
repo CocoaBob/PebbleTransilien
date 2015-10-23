@@ -58,19 +58,18 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
                   char * str_time,
                   char * str_station);
 
-// MARK: Menu Layer Callbacks
-
-void menu_layer_button_up_handler(ClickRecognizerRef recognizer, void *context);
-void menu_layer_button_down_handler(ClickRecognizerRef recognizer, void *context);
+// MARK: Menu Layer Click Config Provider handlers
+void common_menu_layer_button_up_handler(ClickRecognizerRef recognizer, void *context);
+void common_menu_layer_button_down_handler(ClickRecognizerRef recognizer, void *context);
 
 #if !defined(PBL_PLATFORM_APLITE)
-int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context);
-void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context);
-void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context);
+// MARK: Menu Layer Callbacks
+int16_t common_menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context);
+void common_menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context);
+void common_menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context);
 #endif
 
 // MARK: Scroll Texts
-
 void text_scroll_begin(Layer *menu_layer, const char* text, size_t const text_length, const char * font_key, const GRect text_frame);
 void text_scroll_end();
 bool text_scroll_is_on();

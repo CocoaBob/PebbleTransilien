@@ -282,8 +282,8 @@ static void click_config_provider(void *context) {
     user_info->last_ccp(user_info->menu_layer);
     
     window_long_click_subscribe(BUTTON_ID_SELECT, 0, window_long_click_handler, NULL);
-    window_single_repeating_click_subscribe(BUTTON_ID_UP, 30, menu_layer_button_up_handler);
-    window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 30, menu_layer_button_down_handler);
+    window_single_repeating_click_subscribe(BUTTON_ID_UP, 30, common_menu_layer_button_up_handler);
+    window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 30, common_menu_layer_button_down_handler);
 }
 
 // MARK: Message Request callbacks
@@ -579,10 +579,10 @@ static void window_load(Window *window) {
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
 #if !defined(PBL_PLATFORM_APLITE)
         ,
-        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
-        .draw_separator = (MenuLayerDrawSeparatorCallback)menu_layer_draw_separator_callback,
+        .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
+        .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .selection_will_change = (MenuLayerSelectionWillChangeCallback)menu_layer_selection_will_change_callback,
-        .draw_background = (MenuLayerDrawBackgroundCallback)menu_layer_draw_background_callback
+        .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
 #endif
     });
     
