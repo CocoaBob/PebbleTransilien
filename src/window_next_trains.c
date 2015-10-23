@@ -72,11 +72,12 @@ static void draw_menu_layer_cell(GContext *ctx,
                                  bool is_highlighed,
 #endif
                                  bool is_selected,
-                                 const char * str_code,
-                                 const char * str_time,
-                                 const char * str_terminus,
-                                 const char * str_platform,
-                                 const char * str_mention) {
+                                 char * str_code,
+                                 char * str_time,
+                                 char * str_terminus,
+                                 char * str_platform,
+                                 char * str_mention,
+                                 NextTrains *user_info) {
 #ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, text_color);
 #else
@@ -174,12 +175,18 @@ static void draw_menu_layer_cell(GContext *ctx,
 #endif
         }
     }
+    
+    // Draw text, considering the scrolling index
     draw_text(ctx,
-              str_terminus,
+              is_selected?text_scroll_text(str_terminus, FONT_KEY_GOTHIC_18, frame_terminus):str_terminus,
               FONT_KEY_GOTHIC_18,
               frame_terminus,
               GTextAlignmentLeft);
     
+    // Scroll texts
+    if (is_selected) {
+        text_scroll_begin(menu_layer_get_layer(user_info->menu_layer), str_terminus, strlen(str_terminus), FONT_KEY_GOTHIC_18, frame_terminus);
+    }
 }
 
 // MARK: Data
@@ -422,7 +429,7 @@ static void format_timer_stop(NextTrains *user_info) {
 
 static void format_timer_callback(NextTrains *user_info) {
     user_info->show_relative_time = !user_info->show_relative_time;
-    menu_layer_reload_data(user_info->menu_layer);
+    layer_mark_dirty(menu_layer_get_layer(user_info->menu_layer));
     format_timer_start(user_info);
 }
 
@@ -506,7 +513,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                                  str_hour,
                                  str_terminus,
                                  next_train.platform,
-                                 next_train.mention);
+                                 next_train.mention,
+                                 user_info);
             
             // Clean
             free(str_hour);
@@ -531,6 +539,10 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             push_window_train_details(next_train.number, user_info->from_to.from, true);
         }
     }
+}
+
+static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
+    text_scroll_end();
 }
 
 #if !defined(PBL_PLATFORM_APLITE)
@@ -566,7 +578,8 @@ static void window_load(Window *window) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
 #if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
@@ -638,6 +651,9 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
+    // Stop scrolling text
+    text_scroll_end();
+    
     // Unsubscribe services
     accel_tap_service_deinit();
     

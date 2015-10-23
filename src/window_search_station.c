@@ -502,6 +502,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         stations_get_name(station_index, str_station, STATION_NAME_MAX_LENGTH);
         
         draw_station(ctx, cell_layer,
+                     user_info->menu_layer, is_selected,
 #ifdef PBL_COLOR
                      text_color,
                      is_highlighed,
@@ -536,6 +537,7 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
 }
 
 static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, SearchStation *user_info) {
+    text_scroll_end();
     if (user_info->actived_layer_index == SEARCH_STATION_MENU_LAYER) {
         panel_update_with_menu_layer_selection(user_info);
     }
@@ -655,6 +657,9 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
+    // Stop scrolling text
+    text_scroll_end();
+    
     // Release memory for searching
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_end();

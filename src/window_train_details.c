@@ -158,7 +158,7 @@ static void format_timer_stop(TrainDetails *user_info) {
 
 static void format_timer_callback(TrainDetails *user_info) {
     user_info->show_relative_time = !user_info->show_relative_time;
-    menu_layer_reload_data(user_info->menu_layer);
+    layer_mark_dirty(menu_layer_get_layer(user_info->menu_layer));
     format_timer_start(user_info);
 }
 
@@ -213,6 +213,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         stations_get_name(train_detail.station, str_station, STATION_NAME_MAX_LENGTH);
 
         draw_station(ctx, cell_layer,
+                     user_info->menu_layer, is_selected,
 #ifdef PBL_COLOR
                      text_color,
                      is_highlighed,
@@ -236,6 +237,10 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, TrainDetails *user_info) {
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
     push_window_next_trains((DataModelFromTo){user_info->train_details_list[selected_index.row].station, STATION_NON}, true);
+}
+
+static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
+    text_scroll_end();
 }
 
 // MARK: Window callbacks
@@ -263,7 +268,8 @@ static void window_load(Window *window) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
 #if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)menu_layer_get_separator_height_callback,
@@ -334,6 +340,9 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
+    // Stop scrolling text
+    text_scroll_end();
+    
     // Unsubscribe services
     accel_tap_service_deinit();
     

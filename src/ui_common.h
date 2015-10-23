@@ -44,14 +44,15 @@ void draw_from_to(GContext* ctx,
                   DataModelFromTo from_to);
 
 void draw_station(GContext *ctx, Layer *cell_layer,
+                  MenuLayer *menu_layer, bool is_selected,
 #ifdef PBL_COLOR
                   GColor text_color,
                   bool is_highlighed,
 #else
                   bool is_inverted,
 #endif
-                  const char * str_time,
-                  const char * str_station);
+                  char * str_time,
+                  char * str_station);
 
 // MARK: Menu Layer Callbacks
 
@@ -63,3 +64,9 @@ int16_t menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, M
 void menu_layer_draw_separator_callback(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context);
 void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, bool highlight, void *callback_context);
 #endif
+
+// MARK: Scroll Texts
+
+void text_scroll_begin(Layer *menu_layer, const char* text, size_t const text_length, const char * font_key, const GRect text_frame);
+void text_scroll_end();
+char *text_scroll_text(char* text, const char * font_key, const GRect text_frame);

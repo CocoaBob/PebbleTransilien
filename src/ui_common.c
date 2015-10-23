@@ -159,14 +159,15 @@ void draw_from_to(GContext* ctx,
 // MARK: Draw Station layer, layer hight should be 22
 
 void draw_station(GContext *ctx, Layer *cell_layer,
+                  MenuLayer *menu_layer, bool is_selected,
 #ifdef PBL_COLOR
                   GColor text_color,
                   bool is_highlighed,
 #else
                   bool is_inverted,
 #endif
-                  const char * str_time,
-                  const char * str_station) {
+                  char * str_time,
+                  char * str_station) {
     GRect bounds = layer_get_bounds(cell_layer);
 #ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, text_color);
@@ -208,12 +209,22 @@ void draw_station(GContext *ctx, Layer *cell_layer,
         frame_time.origin.x = bounds.size.w;
     }
     
-    // Station
+    //  Draw station text, considering the scrolling index
     GRect frame_station = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
                                 TEXT_Y_OFFSET,
                                 frame_time.origin.x - CELL_MARGIN_3 - FROM_TO_ICON_WIDTH,
                                 CELL_HEIGHT_2);
-    draw_text(ctx, str_station, FONT_KEY_GOTHIC_18, frame_station, GTextAlignmentLeft);
+    
+    draw_text(ctx,
+              is_selected?text_scroll_text(str_station, FONT_KEY_GOTHIC_18, frame_station):str_station,
+              FONT_KEY_GOTHIC_18,
+              frame_station,
+              GTextAlignmentLeft);
+    
+    // Scroll texts
+    if (is_selected) {
+        text_scroll_begin(menu_layer_get_layer(menu_layer), str_station, strlen(str_station), FONT_KEY_GOTHIC_18, frame_station);
+    }
 }
 
 // MARK: Menu Layer Callbacks
@@ -252,3 +263,65 @@ void menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_layer, b
     graphics_fill_rect(ctx, frame, 0, GCornerNone);
 }
 #endif
+
+// MARK: Scroll texts
+
+#define TEXT_SCROLL_INTERVAL 300
+#define TEXT_PAUSE_INTERVAL 600
+
+static size_t s_text_scroll_index;
+static size_t s_text_scroll_reset_index;
+static AppTimer *s_text_scroll_timer;
+
+static void text_scroll_timer_callback(Layer *layer) {
+    if (s_text_scroll_index >= s_text_scroll_reset_index) {
+        s_text_scroll_index = 0;
+    } else {
+        s_text_scroll_index += 1;
+    }
+    
+    layer_mark_dirty(layer);
+    
+    s_text_scroll_timer = app_timer_register((s_text_scroll_index >= s_text_scroll_reset_index)?TEXT_PAUSE_INTERVAL:TEXT_SCROLL_INTERVAL, (AppTimerCallback)text_scroll_timer_callback, layer);
+}
+
+void text_scroll_begin(Layer *menu_layer, const char* text, size_t const text_length, const char * font_key, const GRect text_frame) {
+    if (s_text_scroll_timer) {
+        return;
+    }
+    
+    s_text_scroll_index = s_text_scroll_reset_index = 0;
+    GRect frame_test = GRect(0, 0, INT16_MAX, text_frame.size.h);
+    GSize text_size = graphics_text_layout_get_content_size(text+s_text_scroll_reset_index, fonts_get_system_font(font_key), frame_test, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+    while (s_text_scroll_reset_index < text_length &&
+           (text_size.w > text_frame.size.w || text_size.w == 0)) {
+        ++s_text_scroll_reset_index;
+        text_size = graphics_text_layout_get_content_size(text+s_text_scroll_reset_index, fonts_get_system_font(font_key), frame_test, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+    }
+    if (s_text_scroll_reset_index > 0) {
+        s_text_scroll_timer = app_timer_register(TEXT_SCROLL_INTERVAL, (AppTimerCallback)text_scroll_timer_callback, menu_layer);
+    }
+}
+
+void text_scroll_end() {
+    if (s_text_scroll_timer) {
+        app_timer_cancel(s_text_scroll_timer);
+        s_text_scroll_timer = NULL;
+    }
+}
+
+size_t text_scroll_index() {
+    return s_text_scroll_index;
+}
+
+char *text_scroll_text(char* text, const char * font_key, const GRect text_frame) {
+    char *drawing_text = text + text_scroll_index();
+    GRect frame_test = GRect(0, 0, INT16_MAX, text_frame.size.h);
+    GSize text_size = graphics_text_layout_get_content_size(drawing_text, fonts_get_system_font(FONT_KEY_GOTHIC_18), frame_test, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+    // In case of accent letters like é, à, we have to jump 2 digits
+    if (text_size.w == 0) {
+        drawing_text += 1;
+        ++s_text_scroll_index;
+    }
+    return drawing_text;
+}
