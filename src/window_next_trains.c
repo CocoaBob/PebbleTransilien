@@ -660,6 +660,9 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
+    // Set callbacks to NULL
+    message_clear_callbacks();
+    
 #if !defined(PBL_PLATFORM_APLITE)
     // Stop scrolling text
     text_scroll_end();
