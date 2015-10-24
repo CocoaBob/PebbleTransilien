@@ -320,9 +320,9 @@ void common_menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_l
 #define TEXT_SCROLL_INTERVAL 100
 #define TEXT_PAUSE_INTERVAL 1000
 
-static size_t s_text_scroll_index;
-static size_t s_text_scroll_reset_index_max;
-static size_t** s_text_scroll_reset_indexes;
+static size_t s_text_scroll_index;              // Current scrolling positions
+static size_t s_text_scroll_reset_index_max;    // Largest reset position
+static size_t** s_text_scroll_reset_indexes;    // Reset positions, when scrolled to reset positions, return to the beginning
 static size_t s_text_scroll_reset_indexes_count;
 static AppTimer *s_text_scroll_timer;
 
@@ -344,6 +344,10 @@ void text_scroll_begin(Layer *redraw_layer, char** string_pointers, size_t text_
     if (text_scroll_is_on()) {
         return;
     }
+    
+    // In case text_scroll_end() not called before calling text_scroll_begin()
+    text_scroll_end();
+    
     s_text_scroll_reset_indexes_count = text_count;
     
     s_text_scroll_index = s_text_scroll_reset_index_max = 0;

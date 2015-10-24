@@ -99,9 +99,10 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, ActionList *user_info) {
-    window_stack_remove(user_info->window, true);
     if (!user_info->config->callbacks.is_enabled || user_info->config->callbacks.is_enabled(cell_index->row, user_info->config->context)) {
         user_info->config->callbacks.select_click(user_info->window, cell_index->row, user_info->config->context);
+        // Must remove the window after using it's user_info, otherwise user_info will be released too early.
+        window_stack_remove(user_info->window, true);
     }
 }
 
