@@ -76,7 +76,10 @@ static size_t current_search_results_count(SearchStation *user_info) {
 }
 
 static StationIndex current_search_result_at_index(size_t index, SearchStation *user_info) {
-    return user_info->search_results[user_info->search_results_index].search_results[index];
+    if (index < user_info->search_results[user_info->search_results_index].search_results_count) {
+        return user_info->search_results[user_info->search_results_index].search_results[index];
+    }
+    return STATION_NON;
 }
 
 static StationIndex current_search_result(SearchStation *user_info) {

@@ -45,12 +45,18 @@ size_t stations_get_name_pos(StationIndex index) {
 }
 
 size_t stations_get_name(StationIndex index, char *buffer, const size_t buffer_size) {
-    size_t name_pos = stations_get_name_pos(index);
-    return resource_load_byte_range(s_name_handle, name_pos, (uint8_t *)buffer, buffer_size);
+    if (index <= STATION_INDEX_MAX) {
+        size_t name_pos = stations_get_name_pos(index);
+        return resource_load_byte_range(s_name_handle, name_pos, (uint8_t *)buffer, buffer_size);
+    }
+    return STATION_NON;
 }
 
 size_t stations_get_code(StationIndex index, char *buffer, const size_t buffer_size) {
-    return resource_load_byte_range(s_code_handle, STATION_CODE_LENGTH * index, (uint8_t *)buffer, buffer_size);
+    if (index <= STATION_INDEX_MAX) {
+        return resource_load_byte_range(s_code_handle, STATION_CODE_LENGTH * index, (uint8_t *)buffer, buffer_size);
+    }
+    return STATION_NON;
 }
 
 // High performance solution

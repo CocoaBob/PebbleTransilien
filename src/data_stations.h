@@ -14,6 +14,8 @@
 #define STATION_NAME_POS_VALUE_LENGTH 2
 #define STATION_NON 999
 
+#define STATION_INDEX_MAX 474
+
 #define STATION_SEARH_RESULT_MAX_COUNT 6
 
 void stations_init();
