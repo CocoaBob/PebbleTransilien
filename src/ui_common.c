@@ -298,7 +298,7 @@ void common_menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_l
 
 // MARK: Scroll texts
 
-#define TEXT_SCROLL_INTERVAL 300
+#define TEXT_SCROLL_INTERVAL 100
 #define TEXT_PAUSE_INTERVAL 1000
 
 static size_t s_text_scroll_index;
