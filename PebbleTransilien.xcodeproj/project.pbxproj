@@ -7,24 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		453FB2071BD3030E005E86A5 /* window_action_list.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E41BCE469F0057BC11 /* window_action_list.c */; settings = {ASSET_TAGS = (); }; };
-		457D34EE1BCE469F0057BC11 /* localize.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34C81BCE469F0057BC11 /* localize.c */; settings = {ASSET_TAGS = (); }; };
-		457D34EF1BCE469F0057BC11 /* selection_layer.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CB1BCE469F0057BC11 /* selection_layer.c */; settings = {ASSET_TAGS = (); }; };
-		457D34F01BCE469F0057BC11 /* app_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CD1BCE469F0057BC11 /* app_message.c */; settings = {ASSET_TAGS = (); }; };
-		457D34F11BCE469F0057BC11 /* app_settings.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CF1BCE469F0057BC11 /* app_settings.c */; settings = {ASSET_TAGS = (); }; };
-		457D34F21BCE469F0057BC11 /* data_favorites.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34D21BCE469F0057BC11 /* data_favorites.c */; settings = {ASSET_TAGS = (); }; };
-		457D34F31BCE469F0057BC11 /* data_model.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34D41BCE469F0057BC11 /* data_model.c */; settings = {ASSET_TAGS = (); }; };
-		457D34F41BCE469F0057BC11 /* data_process.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34D61BCE469F0057BC11 /* data_process.c */; settings = {ASSET_TAGS = (); }; };
-		457D34F51BCE469F0057BC11 /* data_stations.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34D81BCE469F0057BC11 /* data_stations.c */; settings = {ASSET_TAGS = (); }; };
-		457D34F61BCE469F0057BC11 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34DD1BCE469F0057BC11 /* main.c */; settings = {ASSET_TAGS = (); }; };
-		457D34F71BCE469F0057BC11 /* ui_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34DE1BCE469F0057BC11 /* ui_common.c */; settings = {ASSET_TAGS = (); }; };
-		457D34F91BCE469F0057BC11 /* ui_setup.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E21BCE469F0057BC11 /* ui_setup.c */; settings = {ASSET_TAGS = (); }; };
-		457D34FB1BCE469F0057BC11 /* window_main_menu.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E61BCE469F0057BC11 /* window_main_menu.c */; settings = {ASSET_TAGS = (); }; };
-		457D34FC1BCE469F0057BC11 /* window_next_trains.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E81BCE469F0057BC11 /* window_next_trains.c */; settings = {ASSET_TAGS = (); }; };
-		457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EA1BCE469F0057BC11 /* window_search_station.c */; settings = {ASSET_TAGS = (); }; };
-		457D34FE1BCE469F0057BC11 /* window_train_details.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EC1BCE469F0057BC11 /* window_train_details.c */; settings = {ASSET_TAGS = (); }; };
-		45B585691BD7958800DBBC82 /* ui_status_bar.c in Sources */ = {isa = PBXBuildFile; fileRef = 45B585671BD7958800DBBC82 /* ui_status_bar.c */; settings = {ASSET_TAGS = (); }; };
-		45EAAF321BD64FB600445244 /* app_services.c in Sources */ = {isa = PBXBuildFile; fileRef = 45EAAF301BD64FB600445244 /* app_services.c */; settings = {ASSET_TAGS = (); }; };
+		453FB2071BD3030E005E86A5 /* window_action_list.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E41BCE469F0057BC11 /* window_action_list.c */; };
+		457D34EE1BCE469F0057BC11 /* localize.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34C81BCE469F0057BC11 /* localize.c */; };
+		457D34EF1BCE469F0057BC11 /* selection_layer.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CB1BCE469F0057BC11 /* selection_layer.c */; };
+		457D34F01BCE469F0057BC11 /* app_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CD1BCE469F0057BC11 /* app_message.c */; };
+		457D34F11BCE469F0057BC11 /* app_settings.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CF1BCE469F0057BC11 /* app_settings.c */; };
+		457D34F21BCE469F0057BC11 /* data_favorites.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34D21BCE469F0057BC11 /* data_favorites.c */; };
+		457D34F31BCE469F0057BC11 /* data_model.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34D41BCE469F0057BC11 /* data_model.c */; };
+		457D34F41BCE469F0057BC11 /* data_process.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34D61BCE469F0057BC11 /* data_process.c */; };
+		457D34F51BCE469F0057BC11 /* data_stations.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34D81BCE469F0057BC11 /* data_stations.c */; };
+		457D34F61BCE469F0057BC11 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34DD1BCE469F0057BC11 /* main.c */; };
+		457D34F71BCE469F0057BC11 /* ui_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34DE1BCE469F0057BC11 /* ui_common.c */; };
+		457D34F91BCE469F0057BC11 /* ui_setup.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E21BCE469F0057BC11 /* ui_setup.c */; };
+		457D34FB1BCE469F0057BC11 /* window_main_menu.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E61BCE469F0057BC11 /* window_main_menu.c */; };
+		457D34FC1BCE469F0057BC11 /* window_next_trains.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E81BCE469F0057BC11 /* window_next_trains.c */; };
+		457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EA1BCE469F0057BC11 /* window_search_station.c */; };
+		457D34FE1BCE469F0057BC11 /* window_train_details.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EC1BCE469F0057BC11 /* window_train_details.c */; };
+		45B585691BD7958800DBBC82 /* ui_status_bar.c in Sources */ = {isa = PBXBuildFile; fileRef = 45B585671BD7958800DBBC82 /* ui_status_bar.c */; };
+		45E7B7F61BDBCBC7001767F0 /* app_windows.c in Sources */ = {isa = PBXBuildFile; fileRef = 45E7B7F41BDBCBC7001767F0 /* app_windows.c */; };
+		45EAAF321BD64FB600445244 /* app_services.c in Sources */ = {isa = PBXBuildFile; fileRef = 45EAAF301BD64FB600445244 /* app_services.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -87,6 +88,8 @@
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 		45B585671BD7958800DBBC82 /* ui_status_bar.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ui_status_bar.c; sourceTree = "<group>"; };
 		45B585681BD7958800DBBC82 /* ui_status_bar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_status_bar.h; sourceTree = "<group>"; };
+		45E7B7F41BDBCBC7001767F0 /* app_windows.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = app_windows.c; sourceTree = "<group>"; };
+		45E7B7F51BDBCBC7001767F0 /* app_windows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = app_windows.h; sourceTree = "<group>"; };
 		45EAAF301BD64FB600445244 /* app_services.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = app_services.c; sourceTree = "<group>"; };
 		45EAAF311BD64FB600445244 /* app_services.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = app_services.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -137,6 +140,8 @@
 				45EAAF311BD64FB600445244 /* app_services.h */,
 				457D34CF1BCE469F0057BC11 /* app_settings.c */,
 				457D34D01BCE469F0057BC11 /* app_settings.h */,
+				45E7B7F41BDBCBC7001767F0 /* app_windows.c */,
+				45E7B7F51BDBCBC7001767F0 /* app_windows.h */,
 				457D34D21BCE469F0057BC11 /* data_favorites.c */,
 				457D34D31BCE469F0057BC11 /* data_favorites.h */,
 				457D34D41BCE469F0057BC11 /* data_model.c */,
@@ -426,6 +431,7 @@
 				457D34EF1BCE469F0057BC11 /* selection_layer.c in Sources */,
 				457D34F21BCE469F0057BC11 /* data_favorites.c in Sources */,
 				453FB2071BD3030E005E86A5 /* window_action_list.c in Sources */,
+				45E7B7F61BDBCBC7001767F0 /* app_windows.c in Sources */,
 				45EAAF321BD64FB600445244 /* app_services.c in Sources */,
 				457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */,
 				457D34EE1BCE469F0057BC11 /* localize.c in Sources */,

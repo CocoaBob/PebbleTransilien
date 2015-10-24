@@ -56,7 +56,9 @@ typedef struct {
     DataModelFromTo from_to;
     
     // To deactivate the menu layer
-    uint8_t actived_layer_index;
+    uint8_t active_layer_index;
+    
+    bool is_initialised;
 } SearchStation;
 
 // MARK: Forward declaration
@@ -247,7 +249,6 @@ static bool action_list_is_enabled_callback(size_t index, SearchStation *user_in
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index, SearchStation *user_info) {
-    window_stack_remove(action_list_window, true);
     DataModelFromTo from_to = user_info->from_to;
     confirm_from_to(&from_to, user_info);
     if (index == SEARCH_STATION_ACTIONS_DESTINATION) {
@@ -262,7 +263,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     } else if (index == SEARCH_STATION_ACTIONS_FAV) {
         fav_add(from_to.from, from_to.to);
     } else { // SEARCH_STATION_ACTIONS_TIMETABLE
-        push_window_next_trains(from_to, true);
+        window_push(new_window_next_trains(from_to));
     }
 }
 
@@ -378,7 +379,7 @@ static void panel_layer_set_active(bool is_active, SearchStation *user_info) {
 
 static void move_focus_to_selection_layer(SearchStation *user_info) {
     // Move
-    user_info->actived_layer_index = SEARCH_STATION_SELECTION_LAYER;
+    user_info->active_layer_index = SEARCH_STATION_SELECTION_LAYER;
     
     search_selection_layer_set_active(true, user_info);
     menu_layer_set_active(false, user_info);
@@ -390,7 +391,7 @@ static void move_focus_to_selection_layer(SearchStation *user_info) {
 
 static void move_focus_to_menu_layer(SearchStation *user_info) {
     // Move
-    user_info->actived_layer_index = SEARCH_STATION_MENU_LAYER;
+    user_info->active_layer_index = SEARCH_STATION_MENU_LAYER;
     
     search_selection_layer_set_active(false, user_info);
     menu_layer_set_active(true, user_info);
@@ -404,7 +405,7 @@ static void move_focus_to_menu_layer(SearchStation *user_info) {
 
 static void move_focus_to_panel(SearchStation *user_info) {
     // Move
-    user_info->actived_layer_index = SEARCH_STATION_PANEL_LAYER;
+    user_info->active_layer_index = SEARCH_STATION_PANEL_LAYER;
     
     search_selection_layer_set_active(false, user_info);
     menu_layer_set_active(false, user_info);
@@ -507,7 +508,7 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, SearchStation *user_info) {
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-    bool is_selected = (user_info->actived_layer_index == SEARCH_STATION_MENU_LAYER)?(selected_index.row == cell_index->row):false;
+    bool is_selected = (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER)?(selected_index.row == cell_index->row):false;
 #ifdef PBL_COLOR
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
@@ -528,7 +529,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                      text_color,
                      is_highlighed,
 #else               
-                     (user_info->actived_layer_index == SEARCH_STATION_SELECTION_LAYER) && (selected_index.row == cell_index->row),
+                     (user_info->active_layer_index == SEARCH_STATION_SELECTION_LAYER) && (selected_index.row == cell_index->row),
 #endif
                      NULL,
                      str_station);
@@ -537,7 +538,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         free(str_station);
     } else {
         draw_centered_title(ctx, cell_layer,
-                            (user_info->actived_layer_index != SEARCH_STATION_MENU_LAYER) || (selected_index.row == cell_index->row),
+                            (user_info->active_layer_index != SEARCH_STATION_MENU_LAYER) || (selected_index.row == cell_index->row),
                             (user_info->search_results_index >= 0)?_("Not found."):_("Press UP/DOWN"),
                             NULL);
     }
@@ -561,7 +562,7 @@ static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, 
 #if !defined(PBL_PLATFORM_APLITE)
     text_scroll_end();
 #endif
-    if (user_info->actived_layer_index == SEARCH_STATION_MENU_LAYER) {
+    if (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER) {
         panel_update_with_menu_layer_selection(user_info);
     }
 }
@@ -670,6 +671,17 @@ static void window_unload(Window *window) {
 static void window_appear(Window *window) {
     SearchStation *user_info = window_get_user_data(window);
     
+    if (!user_info->is_initialised) {
+        user_info->is_initialised = true;
+        
+        // Initialize Data
+        reset_search_results(user_info);
+        panel_update(user_info->from_to, user_info);
+        
+        // Focus the selection layer
+        move_focus_to_selection_layer(user_info);
+    }
+    
     // Add status bar
     ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
@@ -693,7 +705,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_window_search_train(StationIndex from, StationIndex to, bool animated) {
+Window* new_window_search_train(StationIndex from, StationIndex to) {
     SearchStation *user_info = calloc(1, sizeof(SearchStation));
     if (user_info) {
         user_info->window = window_create();
@@ -705,20 +717,16 @@ void push_window_search_train(StationIndex from, StationIndex to, bool animated)
             .unload = window_unload,
         });
         
+        user_info->from_to.from = from;
+        user_info->from_to.to = to;
+        
 #ifdef PBL_SDK_2
         // Fullscreen
         window_set_fullscreen(user_info->window, true);
 #endif
         
-        window_stack_push(user_info->window, animated);
-        
-        // Initialize Data
-        reset_search_results(user_info);
-        user_info->from_to.from = from;
-        user_info->from_to.to = to;
-        panel_update(user_info->from_to, user_info);
-        
-        // Focus the selection layer
-        move_focus_to_selection_layer(user_info);
+        // Return the window
+        return user_info->window;
     }
+    return NULL;
 }

@@ -8,4 +8,4 @@
 
 #pragma once
 
-void push_window_next_trains(DataModelFromTo from_to, bool animated);
+Window* new_window_next_trains(DataModelFromTo from_to);

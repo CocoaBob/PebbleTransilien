@@ -238,7 +238,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, TrainDetails *user_info) {
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-    push_window_next_trains((DataModelFromTo){user_info->train_details_list[selected_index.row].station, STATION_NON}, true);
+    window_push(new_window_next_trains((DataModelFromTo){user_info->train_details_list[selected_index.row].station, STATION_NON}));
 }
 
 #if !defined(PBL_PLATFORM_APLITE)
@@ -361,7 +361,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_window_train_details(char* train_number, StationIndex from_station, bool animated) {
+Window* new_window_train_details(char* train_number, StationIndex from_station) {
     TrainDetails *user_info = calloc(1, sizeof(TrainDetails));
     if (user_info) {
         user_info->window = window_create();
@@ -384,6 +384,8 @@ void push_window_train_details(char* train_number, StationIndex from_station, bo
         window_set_fullscreen(user_info->window, true);
 #endif
         
-        window_stack_push(user_info->window, animated);
+        // Return the window
+        return user_info->window;
     }
+    return NULL;
 }

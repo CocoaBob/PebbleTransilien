@@ -70,7 +70,6 @@ static bool action_list_is_enabled_callback(size_t index, MainMenu *user_info) {
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index, MainMenu *user_info) {
-    window_stack_remove(action_list_window, true);
     MenuIndex current_selection = menu_layer_get_selected_index(user_info->menu_layer);
     if (index == MAIN_MENU_ACTIONS_MOVE_UP) {
         fav_move_up_index(current_selection.row);
@@ -79,7 +78,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         fav_delete_at_index(current_selection.row);
     } else { // MAIN_MENU_ACTIONS_EDIT
         Favorite favorite = fav_at_index(current_selection.row);
-        push_window_search_train(favorite.from, favorite.to, true);
+        window_push(new_window_search_train(favorite.from, favorite.to));
     }
 }
 
@@ -182,10 +181,10 @@ static void menu_layer_draw_header_callback(GContext *ctx, const Layer *cell_lay
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, MainMenu *user_info) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         Favorite favorite = fav_at_index(cell_index->row);
-        push_window_next_trains(favorite, true);
+        window_push(new_window_next_trains(favorite));
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            push_window_search_train(STATION_NON, STATION_NON, true);
+            window_push(new_window_search_train(STATION_NON, STATION_NON));
         } else {
             // TODO: Nearby stations
         }
@@ -326,7 +325,7 @@ static void window_unload(Window *window) {
 
 // MARK: Entry point
 
-void push_window_main_menu(bool animated) {
+Window* new_window_main_menu() {
     MainMenu *user_info = calloc(1, sizeof(MainMenu));
     if (user_info) {
         user_info->window = window_create();
@@ -345,6 +344,8 @@ void push_window_main_menu(bool animated) {
         window_set_fullscreen(user_info->window, true);
 #endif
         
-        window_stack_push(user_info->window, animated);
+        // Return the window
+        return user_info->window;
     }
+    return NULL;
 }

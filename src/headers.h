@@ -16,6 +16,7 @@
 #include "app_message.h"
 #include "app_services.h"
 #include "app_settings.h"
+#include "app_windows.h"
 
 #include "data_favorites.h"
 #include "data_process.h"

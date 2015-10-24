@@ -250,7 +250,6 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     switch (index) {
         case NEXT_TRAINS_ACTIONS_FAV:
             fav_add(user_info->from_to.from, user_info->from_to.to);
-            window_stack_remove(action_list_window, true);
             break;
     }
 }
@@ -544,7 +543,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (!user_info->is_updating && user_info->next_trains_list_count > 0) {
             DataModelNextTrain next_train = user_info->next_trains_list[cell_index->row];
-            push_window_train_details(next_train.number, user_info->from_to.from, true);
+            window_push(new_window_train_details(next_train.number, user_info->from_to.from));
         }
     }
 }
@@ -678,7 +677,7 @@ static void window_disappear(Window *window) {
 
 // MARK: Entry point
 
-void push_window_next_trains(DataModelFromTo from_to, bool animated) {
+Window* new_window_next_trains(DataModelFromTo from_to) {
     NextTrains *user_info = calloc(1, sizeof(NextTrains));
     if (user_info) {
         user_info->window = window_create();
@@ -702,7 +701,8 @@ void push_window_next_trains(DataModelFromTo from_to, bool animated) {
         window_set_fullscreen(user_info->window, true);
 #endif
         
-        // Push window
-        window_stack_push(user_info->window, animated);
+        //Return the window
+        return user_info->window;
     }
+    return NULL;
 }

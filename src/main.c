@@ -15,10 +15,9 @@ void handle_init(void) {
     locale_init();
     stations_init();
     favorites_init();
-    
-    push_window_main_menu(false);
-    
     message_init();
+    
+    window_push(new_window_main_menu());
 }
 
 void handle_deinit(void) {

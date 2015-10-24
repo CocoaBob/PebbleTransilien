@@ -8,4 +8,4 @@
 
 #pragma once
 
-void push_window_main_menu(bool animated);
+Window* new_window_main_menu();
