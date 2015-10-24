@@ -93,11 +93,14 @@ static bool value_is_valid(char value) {
 }
 
 static void confirm_from_to(DataModelFromTo *i_o_from_to, SearchStation *user_info) {
-    if (i_o_from_to->from == STATION_NON) {
-        i_o_from_to->from = current_search_result(user_info);
-        i_o_from_to->to = STATION_NON;
-    } else {
-        i_o_from_to->to = current_search_result(user_info);
+    StationIndex search_result = current_search_result(user_info);
+    if (search_result != STATION_NON) {
+        if (i_o_from_to->from == STATION_NON) {
+            i_o_from_to->from = search_result;
+            i_o_from_to->to = STATION_NON;
+        } else {
+            i_o_from_to->to = search_result;
+        }
     }
 }
 
