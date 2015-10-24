@@ -124,7 +124,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
         draw_from_to(ctx, cell_layer,
+#if !defined(PBL_PLATFORM_APLITE)
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
+#endif
 #ifdef PBL_COLOR
                      is_highlighed,
                      text_color,
@@ -231,9 +233,11 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
     }
 }
 
+#if !defined(PBL_PLATFORM_APLITE)
 static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
     text_scroll_end();
 }
+#endif
 
 // MARK: Window callbacks
 
@@ -258,10 +262,10 @@ static void window_load(Window *window) {
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
         .draw_header = (MenuLayerDrawHeaderCallback)menu_layer_draw_header_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
-        .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback,
-        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
+        .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback
 #if !defined(PBL_PLATFORM_APLITE)
         ,
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
@@ -301,10 +305,12 @@ static void window_appear(Window *window) {
 //    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
+#if !defined(PBL_PLATFORM_APLITE)
 static void window_disappear(Window *window) {
     // Stop scrolling text
     text_scroll_end();
 }
+#endif
 
 static void window_unload(Window *window) {
     MainMenu *user_info = window_get_user_data(window);
@@ -328,7 +334,9 @@ void push_window_main_menu(bool animated) {
         window_set_window_handlers(user_info->window, (WindowHandlers) {
             .load = window_load,
             .appear = window_appear,
+#if !defined(PBL_PLATFORM_APLITE)
             .disappear = window_disappear,
+#endif
             .unload = window_unload
         });
         

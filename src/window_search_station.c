@@ -151,7 +151,9 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
 #endif
     
     draw_from_to(ctx, layer,
+#if !defined(PBL_PLATFORM_APLITE)
                  layer, layer_data->is_active,
+#endif
 #ifdef PBL_COLOR
                  true,
                  text_color,
@@ -363,8 +365,10 @@ static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
 
 
 static void panel_layer_set_active(bool is_active, SearchStation *user_info) {
+#if !defined(PBL_PLATFORM_APLITE)
     // Stop scrolling text
     text_scroll_end();
+#endif
     
     // Update panel
     PanelData *layer_data = layer_get_data(user_info->panel_layer);
@@ -517,7 +521,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         stations_get_name(station_index, str_station, STATION_NAME_MAX_LENGTH);
         
         draw_station(ctx, cell_layer,
+#if !defined(PBL_PLATFORM_APLITE)
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
+#endif
 #ifdef PBL_COLOR
                      text_color,
                      is_highlighed,
@@ -552,7 +558,9 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
 }
 
 static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, SearchStation *user_info) {
+#if !defined(PBL_PLATFORM_APLITE)
     text_scroll_end();
+#endif
     if (user_info->actived_layer_index == SEARCH_STATION_MENU_LAYER) {
         panel_update_with_menu_layer_selection(user_info);
     }
@@ -672,8 +680,10 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
+#if !defined(PBL_PLATFORM_APLITE)
     // Stop scrolling text
     text_scroll_end();
+#endif
     
     // Release memory for searching
 #if !defined(PBL_PLATFORM_APLITE)

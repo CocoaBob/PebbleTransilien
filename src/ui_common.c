@@ -92,7 +92,9 @@ void draw_centered_title(GContext* ctx,
 // MARK: Draw From To Layer, layer height should be 44
 
 void draw_from_to(GContext* ctx, Layer *display_layer,
+#if !defined(PBL_PLATFORM_APLITE)
                   Layer *redraw_layer, bool is_selected,
+#endif
 #ifdef PBL_COLOR
                   bool is_highlighed,
                   GColor text_color,
@@ -146,6 +148,7 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
         frame_from.size.h = text_size.h;
     }
     
+#if !defined(PBL_PLATFORM_APLITE)
     // Scroll texts
     if (is_selected) {
         GRect frame_test = GRect(0, 0, INT16_MAX, frame_from.size.h);
@@ -167,18 +170,27 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
             free(string_pointers);
         }
     }
+#endif
     
     // Draw texts
     if (from_to.from != STATION_NON) {
         draw_text(ctx,
+#if !defined(PBL_PLATFORM_APLITE)
                   is_selected?text_scroll_text(str_from, 0, FONT_KEY_GOTHIC_18_BOLD, frame_from, false):str_from,
+#else
+                  str_from,
+#endif
                   FONT_KEY_GOTHIC_18_BOLD,
                   frame_from,
                   GTextAlignmentLeft);
     }
     if (from_to.to != STATION_NON) {
         draw_text(ctx,
+#if !defined(PBL_PLATFORM_APLITE)
                   is_selected?text_scroll_text(str_to, 1,FONT_KEY_GOTHIC_18_BOLD, frame_from, false):str_to,
+#else
+                  str_to,
+#endif
                   FONT_KEY_GOTHIC_18_BOLD,
                   frame_to,
                   GTextAlignmentLeft);
@@ -192,7 +204,9 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
 // MARK: Draw Station layer, layer hight should be 22
 
 void draw_station(GContext *ctx, Layer *drawing_layer,
+#if !defined(PBL_PLATFORM_APLITE)
                   Layer *redraw_layer, bool is_selected,
+#endif
 #ifdef PBL_COLOR
                   GColor text_color,
                   bool is_highlighed,
@@ -245,11 +259,16 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
                                 CELL_HEIGHT_2);
     
     draw_text(ctx,
+#if !defined(PBL_PLATFORM_APLITE)
               is_selected?text_scroll_text(str_station, 0,FONT_KEY_GOTHIC_18, frame_station, true):str_station,
+#else
+              str_station,
+#endif
               FONT_KEY_GOTHIC_18,
               frame_station,
               GTextAlignmentLeft);
     
+#if !defined(PBL_PLATFORM_APLITE)
     // Scroll texts
     if (is_selected) {
         char **string_pointers = calloc(1, sizeof(char *));
@@ -257,6 +276,7 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
         text_scroll_begin(redraw_layer, string_pointers, 1, FONT_KEY_GOTHIC_18, frame_station);
         free(string_pointers);
     }
+#endif
 }
 
 // MARK: Menu Layer Callbacks
@@ -294,7 +314,6 @@ void common_menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_l
     graphics_context_set_fill_color(ctx, curr_bg_color());
     graphics_fill_rect(ctx, frame, 0, GCornerNone);
 }
-#endif
 
 // MARK: Scroll texts
 
@@ -384,3 +403,4 @@ char *text_scroll_text(char* text, size_t text_index, const char * font_key, con
     }
     return drawing_text;
 }
+#endif

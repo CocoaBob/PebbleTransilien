@@ -213,7 +213,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         stations_get_name(train_detail.station, str_station, STATION_NAME_MAX_LENGTH);
 
         draw_station(ctx, cell_layer,
+#if !defined(PBL_PLATFORM_APLITE)
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
+#endif
 #ifdef PBL_COLOR
                      text_color,
                      is_highlighed,
@@ -239,9 +241,11 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     push_window_next_trains((DataModelFromTo){user_info->train_details_list[selected_index.row].station, STATION_NON}, true);
 }
 
+#if !defined(PBL_PLATFORM_APLITE)
 static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
     text_scroll_end();
 }
+#endif
 
 // MARK: Window callbacks
 
@@ -268,10 +272,10 @@ static void window_load(Window *window) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
-        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
 #if !defined(PBL_PLATFORM_APLITE)
         ,
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
@@ -340,8 +344,10 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
+#if !defined(PBL_PLATFORM_APLITE)
     // Stop scrolling text
     text_scroll_end();
+#endif
     
     // Unsubscribe services
     accel_tap_service_deinit();
