@@ -24,7 +24,6 @@
 		457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EA1BCE469F0057BC11 /* window_search_station.c */; };
 		457D34FE1BCE469F0057BC11 /* window_train_details.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34EC1BCE469F0057BC11 /* window_train_details.c */; };
 		45B585691BD7958800DBBC82 /* ui_status_bar.c in Sources */ = {isa = PBXBuildFile; fileRef = 45B585671BD7958800DBBC82 /* ui_status_bar.c */; };
-		45E7B7F61BDBCBC7001767F0 /* app_windows.c in Sources */ = {isa = PBXBuildFile; fileRef = 45E7B7F41BDBCBC7001767F0 /* app_windows.c */; };
 		45EAAF321BD64FB600445244 /* app_services.c in Sources */ = {isa = PBXBuildFile; fileRef = 45EAAF301BD64FB600445244 /* app_services.c */; };
 /* End PBXBuildFile section */
 
@@ -88,8 +87,6 @@
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 		45B585671BD7958800DBBC82 /* ui_status_bar.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ui_status_bar.c; sourceTree = "<group>"; };
 		45B585681BD7958800DBBC82 /* ui_status_bar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_status_bar.h; sourceTree = "<group>"; };
-		45E7B7F41BDBCBC7001767F0 /* app_windows.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = app_windows.c; sourceTree = "<group>"; };
-		45E7B7F51BDBCBC7001767F0 /* app_windows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = app_windows.h; sourceTree = "<group>"; };
 		45EAAF301BD64FB600445244 /* app_services.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = app_services.c; sourceTree = "<group>"; };
 		45EAAF311BD64FB600445244 /* app_services.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = app_services.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -140,8 +137,6 @@
 				45EAAF311BD64FB600445244 /* app_services.h */,
 				457D34CF1BCE469F0057BC11 /* app_settings.c */,
 				457D34D01BCE469F0057BC11 /* app_settings.h */,
-				45E7B7F41BDBCBC7001767F0 /* app_windows.c */,
-				45E7B7F51BDBCBC7001767F0 /* app_windows.h */,
 				457D34D21BCE469F0057BC11 /* data_favorites.c */,
 				457D34D31BCE469F0057BC11 /* data_favorites.h */,
 				457D34D41BCE469F0057BC11 /* data_model.c */,
@@ -390,7 +385,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "PHONE_IP=192.168.2.22\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e \"do script \\\"pebble install -v --phone $PHONE_IP --logs\\\" in ctx\" -e \"do script \\\"pebble logs -v --phone ${PHONE_IP}\\\" in ctx\" -e 'end tell'";
+			shellScript = "PHONE_IP=192.168.1.20\nPEBBLE_DEV_DIR=~/pebble-dev\nPEBBLE_SDK_PATH=$(find $PEBBLE_DEV_DIR -mindepth 1 -maxdepth 1 -type d -name \"PebbleSDK-*.*\" | sort -n | tail -1)\nPATH=${PATH}:${PEBBLE_SDK_PATH}/bin/\nosascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble clean\" in ctx' -e 'do script \"pebble build\" in ctx' -e \"do script \\\"pebble install -v --phone $PHONE_IP --logs\\\" in ctx\" -e \"do script \\\"pebble logs -v --phone ${PHONE_IP}\\\" in ctx\" -e 'end tell'";
 		};
 		459536811BCFD43C0028235C /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -431,7 +426,6 @@
 				457D34EF1BCE469F0057BC11 /* selection_layer.c in Sources */,
 				457D34F21BCE469F0057BC11 /* data_favorites.c in Sources */,
 				453FB2071BD3030E005E86A5 /* window_action_list.c in Sources */,
-				45E7B7F61BDBCBC7001767F0 /* app_windows.c in Sources */,
 				45EAAF321BD64FB600445244 /* app_services.c in Sources */,
 				457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */,
 				457D34EE1BCE469F0057BC11 /* localize.c in Sources */,

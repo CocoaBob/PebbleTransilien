@@ -78,3 +78,7 @@ void text_scroll_end();
 bool text_scroll_is_on();
 char *text_scroll_text(char* text, size_t text_index, const char * font_key, const GRect text_frame, bool jump_accent);
 #endif
+
+// MARK: Push windows
+bool ui_can_push_window();
+void ui_push_window(Window *window);

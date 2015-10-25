@@ -8,8 +8,13 @@
 
 #pragma once
 
+// Show a flickering alert in the status bar
+void status_bar_low_memory_alert();
+
+// Get status bar layer
 Layer *status_bar(GRect frame);
 
+// Update status bar drawing
 void status_bar_update();
 
 // Setup Connection Service

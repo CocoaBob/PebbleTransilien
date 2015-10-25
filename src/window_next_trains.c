@@ -361,7 +361,7 @@ static void message_succeeded_callback(DictionaryIterator *received, NextTrains 
 #endif
     user_info->show_relative_time = false;
     menu_layer_reload_data(user_info->menu_layer);
-    vibes_short_pulse();
+    vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
 }
 
 static void message_failed_callback(NextTrains *user_info) {
@@ -543,7 +543,9 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (!user_info->is_updating && user_info->next_trains_list_count > 0) {
             DataModelNextTrain next_train = user_info->next_trains_list[cell_index->row];
-            window_push(new_window_train_details(next_train.number, user_info->from_to.from));
+            if (ui_can_push_window()) {
+                ui_push_window(new_window_train_details(next_train.number, user_info->from_to.from));
+            }
         }
     }
 }
@@ -656,7 +658,6 @@ static void window_appear(Window *window) {
     format_timer_start(user_info);
 #endif
     
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

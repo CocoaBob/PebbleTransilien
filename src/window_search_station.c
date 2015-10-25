@@ -266,7 +266,9 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     } else if (index == SEARCH_STATION_ACTIONS_FAV) {
         fav_add(from_to.from, from_to.to);
     } else { // SEARCH_STATION_ACTIONS_TIMETABLE
-        window_push(new_window_next_trains(from_to));
+        if (ui_can_push_window()) {
+            ui_push_window(new_window_next_trains(from_to));
+        }
     }
 }
 
@@ -511,7 +513,9 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, SearchStation *user_info) {
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
+#if !defined(PBL_PLATFORM_APLITE) || PBL_COLOR
     bool is_selected = (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER)?(selected_index.row == cell_index->row):false;
+#endif
 #ifdef PBL_COLOR
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
@@ -691,7 +695,6 @@ static void window_appear(Window *window) {
 #if !defined(PBL_PLATFORM_APLITE)
     stations_search_name_begin();
 #endif
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 static void window_disappear(Window *window) {

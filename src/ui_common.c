@@ -408,3 +408,34 @@ char *text_scroll_text(char* text, size_t text_index, const char * font_key, con
     return drawing_text;
 }
 #endif
+
+// MARK: Push windows
+
+bool ui_can_push_window() {
+//    printf("1 Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+    
+#if !defined(PBL_PLATFORM_APLITE)
+    size_t critical_memory = 3200;
+#else
+    size_t critical_memory = 1600;
+#endif
+        
+    if (heap_bytes_free() < critical_memory) {
+            // Show warning
+        status_bar_low_memory_alert();
+        
+        // Vibrate
+        vibes_enqueue_custom_pattern((VibePattern){
+            .durations = (uint32_t[]) {50, 50, 50, 50, 50},
+            .num_segments = 5
+        });
+        return false;
+    }
+    return true;
+}
+
+void ui_push_window(Window *window) {
+    if (window != NULL) {
+        window_stack_push(window, true);
+    }
+}

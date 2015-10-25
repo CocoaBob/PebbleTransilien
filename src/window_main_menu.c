@@ -78,7 +78,9 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         fav_delete_at_index(current_selection.row);
     } else { // MAIN_MENU_ACTIONS_EDIT
         Favorite favorite = fav_at_index(current_selection.row);
-        window_push(new_window_search_train(favorite.from, favorite.to));
+        if (ui_can_push_window()) {
+            ui_push_window(new_window_search_train(favorite.from, favorite.to));
+        }
     }
 }
 
@@ -113,7 +115,9 @@ static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_laye
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, MainMenu *user_info) {
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
+#if !defined(PBL_PLATFORM_APLITE) || PBL_COLOR
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+#endif
 #ifdef PBL_COLOR
     bool is_highlighed = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
@@ -181,10 +185,14 @@ static void menu_layer_draw_header_callback(GContext *ctx, const Layer *cell_lay
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, MainMenu *user_info) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         Favorite favorite = fav_at_index(cell_index->row);
-        window_push(new_window_next_trains(favorite));
+        if (ui_can_push_window()) {
+            ui_push_window(new_window_next_trains(favorite));
+        }
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            window_push(new_window_search_train(STATION_NON, STATION_NON));
+            if (ui_can_push_window()) {
+                ui_push_window(new_window_search_train(STATION_NON, STATION_NON));
+            }
         } else {
             // TODO: Nearby stations
         }
@@ -301,7 +309,6 @@ static void window_appear(Window *window) {
     // Show the selected row
     menu_layer_set_selected_index(user_info->menu_layer, menu_layer_get_selected_index(user_info->menu_layer), MenuRowAlignCenter, false);
     
-//    printf("Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
 }
 
 #if !defined(PBL_PLATFORM_APLITE)

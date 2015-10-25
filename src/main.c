@@ -17,7 +17,7 @@ void handle_init(void) {
     favorites_init();
     message_init();
     
-    window_push(new_window_main_menu());
+    ui_push_window(new_window_main_menu());
 }
 
 void handle_deinit(void) {
