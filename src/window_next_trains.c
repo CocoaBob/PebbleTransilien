@@ -10,13 +10,14 @@
 #include "headers.h"
 
 enum {
-    NEXT_TRAINS_SECTION_INFO = 0,
+    NEXT_TRAINS_SECTION_INFO,
     NEXT_TRAINS_SECTION_TRAINS,
     NEXT_TRAINS_SECTION_COUNT
 };
 
 enum {
-    NEXT_TRAINS_ACTIONS_FAV = 0,
+    NEXT_TRAINS_ACTIONS_EDIT,
+    NEXT_TRAINS_ACTIONS_FAV,
     NEXT_TRAINS_ACTIONS_COUNT
 };
 
@@ -236,7 +237,11 @@ static bool reverse_from_to(NextTrains *user_info) {
 // MARK: Action list callbacks
 
 static char* action_list_get_title_callback(size_t index, NextTrains *user_info) {
-    return _("Set Favorite");
+    if (index == NEXT_TRAINS_ACTIONS_EDIT) {
+        return _("Edit");
+    } else {
+        return _("Add Favorite");
+    }
 }
 
 static bool action_list_is_enabled_callback(size_t index, NextTrains *user_info) {
@@ -247,10 +252,10 @@ static bool action_list_is_enabled_callback(size_t index, NextTrains *user_info)
 }
 
 static void action_list_select_callback(Window *action_list_window, size_t index, NextTrains *user_info) {
-    switch (index) {
-        case NEXT_TRAINS_ACTIONS_FAV:
-            fav_add(user_info->from_to.from, user_info->from_to.to);
-            break;
+    if (index == NEXT_TRAINS_ACTIONS_EDIT) {
+        ui_push_window(new_window_search_train(user_info->from_to.from, user_info->from_to.to));
+    } else {
+        fav_add(user_info->from_to.from, user_info->from_to.to);
     }
 }
 
@@ -260,10 +265,11 @@ static void window_long_click_handler(ClickRecognizerRef recognizer, void *conte
     MenuLayer *menu_layer = context;
     MenuIndex selected_index = menu_layer_get_selected_index(menu_layer);
     if (selected_index.section == NEXT_TRAINS_SECTION_INFO) {
+        NextTrains *user_info = window_get_user_data(layer_get_window(menu_layer_get_layer(menu_layer)));
         ActionListConfig config = (ActionListConfig){
-            .context = menu_layer,
+            .context = user_info,
             .num_rows = NEXT_TRAINS_ACTIONS_COUNT,
-            .default_selection = NEXT_TRAINS_ACTIONS_FAV,
+            .default_selection = NEXT_TRAINS_ACTIONS_EDIT,
 #ifdef PBL_COLOR
             .colors = {
                 .background = GColorCobaltBlue,

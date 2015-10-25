@@ -17,6 +17,7 @@
 #define SELECTION_LAYER_VALUE_MAX 'Z'
 
 enum {
+    SEARCH_STATION_ACTIONS_REVERSE,
     SEARCH_STATION_ACTIONS_DESTINATION,
     SEARCH_STATION_ACTIONS_TIMETABLE,
     SEARCH_STATION_ACTIONS_FAV,
@@ -24,7 +25,7 @@ enum {
 };
 
 enum {
-    SEARCH_STATION_SELECTION_LAYER = 0,
+    SEARCH_STATION_SELECTION_LAYER,
     SEARCH_STATION_MENU_LAYER,
     SEARCH_STATION_PANEL_LAYER
 };
@@ -233,12 +234,14 @@ static void panel_update_with_menu_layer_selection(SearchStation *user_info) {
 // MARK: Action list callbacks
 
 static char* action_list_get_title_callback(size_t index, SearchStation *user_info) {
-    if (index == SEARCH_STATION_ACTIONS_DESTINATION) {
+    if (index == SEARCH_STATION_ACTIONS_REVERSE) {
+        return _("Reverse");
+    } else if (index == SEARCH_STATION_ACTIONS_DESTINATION) {
         return _("Add Destination");
     } else if (index == SEARCH_STATION_ACTIONS_TIMETABLE) {
         return _("Check Timetable");
     } else {
-        return _("Set Favorite");
+        return _("Add Favorite");
     }
 }
 
@@ -254,22 +257,29 @@ static bool action_list_is_enabled_callback(size_t index, SearchStation *user_in
 static void action_list_select_callback(Window *action_list_window, size_t index, SearchStation *user_info) {
     DataModelFromTo from_to = user_info->from_to;
     confirm_from_to(&from_to, user_info);
-    if (index == SEARCH_STATION_ACTIONS_DESTINATION) {
+    if (index == SEARCH_STATION_ACTIONS_REVERSE) {
+        user_info->from_to.from = from_to.to;
+        user_info->from_to.to = from_to.from;
+    } else if (index == SEARCH_STATION_ACTIONS_DESTINATION) {
         user_info->from_to = from_to;
         if (user_info->from_to.to != STATION_NON) {
             user_info->from_to.from = user_info->from_to.to;
             user_info->from_to.to = STATION_NON;
         }
-        panel_update(user_info->from_to, user_info);
-        move_focus_to_selection_layer(user_info);
-        reset_search_results(user_info);
     } else if (index == SEARCH_STATION_ACTIONS_FAV) {
         fav_add(from_to.from, from_to.to);
+        window_stack_pop(true);
+        return;
     } else { // SEARCH_STATION_ACTIONS_TIMETABLE
         if (ui_can_push_window()) {
             ui_push_window(new_window_next_trains(from_to));
         }
+        return;
     }
+    // Update UI for SEARCH_STATION_ACTIONS_REVERSE & SEARCH_STATION_ACTIONS_DESTINATION
+    panel_update(user_info->from_to, user_info);
+    move_focus_to_selection_layer(user_info);
+    reset_search_results(user_info);
 }
 
 static void show_action_list(SearchStation *user_info) {

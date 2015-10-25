@@ -18,7 +18,6 @@ enum {
 };
 
 enum {
-//    MAIN_MENU_SECTION_SEARCH_ROW_NEARBY = 0,
     MAIN_MENU_SECTION_SEARCH_ROW_NAME,
     MAIN_MENU_SECTION_SEARCH_ROW_COUNT
 };
@@ -56,9 +55,9 @@ static char* action_list_get_title_callback(size_t index, MainMenu *user_info) {
     if (index == MAIN_MENU_ACTIONS_MOVE_UP) {
         return _("Move up");
     } else if (index == MAIN_MENU_ACTIONS_EDIT) {
-        return _("Edit Favorite");
+        return _("Edit");
     } else {
-        return _("Delete Favorite");
+        return _("Delete");
     }
 }
 
@@ -138,9 +137,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #endif
                      favorite);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
-        /*if (row == MAIN_MENU_SECTION_SEARCH_ROW_NEARBY) {
-            menu_cell_basic_draw(ctx, cell_layer, "Nearby...", _("Based on location"), NULL);
-        } else */if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
+        if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
             menu_cell_basic_draw(ctx, cell_layer, _("Alphabetic..."), _("By choosing letters"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_SETTING) {
@@ -153,7 +150,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
             menu_cell_basic_draw(ctx, cell_layer, _("Developer"), "@CocoaBob", NULL);
         } else if (row == MAIN_MENU_SECTION_ABOUT_ROW_VERSION) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.0.0", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.1", NULL);
         }
     }
 }
