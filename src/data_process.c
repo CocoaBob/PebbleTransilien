@@ -16,6 +16,9 @@ void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relati
         return;
     }
     
+#if defined(PBL_PLATFORM_APLITE)
+    strftime(o_str, o_str_size, "%H:%M", localtime(&timestamp));
+#else
     time_t o_time = timestamp;
     size_t offset = 0;
     if (is_relative_to_now) {
@@ -45,12 +48,9 @@ void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relati
         o_time = MIN(99, o_time);
         snprintf(o_str+offset, o_str_size-offset, "%lldmin", (long long)o_time);
     } else {
-#if defined(PBL_PLATFORM_APLITE)
-        strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time));
-#else
         strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time)); // Show local time
-#endif
     }
+#endif
 }
 
 bool string_contains_sub_string(char *string_a, size_t size_a, char *string_b, size_t size_b) {
