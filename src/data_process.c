@@ -21,6 +21,7 @@ void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relati
     if (is_relative_to_now) {
         time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
         o_time = timestamp - time_curr; // UTC time
+        // Round to minutes (Remove seconds)
         if (o_time < 0) {
             o_time = -o_time;
             time_t mod = o_time % 60;
@@ -39,15 +40,17 @@ void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relati
             offset = 1;
         }
     }
-#if defined(PBL_PLATFORM_APLITE)
-    strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time));
-#else
     if (is_relative_to_now) {
-        strftime(o_str+offset, o_str_size-offset, "%H:%M", gmtime(&o_time)); // Show UTC time
+        o_time /= 60;
+        o_time = MIN(99, o_time);
+        snprintf(o_str+offset, o_str_size-offset, "%lldmin", (long long)o_time);
     } else {
+#if defined(PBL_PLATFORM_APLITE)
+        strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time));
+#else
         strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time)); // Show local time
-    }
 #endif
+    }
 }
 
 bool string_contains_sub_string(char *string_a, size_t size_a, char *string_b, size_t size_b) {
