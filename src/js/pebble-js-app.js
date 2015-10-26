@@ -296,13 +296,17 @@ function parseTrainHour(str) {
     m = str.match(/^(\d{2}):(\d{2})$/);
     if (m) {
         var now = new Date();
-        return new Date(now.getUTCFullYear(),  // Year
-                        now.getUTCMonth(),      // Month
-                        now.getUTCDate(),      // Day
-                        m[1],                   // Hour
-                        m[2],                   // Minute
-                        0,                      // Second
-                        0);                     // Millisecond
+        var date = new Date(now.getUTCFullYear(),   // Year
+                            now.getUTCMonth(),      // Month
+                            now.getUTCDate(),       // Day
+                            m[1],                   // Hour
+                            m[2],                   // Minute
+                            0,                      // Second
+                            0);                     // Millisecond
+        if ((now.getUTCHours() - m[1]) > 12) {
+            date.setTime(date.getTime() + 86400000);
+        }
+        return date;
     }
     
     return null;
