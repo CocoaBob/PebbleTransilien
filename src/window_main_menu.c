@@ -144,7 +144,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         if (row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             menu_cell_basic_draw(ctx, cell_layer, _("Theme"), settings_is_dark_theme()?_("Dark theme"):_("Light theme"), NULL);
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
-            menu_cell_basic_draw(ctx, cell_layer, "Language", _("English"), NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Language"), _("English"), NULL);
         }
     } else if (section == MAIN_MENU_SECTION_ABOUT) {
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
