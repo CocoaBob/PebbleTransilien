@@ -304,10 +304,14 @@ static void click_config_provider(void *context) {
 
 static void message_succeeded_callback(DictionaryIterator *received, NextTrains *user_info) {
     Tuple *tuple_type = dict_find(received, MESSAGE_KEY_RESPONSE_TYPE);
-    if (tuple_type->value->int8 != MESSAGE_TYPE_NEXT_TRAINS) {
+    if (!tuple_type || tuple_type->value->int8 != MESSAGE_TYPE_NEXT_TRAINS) {
         return;
     }
     Tuple *tuple_payload_count = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT);
+    if (!tuple_payload_count) {
+        return;
+    }
+    
     size_t count = tuple_payload_count->value->int16;
     
     release_next_trains_list(user_info);
@@ -318,7 +322,7 @@ static void message_succeeded_callback(DictionaryIterator *received, NextTrains 
     
     for (size_t idx = 0; idx < count; ++idx) {
         Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + idx);
-        if (tuple_payload->type == TUPLE_BYTE_ARRAY) {
+        if (tuple_payload && tuple_payload->type == TUPLE_BYTE_ARRAY) {
             uint8_t *data = tuple_payload->value->data;
             uint16_t size_left = tuple_payload->length;
             size_t str_length = 0,offset = 0;
