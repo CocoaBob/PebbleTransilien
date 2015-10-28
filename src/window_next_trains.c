@@ -175,7 +175,7 @@ static void draw_menu_layer_cell(GContext *ctx,
     
     // Draw text, considering the scrolling index
     draw_text(ctx,
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
               is_selected?text_scroll_text(str_terminus, 0,FONT_KEY_GOTHIC_18, frame_terminus, true):str_terminus,
 #else
               str_terminus,
@@ -184,7 +184,7 @@ static void draw_menu_layer_cell(GContext *ctx,
               frame_terminus,
               GTextAlignmentLeft);
     
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
     // Scroll texts
     if (is_selected) {
         char **string_pointers = calloc(1, sizeof(char *));
@@ -493,7 +493,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
         draw_from_to(ctx, cell_layer,
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
 #ifdef PBL_COLOR
@@ -560,20 +560,18 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     }
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
 static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
     text_scroll_end();
 }
 #endif
 
 #if !defined(PBL_PLATFORM_APLITE)
-
 static void menu_layer_selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, NextTrains *user_info) {
     if (new_index->section == NEXT_TRAINS_SECTION_TRAINS && user_info->next_trains_list_count == 0) {
         *new_index = old_index;
     }
 }
-
 #endif
 
 // MARK: Window callbacks
@@ -600,9 +598,12 @@ static void window_load(Window *window) {
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
+#if TEXT_SCROLL_IS_ENABLED
+        ,
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
+#endif
 #if !defined(PBL_PLATFORM_APLITE)
         ,
-        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .selection_will_change = (MenuLayerSelectionWillChangeCallback)menu_layer_selection_will_change_callback,
@@ -674,7 +675,7 @@ static void window_disappear(Window *window) {
     // Set callbacks to NULL
     message_clear_callbacks();
     
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
     // Stop scrolling text
     text_scroll_end();
 #endif

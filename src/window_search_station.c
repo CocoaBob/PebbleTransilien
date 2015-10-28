@@ -157,7 +157,7 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
 #endif
     
     draw_from_to(ctx, layer,
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
                  layer, layer_data->is_active,
 #endif
 #ifdef PBL_COLOR
@@ -381,7 +381,7 @@ static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
 
 
 static void panel_layer_set_active(bool is_active, SearchStation *user_info) {
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
     // Stop scrolling text
     text_scroll_end();
 #endif
@@ -523,7 +523,7 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, SearchStation *user_info) {
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-#if !defined(PBL_PLATFORM_APLITE) || PBL_COLOR
+#if TEXT_SCROLL_IS_ENABLED || PBL_COLOR
     bool is_selected = (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER)?(selected_index.row == cell_index->row):false;
 #endif
 #ifdef PBL_COLOR
@@ -539,7 +539,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         stations_get_name(station_index, str_station, STATION_NAME_MAX_LENGTH);
         
         draw_station(ctx, cell_layer,
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
 #ifdef PBL_COLOR
@@ -576,7 +576,7 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
 }
 
 static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, SearchStation *user_info) {
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
     text_scroll_end();
 #endif
     if (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER) {
@@ -708,7 +708,7 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
     // Stop scrolling text
     text_scroll_end();
 #endif

@@ -8,6 +8,9 @@
 
 #pragma once
 
+//#define ENABLE_TEXT_SCROLL_FOR_APLITE
+#define TEXT_SCROLL_IS_ENABLED (!defined(PBL_PLATFORM_APLITE) || defined(ENABLE_TEXT_SCROLL_FOR_APLITE))
+
 #ifndef MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif

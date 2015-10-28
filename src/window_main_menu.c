@@ -114,7 +114,7 @@ static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_laye
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, MainMenu *user_info) {
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-#if !defined(PBL_PLATFORM_APLITE) || PBL_COLOR
+#if TEXT_SCROLL_IS_ENABLED || PBL_COLOR
     bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
 #endif
 #ifdef PBL_COLOR
@@ -126,7 +126,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     if (section == MAIN_MENU_SECTION_FAV ) {
         Favorite favorite = fav_at_index(row);
         draw_from_to(ctx, cell_layer,
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
 #ifdef PBL_COLOR
@@ -237,7 +237,7 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
     }
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
 static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
     text_scroll_end();
 }
@@ -267,9 +267,12 @@ static void window_load(Window *window) {
         .draw_header = (MenuLayerDrawHeaderCallback)menu_layer_draw_header_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback
+#if TEXT_SCROLL_IS_ENABLED
+        ,
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
+#endif
 #if !defined(PBL_PLATFORM_APLITE)
         ,
-        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
@@ -308,7 +311,7 @@ static void window_appear(Window *window) {
     
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
 static void window_disappear(Window *window) {
     // Stop scrolling text
     text_scroll_end();
@@ -337,7 +340,7 @@ Window* new_window_main_menu() {
         window_set_window_handlers(user_info->window, (WindowHandlers) {
             .load = window_load,
             .appear = window_appear,
-#if !defined(PBL_PLATFORM_APLITE)
+#if TEXT_SCROLL_IS_ENABLED
             .disappear = window_disappear,
 #endif
             .unload = window_unload
