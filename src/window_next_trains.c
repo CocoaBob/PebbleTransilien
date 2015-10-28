@@ -566,14 +566,6 @@ static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex
 }
 #endif
 
-#if !defined(PBL_PLATFORM_APLITE)
-static void menu_layer_selection_will_change_callback(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, NextTrains *user_info) {
-    if (new_index->section == NEXT_TRAINS_SECTION_TRAINS && user_info->next_trains_list_count == 0) {
-        *new_index = old_index;
-    }
-}
-#endif
-
 // MARK: Window callbacks
 
 static void window_load(Window *window) {
@@ -606,7 +598,6 @@ static void window_load(Window *window) {
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
-        .selection_will_change = (MenuLayerSelectionWillChangeCallback)menu_layer_selection_will_change_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
 #endif
     });
