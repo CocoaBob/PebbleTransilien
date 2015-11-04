@@ -31,9 +31,10 @@ typedef struct {
     InverterLayer *inverter_layer;
 #endif
     
-#if !defined(PBL_PLATFORM_APLITE)
+#if RELATIVE_TIME_IS_ENABLED
 #define UPDATE_TIME_FORMAT_INTERVAL 3000 // 3 seconds
     AppTimer *format_timer;
+    bool show_relative_time;
 #endif
     
     DataModelFromTo from_to;
@@ -43,13 +44,11 @@ typedef struct {
     size_t next_trains_list_count;
     DataModelNextTrain *next_trains_list;
     bool is_updating;
-    
-    bool show_relative_time;
 } NextTrains;
 
 // Forward declaration
 
-#if !defined(PBL_PLATFORM_APLITE)
+#if RELATIVE_TIME_IS_ENABLED
 static void restart_timers(NextTrains *user_info);
 #endif
 
@@ -334,7 +333,7 @@ static void message_succeeded_callback(DictionaryIterator *received, NextTrains 
                 // Interger data
                 if (data_index == NEXT_TRAIN_KEY_HOUR ||
                     data_index == NEXT_TRAIN_KEY_TERMINUS) {
-                    long long temp_int = 0;
+                    long temp_int = 0;
                     for (size_t i = 0; i < str_length; ++i) {
                         temp_int += data[i] << (8 * (str_length - i - 1));
                     }
@@ -366,10 +365,10 @@ static void message_succeeded_callback(DictionaryIterator *received, NextTrains 
     
     // Update UI
     user_info->is_updating = false;
-#if !defined(PBL_PLATFORM_APLITE)
+#if RELATIVE_TIME_IS_ENABLED
     restart_timers(user_info);
-#endif
     user_info->show_relative_time = false;
+#endif
     menu_layer_reload_data(user_info->menu_layer);
     vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
 }
@@ -426,8 +425,8 @@ static void request_next_stations(NextTrains *user_info) {
     free(dict_buffer);
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
 // MARK: Timers
+#if RELATIVE_TIME_IS_ENABLED
 
 static void format_timer_callback(NextTrains *user_info);
 
@@ -514,7 +513,14 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             
             // Hour
             char *str_hour = calloc(TIME_STRING_LENGTH, sizeof(char));
-            time_2_str(next_train.hour, str_hour, TIME_STRING_LENGTH, user_info->show_relative_time);
+            time_2_str(next_train.hour,
+                       str_hour,
+                       TIME_STRING_LENGTH
+#if RELATIVE_TIME_IS_ENABLED
+                       ,
+                       user_info->show_relative_time
+#endif
+                       );
             
             // Terminus
             char *str_terminus = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
@@ -655,8 +661,8 @@ static void window_appear(Window *window) {
         request_next_stations(user_info);
     }
     
-    // Start UI timer
-#if !defined(PBL_PLATFORM_APLITE)
+    // Start timers
+#if RELATIVE_TIME_IS_ENABLED
     format_timer_start(user_info);
 #endif
     
@@ -674,8 +680,8 @@ static void window_disappear(Window *window) {
     // Unsubscribe services
     accel_tap_service_deinit();
     
-    // Stop UI timer
-#if !defined(PBL_PLATFORM_APLITE)
+    // Stop timers
+#if RELATIVE_TIME_IS_ENABLED
     NextTrains *user_info = window_get_user_data(window);
     format_timer_stop(user_info);
 #endif
@@ -698,9 +704,6 @@ Window* new_window_next_trains(DataModelFromTo from_to) {
         // Reset data
         set_from_to(from_to.from, from_to.to, user_info);
         user_info->is_updating = false;
-        
-        // Reset some status
-        user_info->show_relative_time = false;
         
 #ifdef PBL_SDK_2
         // Fullscreen

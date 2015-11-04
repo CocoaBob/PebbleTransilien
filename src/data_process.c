@@ -9,16 +9,21 @@
 #include <pebble.h>
 #include "headers.h"
 
-void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relative_to_now) {
+void time_2_str(time_t timestamp,
+                char *o_str,
+                size_t o_str_size
+#if RELATIVE_TIME_IS_ENABLED
+                ,
+                bool is_relative_to_now
+#endif
+                ) {
     // 0 means no time value in the response
     if (timestamp == 0) {
         o_str = '\0';
         return;
     }
     
-#if defined(PBL_PLATFORM_APLITE)
-    strftime(o_str, o_str_size, "%H:%M", localtime(&timestamp));
-#else
+#if RELATIVE_TIME_IS_ENABLED
     time_t o_time = timestamp;
     size_t offset = 0;
     if (is_relative_to_now) {
@@ -46,10 +51,12 @@ void time_2_str(time_t timestamp, char *o_str, size_t o_str_size, bool is_relati
     if (is_relative_to_now) {
         o_time /= 60;
         o_time = MIN(99, o_time);
-        snprintf(o_str+offset, o_str_size-offset, "%lldmin", (long long)o_time);
+        snprintf(o_str+offset, o_str_size-offset, "%ldmin", (long)o_time);
     } else {
         strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time)); // Show local time
     }
+#else
+    strftime(o_str, o_str_size, "%H:%M", localtime(&timestamp));
 #endif
 }
 

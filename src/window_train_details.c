@@ -19,9 +19,10 @@ typedef struct {
     InverterLayer *inverter_layer;
 #endif
     
-#if !defined(PBL_PLATFORM_APLITE)
+#if RELATIVE_TIME_IS_ENABLED
 #define UPDATE_TIME_FORMAT_INTERVAL 3000 // 3 seconds
     AppTimer *format_timer;
+    bool show_relative_time;
 #endif
     
     char* train_number;
@@ -30,13 +31,11 @@ typedef struct {
     size_t train_details_list_count;
     DataModelTrainDetail *train_details_list;
     bool is_updating;
-    
-    bool show_relative_time;
 } TrainDetails;
 
 // Forward declaration
 
-#if !defined(PBL_PLATFORM_APLITE)
+#if RELATIVE_TIME_IS_ENABLED
 static void restart_timers(TrainDetails *user_info);
 #endif
 
@@ -82,7 +81,7 @@ static void message_succeeded_callback(DictionaryIterator *received, TrainDetail
                 str_length = (data_index == TRAIN_DETAIL_KEY_TIME)?4:strlen((char *)data);
                 offset = str_length + 1;
                 
-                long long temp_int = 0;
+                long temp_int = 0;
                 for (size_t i = 0; i < str_length; ++i) {
                     temp_int += data[i] << (8 * (str_length - i - 1));
                 }
@@ -99,10 +98,10 @@ static void message_succeeded_callback(DictionaryIterator *received, TrainDetail
     
     // Update UI
     user_info->is_updating = false;
-#if !defined(PBL_PLATFORM_APLITE)
+#if RELATIVE_TIME_IS_ENABLED
     restart_timers(user_info);
-#endif
     user_info->show_relative_time = false;
+#endif
     menu_layer_reload_data(user_info->menu_layer);
     vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
 }
@@ -144,8 +143,8 @@ static void request_train_details(TrainDetails *user_info) {
     free(dict_buffer);
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
 // MARK: Timers
+#if RELATIVE_TIME_IS_ENABLED
 
 static void format_timer_callback(TrainDetails *user_info);
 
@@ -209,7 +208,14 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         
         // Time
         char *str_time = calloc(TIME_STRING_LENGTH, sizeof(char));
-        time_2_str(train_detail.time, str_time, TIME_STRING_LENGTH, user_info->show_relative_time);
+        time_2_str(train_detail.time,
+                   str_time,
+                   TIME_STRING_LENGTH
+#if RELATIVE_TIME_IS_ENABLED
+                   ,
+                   user_info->show_relative_time
+#endif
+                   );
         
         // Station
         char *str_station = malloc(sizeof(char) * STATION_NAME_MAX_LENGTH);
@@ -343,8 +349,8 @@ static void window_appear(Window *window) {
         request_train_details(user_info);
     }
     
-    // Start UI timer
-#if !defined(PBL_PLATFORM_APLITE)
+    // Start timers
+#if RELATIVE_TIME_IS_ENABLED
     format_timer_start(user_info);
 #endif
     
@@ -362,9 +368,9 @@ static void window_disappear(Window *window) {
     // Unsubscribe services
     accel_tap_service_deinit();
     
-#if !defined(PBL_PLATFORM_APLITE)
+    // Stop timers
+#if RELATIVE_TIME_IS_ENABLED
     TrainDetails *user_info = window_get_user_data(window);
-    // Stop UI timer
     format_timer_stop(user_info);
 #endif
 }

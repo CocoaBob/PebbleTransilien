@@ -8,8 +8,11 @@
 
 #pragma once
 
-//#define ENABLE_TEXT_SCROLL_FOR_APLITE
+//#define ENABLE_TEXT_SCROLL_FOR_APLITE // (-1500B)
 #define TEXT_SCROLL_IS_ENABLED (!defined(PBL_PLATFORM_APLITE) || defined(ENABLE_TEXT_SCROLL_FOR_APLITE))
+
+//#define ENABLE_RELATIVE_TIME_FOR_APLITE // (-357B)
+#define RELATIVE_TIME_IS_ENABLED (!defined(PBL_PLATFORM_APLITE) || defined(ENABLE_RELATIVE_TIME_FOR_APLITE))
 
 #ifndef MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
