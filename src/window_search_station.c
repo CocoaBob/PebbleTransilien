@@ -675,6 +675,8 @@ static void window_unload(Window *window) {
     SearchStation *user_info = window_get_user_data(window);
     
     // Window
+    selection_layer_destroy(user_info->selection_layer);
+    layer_destroy(user_info->panel_layer);
     menu_layer_destroy(user_info->menu_layer);
     window_destroy(user_info->window);
     

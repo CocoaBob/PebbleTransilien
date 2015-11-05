@@ -21,12 +21,12 @@ void handle_init(void) {
 }
 
 void handle_deinit(void) {
-    status_bar_deinit();
+    status_bar_deinit(); // Always have 40B memory leak due to tick_timer_service_subscribe()
     favorites_deinit();
     stations_deinit();
     locale_deinit();
     settings_deinit();
-    message_deinit();
+    message_deinit(); // Always have 16B memory leak due to app_message_set_context()
 }
 
 int main(void) {

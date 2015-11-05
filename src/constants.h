@@ -34,7 +34,7 @@
 #define SETTING_KEY_FAVORITES 200
 #define SETTING_KEY_FAVORITES_COUNT 201
 
-#define NULL_FREE(x) {if (x != NULL) free(x); x = NULL;}
+#define NULL_FREE(x) {free(x?:NULL); x = NULL;}
 
 #define CELL_MARGIN 4
 #define CELL_MARGIN_2 8
