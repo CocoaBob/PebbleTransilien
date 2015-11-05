@@ -28,7 +28,7 @@ typedef struct {
     char* train_number;
     StationIndex from_station;
     
-    size_t train_details_list_count;
+    int train_details_list_count;
     DataModelTrainDetail *train_details_list;
     bool is_updating;
 } TrainDetails;
@@ -53,22 +53,28 @@ static void click_config_provider(void *context) {
 
 // MARK: Message Request callbacks
 
-static void message_callback(bool succeeded, TrainDetails *user_info, MESSAGE_TYPE type, void *results, size_t results_count) {
+static void message_callback(bool succeeded, TrainDetails *user_info, MESSAGE_TYPE type, ...) {
     if (succeeded) {
         NULL_FREE(user_info->train_details_list);
         
-        user_info->train_details_list_count = results_count;
-        user_info->train_details_list = results;
+        va_list ap;
+        va_start(ap, type);
+        
+        user_info->train_details_list = va_arg(ap, void *);
+        user_info->train_details_list_count = va_arg(ap, size_t);
+        
+        va_end(ap);
         
         // Update UI
-        user_info->is_updating = false;
 #if RELATIVE_TIME_IS_ENABLED
         restart_timers(user_info);
         user_info->show_relative_time = false;
 #endif
-        menu_layer_reload_data(user_info->menu_layer);
-        vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
+    } else {
+        user_info->train_details_list_count = -1;
     }
+    user_info->is_updating = false;
+    menu_layer_reload_data(user_info->menu_layer);
 }
 
 static void request_train_details(TrainDetails *user_info) {
@@ -124,11 +130,7 @@ static void accel_tap_service_handler(AccelAxisType axis, int32_t direction, voi
 // MARK: Menu layer callbacks
 
 static uint16_t menu_layer_get_num_rows_callback(struct MenuLayer *menu_layer, uint16_t section_index, TrainDetails *user_info) {
-    if (user_info->is_updating) {
-        return 1;
-    } else {
-        return (user_info->train_details_list_count > 0)?user_info->train_details_list_count:1;
-    }
+    return (user_info->train_details_list_count > 0)?user_info->train_details_list_count:1;
 }
 
 static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, TrainDetails *user_info) {
@@ -182,10 +184,15 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         // Clean
         free(str_time);
         free(str_station);
-    } else {
+    } else if (user_info->train_details_list_count == 0) {
         draw_centered_title(ctx, cell_layer,
                             is_selected,
                             _("No train."),
+                            NULL);
+    } else if (user_info->train_details_list_count == -1) {
+        draw_centered_title(ctx, cell_layer,
+                            is_selected,
+                            _("Request Failed."),
                             NULL);
     }
 }

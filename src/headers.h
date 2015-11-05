@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <stdarg.h>
+
 #include "3rd_party/selection_layer/selection_layer.h"
 #include "3rd_party/locale_framework/localize.h"
 

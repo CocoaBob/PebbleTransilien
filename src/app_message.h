@@ -40,7 +40,7 @@ typedef enum {
     TRAIN_DETAIL_KEY_COUNT
 } TRAIN_DETAIL_KEY;
 
-typedef void (*MessageCallback)(bool succeeded, void *context, MESSAGE_TYPE type, void *results, size_t results_count);
+typedef void (*MessageCallback)(bool succeeded, void *context, MESSAGE_TYPE type, ...);
 
 typedef struct MessageCallbacks {
     MessageCallback message_callback;

@@ -8,7 +8,6 @@
 
 #include <pebble.h>
 #include "headers.h"
-#include <stdarg.h>
 
 typedef struct {
     MESSAGE_TYPE type;
@@ -38,6 +37,7 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
     if (count == 0) {
         return;
     }
+    
     void *results = NULL;
     
     if (user_info->type == MESSAGE_TYPE_NEXT_TRAINS) {
@@ -88,7 +88,8 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
         }
         
         results = next_trains_list;
-    } else if (user_info->type == MESSAGE_TYPE_TRAIN_DETAILS) {
+    }
+    else if (user_info->type == MESSAGE_TYPE_TRAIN_DETAILS) {
         DataModelTrainDetail *train_details_list = malloc(sizeof(DataModelTrainDetail) * count);
         
         for (size_t idx = 0; idx < count; ++idx) {
@@ -122,19 +123,22 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
     
     // Call callback
     user_info->callback(true, user_info->context, user_info->type, results, count);
+    
+    // Feedback
+    vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
 }
 
 // Called when an incoming message from PebbleKitJS is dropped
 static void in_dropped_handler(AppMessageResult reason, AppMessage *user_info) {
     if (user_info->callback) {
-        user_info->callback(false, user_info->context, user_info->type, NULL, 0);
+        user_info->callback(false, user_info->context, user_info->type);
     }
 }
 
 // Called when PebbleKitJS does not acknowledge receipt of a message
 static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, AppMessage *user_info) {
     if (user_info->callback) {
-        user_info->callback(false, user_info->context, user_info->type, NULL, 0);
+        user_info->callback(false, user_info->context, user_info->type);
     }
 }
 

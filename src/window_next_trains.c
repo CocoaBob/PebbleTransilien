@@ -41,7 +41,7 @@ typedef struct {
     char *str_from;
     char *str_to;
     
-    size_t next_trains_list_count;
+    int next_trains_list_count;
     DataModelNextTrain *next_trains_list;
     bool is_updating;
 } NextTrains;
@@ -197,7 +197,7 @@ static void draw_menu_layer_cell(GContext *ctx,
 // MARK: Data
 
 static void release_next_trains_list(NextTrains *user_info) {
-    for (size_t idx = 0; idx < user_info->next_trains_list_count; ++idx) {
+    for (int idx = 0; idx < user_info->next_trains_list_count; ++idx) {
         NULL_FREE(user_info->next_trains_list[idx].code);
         NULL_FREE(user_info->next_trains_list[idx].platform);
         NULL_FREE(user_info->next_trains_list[idx].number);
@@ -301,21 +301,28 @@ static void click_config_provider(void *context) {
 
 // MARK: Message Request callbacks
 
-static void message_callback(bool succeeded, NextTrains *user_info, MESSAGE_TYPE type, void *results, size_t results_count) {
+static void message_callback(bool succeeded, NextTrains *user_info, MESSAGE_TYPE type, ...) {
     if (succeeded) {
         release_next_trains_list(user_info);
-        user_info->next_trains_list_count = results_count;
-        user_info->next_trains_list = results;
+        
+        va_list ap;
+        va_start(ap, type);
+        
+        user_info->next_trains_list = va_arg(ap, void *);
+        user_info->next_trains_list_count = va_arg(ap, size_t);
+        
+        va_end(ap);
         
         // Update UI
-        user_info->is_updating = false;
 #if RELATIVE_TIME_IS_ENABLED
         restart_timers(user_info);
         user_info->show_relative_time = false;
 #endif
-        menu_layer_reload_data(user_info->menu_layer);
-        vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
+    } else {
+        user_info->next_trains_list_count = -1;
     }
+    user_info->is_updating = false;
+    menu_layer_reload_data(user_info->menu_layer);
 }
 
 static void request_next_stations(NextTrains *user_info) {
@@ -375,11 +382,7 @@ static uint16_t menu_layer_get_num_rows_callback(struct MenuLayer *menu_layer, u
     if (section_index == NEXT_TRAINS_SECTION_INFO) {
         return 1;
     } else if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
-        if (user_info->is_updating && user_info->next_trains_list_count == 0) {
-            return 1;
-        } else {
-            return (user_info->next_trains_list_count > 0)?user_info->next_trains_list_count:1;
-        }
+        return (user_info->next_trains_list_count > 0)?user_info->next_trains_list_count:1;
     }
     return 0;
 }
@@ -409,7 +412,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #endif
                      user_info->from_to);
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
-        if (user_info->is_updating && user_info->next_trains_list_count == 0) {
+        if (user_info->is_updating) {
             draw_centered_title(ctx, cell_layer,
                                 is_selected,
                                 _("Loading..."),
@@ -448,10 +451,15 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             // Clean
             free(str_hour);
             free(str_terminus);
-        } else {
+        } else if (user_info->next_trains_list_count == 0) {
             draw_centered_title(ctx, cell_layer,
                                 is_selected,
                                 _("No train."),
+                                NULL);
+        } else if (user_info->next_trains_list_count == -1) {
+            draw_centered_title(ctx, cell_layer,
+                                is_selected,
+                                _("Request Failed."),
                                 NULL);
         }
     }
