@@ -40,12 +40,10 @@ typedef enum {
     TRAIN_DETAIL_KEY_COUNT
 } TRAIN_DETAIL_KEY;
 
-typedef void (*MessageSucceededCallback)(DictionaryIterator *received, void *context);
-typedef void (*MessageFailedCallback)(void *context);
+typedef void (*MessageCallback)(bool succeeded, void *context, MESSAGE_TYPE type, void *results, size_t results_count);
 
 typedef struct MessageCallbacks {
-    MessageSucceededCallback message_succeeded_callback;
-    MessageFailedCallback message_failed_callback;
+    MessageCallback message_callback;
 } MessageCallbacks;
 
 // MARK: Setup
@@ -53,7 +51,5 @@ void message_init();
 void message_deinit();
 
 // MARK: Send with callbacks
-void message_send(DictionaryIterator *parameters,
-                  MessageCallbacks callbacks,
-                  void *context);
+void message_send(MESSAGE_TYPE type, MessageCallback callback, void *context, ...);
 void message_clear_callbacks();

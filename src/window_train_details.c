@@ -53,61 +53,22 @@ static void click_config_provider(void *context) {
 
 // MARK: Message Request callbacks
 
-static void message_succeeded_callback(DictionaryIterator *received, TrainDetails *user_info) {
-    Tuple *tuple_type = dict_find(received, MESSAGE_KEY_RESPONSE_TYPE);
-    if (!tuple_type || tuple_type->value->int8 != MESSAGE_TYPE_TRAIN_DETAILS) {
-        return;
-    }
-    Tuple *tuple_payload_count = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT);
-    if (!tuple_payload_count) {
-        return;
-    }
-    size_t count = tuple_payload_count->value->int16;
-    
-    NULL_FREE(user_info->train_details_list);
-    user_info->train_details_list_count = count;
-    if (user_info->train_details_list_count > 0) {
-        user_info->train_details_list = malloc(sizeof(DataModelTrainDetail) * user_info->train_details_list_count);
-    }
-    
-    for (size_t idx = 0; idx < count; ++idx) {
-        Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + idx);
-        if (tuple_payload && tuple_payload->type == TUPLE_BYTE_ARRAY) {
-            uint8_t *data = tuple_payload->value->data;
-            uint16_t size_left = tuple_payload->length;
-            size_t str_length = 0,offset = 0;
-            for (size_t data_index = 0; data_index < TRAIN_DETAIL_KEY_COUNT && size_left > 0; ++data_index) {
-                data += offset;
-                str_length = (data_index == TRAIN_DETAIL_KEY_TIME)?4:strlen((char *)data);
-                offset = str_length + 1;
-                
-                long temp_int = 0;
-                for (size_t i = 0; i < str_length; ++i) {
-                    temp_int += data[i] << (8 * (str_length - i - 1));
-                }
-                if (data_index == TRAIN_DETAIL_KEY_TIME) {
-                    user_info->train_details_list[idx].time = temp_int;
-                } else if (data_index == TRAIN_DETAIL_KEY_STATION) {
-                    user_info->train_details_list[idx].station = temp_int;
-                }
-                
-                size_left -= (uint16_t)offset;
-            }
-        }
-    }
-    
-    // Update UI
-    user_info->is_updating = false;
+static void message_callback(bool succeeded, TrainDetails *user_info, MESSAGE_TYPE type, void *results, size_t results_count) {
+    if (succeeded) {
+        NULL_FREE(user_info->train_details_list);
+        
+        user_info->train_details_list_count = results_count;
+        user_info->train_details_list = results;
+        
+        // Update UI
+        user_info->is_updating = false;
 #if RELATIVE_TIME_IS_ENABLED
-    restart_timers(user_info);
-    user_info->show_relative_time = false;
+        restart_timers(user_info);
+        user_info->show_relative_time = false;
 #endif
-    menu_layer_reload_data(user_info->menu_layer);
-    vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
-}
-
-static void message_failed_callback(TrainDetails *user_info) {
-    // TODO: Cancel loading...
+        menu_layer_reload_data(user_info->menu_layer);
+        vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
+    }
 }
 
 static void request_train_details(TrainDetails *user_info) {
@@ -117,30 +78,14 @@ static void request_train_details(TrainDetails *user_info) {
     NULL_FREE(user_info->train_details_list);
     menu_layer_reload_data(user_info->menu_layer);
     
-    // Prepare parameters
-    DictionaryIterator parameters;
     size_t train_number_length = strlen(user_info->train_number);
     
-    size_t tuple_count = 2;
-    uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), train_number_length);
-    uint8_t *dict_buffer = malloc(dict_size);
-    
-    dict_write_begin(&parameters, dict_buffer, dict_size);
-    
-    dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_TRAIN_DETAILS);
-    dict_write_data(&parameters, MESSAGE_KEY_REQUEST_TRAIN_NUMBER, (uint8_t *)user_info->train_number, train_number_length);
-
-    dict_write_end(&parameters);
-    
     // Send message
-    message_send(&parameters,
-                 (MessageCallbacks){
-                     .message_succeeded_callback = (MessageSucceededCallback)message_succeeded_callback,
-                     .message_failed_callback = (MessageFailedCallback)message_failed_callback
-                 },
-                 user_info);
-    
-    free(dict_buffer);
+    message_send(MESSAGE_TYPE_TRAIN_DETAILS,
+                 (MessageCallback)message_callback,
+                 user_info,
+                 (uint8_t *)user_info->train_number,
+                 train_number_length);
 }
 
 // MARK: Timers

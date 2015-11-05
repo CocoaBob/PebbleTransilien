@@ -301,92 +301,20 @@ static void click_config_provider(void *context) {
 
 // MARK: Message Request callbacks
 
-static void message_succeeded_callback(DictionaryIterator *received, NextTrains *user_info) {
-    Tuple *tuple_type = dict_find(received, MESSAGE_KEY_RESPONSE_TYPE);
-    if (!tuple_type || tuple_type->value->int8 != MESSAGE_TYPE_NEXT_TRAINS) {
-        return;
-    }
-    Tuple *tuple_payload_count = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT);
-    if (!tuple_payload_count) {
-        return;
-    }
-    
-    size_t count = tuple_payload_count->value->int16;
-    
-    release_next_trains_list(user_info);
-    user_info->next_trains_list_count = count;
-    if (user_info->next_trains_list_count > 0) {
-        user_info->next_trains_list = malloc(sizeof(DataModelNextTrain) * user_info->next_trains_list_count);
-    }
-    
-    for (size_t idx = 0; idx < count; ++idx) {
-        Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + idx);
-        if (tuple_payload && tuple_payload->type == TUPLE_BYTE_ARRAY) {
-            uint8_t *data = tuple_payload->value->data;
-            uint16_t size_left = tuple_payload->length;
-            size_t str_length = 0,offset = 0;
-            for (size_t data_index = 0; data_index < NEXT_TRAIN_KEY_COUNT && size_left > 0; ++data_index) {
-                data += offset;
-                str_length = (data_index == NEXT_TRAIN_KEY_HOUR)?4:strlen((char *)data);
-                offset = str_length + 1;
-                
-                // Interger data
-                if (data_index == NEXT_TRAIN_KEY_HOUR ||
-                    data_index == NEXT_TRAIN_KEY_TERMINUS) {
-                    long temp_int = 0;
-                    for (size_t i = 0; i < str_length; ++i) {
-                        temp_int += data[i] << (8 * (str_length - i - 1));
-                    }
-                    if (data_index == NEXT_TRAIN_KEY_HOUR) {
-                        user_info->next_trains_list[idx].hour = temp_int;
-                    } else if (data_index == NEXT_TRAIN_KEY_TERMINUS) {
-                        user_info->next_trains_list[idx].terminus = temp_int;
-                    }
-                }
-                // C string data
-                else {
-                    char *string = calloc(offset, sizeof(char));
-                    strncpy(string, (char *)data, offset);
-                    if (data_index == NEXT_TRAIN_KEY_CODE) {
-                        user_info->next_trains_list[idx].code = string;
-                    } else if (data_index == NEXT_TRAIN_KEY_PLATFORM) {
-                        user_info->next_trains_list[idx].platform = string;
-                    } else if (data_index == NEXT_TRAIN_KEY_NUMBER) {
-                        user_info->next_trains_list[idx].number = string;
-                    } else if (data_index == NEXT_TRAIN_KEY_MENTION) {
-                        user_info->next_trains_list[idx].mention = string;
-                    }
-                }
-                
-                size_left -= (uint16_t)offset;
-            }
-        }
-    }
-    
-    // Update UI
-    user_info->is_updating = false;
+static void message_callback(bool succeeded, NextTrains *user_info, MESSAGE_TYPE type, void *results, size_t results_count) {
+    if (succeeded) {
+        release_next_trains_list(user_info);
+        user_info->next_trains_list_count = results_count;
+        user_info->next_trains_list = results;
+        
+        // Update UI
+        user_info->is_updating = false;
 #if RELATIVE_TIME_IS_ENABLED
-    restart_timers(user_info);
-    user_info->show_relative_time = false;
+        restart_timers(user_info);
+        user_info->show_relative_time = false;
 #endif
-    menu_layer_reload_data(user_info->menu_layer);
-    vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
-}
-
-static void message_failed_callback(NextTrains *user_info) {
-    // TODO: Cancel loading...
-}
-
-static void write_request_dict(DictionaryIterator *parameters, StationIndex station_index, MESSAGE_KEY message_key) {
-    if (station_index != STATION_NON) {
-        char *data = malloc(STATION_CODE_LENGTH);
-        stations_get_code(station_index, data, STATION_CODE_LENGTH);
-        size_t length = strlen(data);
-        if (length > STATION_CODE_LENGTH) {
-            length = STATION_CODE_LENGTH;
-        }
-        dict_write_data(parameters, message_key, (uint8_t *)data, length);
-        free(data);
+        menu_layer_reload_data(user_info->menu_layer);
+        vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
     }
 }
 
@@ -395,34 +323,12 @@ static void request_next_stations(NextTrains *user_info) {
     user_info->is_updating = true;
     menu_layer_reload_data(user_info->menu_layer);
     
-    // Prepare parameters
-    DictionaryIterator parameters;
-    
-    size_t tuple_count = 1;
-    if (user_info->from_to.from != STATION_NON) {
-        ++tuple_count;
-    }
-    if (user_info->from_to.to != STATION_NON) {
-        ++tuple_count;
-    }
-    uint32_t dict_size = dict_calc_buffer_size(tuple_count, sizeof(uint8_t), STATION_CODE_LENGTH * (tuple_count - 1));
-    uint8_t *dict_buffer = malloc(dict_size);
-    
-    dict_write_begin(&parameters, dict_buffer, dict_size);
-    dict_write_uint8(&parameters, MESSAGE_KEY_REQUEST_TYPE, MESSAGE_TYPE_NEXT_TRAINS);
-    write_request_dict(&parameters, user_info->from_to.from, MESSAGE_KEY_REQUEST_CODE_FROM);
-    write_request_dict(&parameters, user_info->from_to.to, MESSAGE_KEY_REQUEST_CODE_TO);
-    dict_write_end(&parameters);
-    
     // Send message
-    message_send(&parameters,
-                 (MessageCallbacks){
-                     .message_succeeded_callback = (MessageSucceededCallback)message_succeeded_callback,
-                     .message_failed_callback = (MessageFailedCallback)message_failed_callback
-                 },
-                 user_info);
-    
-    free(dict_buffer);
+    message_send(MESSAGE_TYPE_NEXT_TRAINS,
+                 (MessageCallback)message_callback,
+                 user_info,
+                 user_info->from_to.from,
+                 user_info->from_to.to);
 }
 
 // MARK: Timers
