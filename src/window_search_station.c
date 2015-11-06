@@ -440,7 +440,8 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
     if (!is_forward) {
         // Return to the main menu window
         if (old_index == 0) {
-            window_stack_pop(true);
+            // Mark -1 to quit
+            *new_index = -1;
         }
         // Clear all indexes behind
         else {
@@ -470,6 +471,10 @@ static void selection_handle_will_change(int old_index, int *new_index, bool is_
 }
 
 static void selection_handle_did_change(int index, bool is_forward, SearchStation *user_info) {
+    // If index == -1, return to the Main Menu window
+    if (index == -1) {
+        window_stack_pop(true);
+    }
     // We update the list only if the value at index-1 is valid
     if (value_is_valid(user_info->search_string[index - 1])) {
         user_info->search_results_index = index - 1;

@@ -637,7 +637,7 @@ static void prv_click_config_provider(Layer *layer) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //! API
 
-static Layer* selection_layer_init(SelectionLayerData *selection_layer_, GRect frame, int num_cells) {
+Layer* selection_layer_create(GRect frame, int num_cells) {
     Layer *layer = layer_create_with_data(frame, sizeof(SelectionLayerData));
     SelectionLayerData *selection_layer_data = layer_get_data(layer);
     
@@ -673,29 +673,20 @@ static Layer* selection_layer_init(SelectionLayerData *selection_layer_, GRect f
     return layer;
 }
 
-Layer* selection_layer_create(GRect frame, int num_cells) {
-    SelectionLayerData *selection_layer_data = NULL;
-    return selection_layer_init(selection_layer_data, frame, num_cells);
-}
-
-static void selection_layer_deinit(Layer* layer) {
-#ifndef PBL_COLOR
-    SelectionLayerData *data = layer_get_data(layer);
-    inverter_layer_destroy(data->inverter);
-#endif
-    
-    layer_destroy(layer);
-}
-
 void selection_layer_destroy(Layer* layer) {
     SelectionLayerData *data = layer_get_data(layer);
     
 #if ANIMATION_IS_ENABLED
     animation_unschedule_all();
 #endif /* ANIMATION_IS_ENABLED */
+    
     if (data) {
-        selection_layer_deinit(layer);
+#ifndef PBL_COLOR
+        inverter_layer_destroy(data->inverter);
+#endif
     }
+    
+    layer_destroy(layer);
 }
 
 void selection_layer_set_cell_width(Layer *layer, int idx, int width) {
