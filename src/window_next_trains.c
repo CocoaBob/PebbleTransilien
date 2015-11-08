@@ -302,7 +302,7 @@ static void click_config_provider(void *context) {
 // MARK: Message Request callbacks
 
 static void message_callback(bool succeeded, NextTrains *user_info, MESSAGE_TYPE type, ...) {
-    if (succeeded) {
+    if (succeeded && type == MESSAGE_TYPE_NEXT_TRAINS) {
         release_next_trains_list(user_info);
         
         va_list ap;
@@ -323,6 +323,9 @@ static void message_callback(bool succeeded, NextTrains *user_info, MESSAGE_TYPE
     }
     user_info->is_updating = false;
     menu_layer_reload_data(user_info->menu_layer);
+    
+    // Feedback
+    vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
 }
 
 static void request_next_stations(NextTrains *user_info) {
@@ -410,7 +413,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #else
                      false,
 #endif
-                     user_info->from_to);
+                     user_info->from_to,
+                     false);
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (user_info->is_updating) {
             draw_centered_title(ctx, cell_layer,

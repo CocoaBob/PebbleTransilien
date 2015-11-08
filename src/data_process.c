@@ -9,6 +9,32 @@
 #include <pebble.h>
 #include "headers.h"
 
+long relative_time(long timestamp) {
+    long o_time = timestamp;
+    time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
+    o_time = timestamp - time_curr; // UTC time
+    // Round to minutes (Remove seconds)
+    if (o_time < 0) {
+        o_time = -o_time;
+        time_t mod = o_time % 60;
+        if (mod > 0) {
+            o_time -= mod;
+        }
+    } else {
+        time_t mod = o_time % 60;
+        if (mod > 0) {
+            o_time += (60 - mod);
+        }
+    }
+    
+    if (o_time != 0 && timestamp < time_curr) {
+        o_time = -o_time;
+    }
+    o_time /= 60;
+    o_time = MAX(-99, MIN(99, o_time));
+    return o_time;
+}
+
 void time_2_str(time_t timestamp,
                 char *o_str,
                 size_t o_str_size
@@ -24,36 +50,10 @@ void time_2_str(time_t timestamp,
     }
     
 #if RELATIVE_TIME_IS_ENABLED
-    time_t o_time = timestamp;
-    size_t offset = 0;
     if (is_relative_to_now) {
-        time_t time_curr = time(NULL); // Contains time zone for Aplite, UTC for Basalt
-        o_time = timestamp - time_curr; // UTC time
-        // Round to minutes (Remove seconds)
-        if (o_time < 0) {
-            o_time = -o_time;
-            time_t mod = o_time % 60;
-            if (mod > 0) {
-                o_time -= mod;
-            }
-        } else {
-            time_t mod = o_time % 60;
-            if (mod > 0) {
-                o_time += (60 - mod);
-            }
-        }
-        
-        if (o_time != 0 && timestamp < time_curr) {
-            snprintf(o_str, 2, "-");
-            offset = 1;
-        }
-    }
-    if (is_relative_to_now) {
-        o_time /= 60;
-        o_time = MIN(99, o_time);
-        snprintf(o_str+offset, o_str_size-offset, "%ldmin", (long)o_time);
+        snprintf(o_str, o_str_size, "%ldmin", relative_time((long)timestamp));
     } else {
-        strftime(o_str+offset, o_str_size-offset, "%H:%M", localtime(&o_time)); // Show local time
+        strftime(o_str, o_str_size, "%H:%M", localtime(&timestamp)); // Show local time
     }
 #else
     strftime(o_str, o_str_size, "%H:%M", localtime(&timestamp));

@@ -19,6 +19,12 @@ typedef struct DataModelFromTo {
 
 typedef DataModelFromTo Favorite;
 
+typedef struct DataModelNextTrainFavorite {
+    time_t hour;                        // Train hour, 8 Bytes unsigned integer, seconds since January 1st 1970, e.g. "1437738167"
+    char platform[3];                   // Train dock or Train lane, null-terminated string, e.g. "C"
+    bool mentioned;                     // If the train has a mention like "supprimé" or retardé", it's true
+} DataModelNextTrainFavorite;
+
 typedef struct DataModelNextTrain {
     char *code;                         // Train mission code, null-terminated string, e.g. "POBI"
     time_t hour;                        // Train hour, 8 Bytes unsigned integer, seconds since January 1st 1970, e.g. "1437738167"
@@ -30,5 +36,5 @@ typedef struct DataModelNextTrain {
 
 typedef struct DataModelTrainDetail {
     time_t time;                        // time, the time of arriving, 8 Bytes unsigned integer, seconds since January 1st 1970, e.g. "1437738167"
-    StationIndex station;                     // codeGare, Station index, e.g. 354 (PSL: Paris Saint-Lazare)
+    StationIndex station;               // codeGare, Station index, e.g. 354 (PSL: Paris Saint-Lazare)
 } DataModelTrainDetail;

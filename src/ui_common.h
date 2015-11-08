@@ -47,7 +47,8 @@ void draw_from_to(GContext* ctx, Layer *drawing_layer,
 #else
                   bool is_inverted,
 #endif
-                  DataModelFromTo from_to);
+                  DataModelFromTo from_to,
+                  bool is_fav_list);
 
 void draw_station(GContext *ctx, Layer *drawing_layer,
 #if TEXT_SCROLL_IS_ENABLED

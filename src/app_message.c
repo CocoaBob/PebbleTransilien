@@ -13,12 +13,15 @@ typedef struct {
     MESSAGE_TYPE type;
     MessageCallback callback;
     void *context;
+    bool is_ready;
 } AppMessage;
 
 // MARK: Handlers
 
 // Called when a message is received from PebbleKitJS
 static void in_received_handler(DictionaryIterator *received, AppMessage *user_info) {
+    user_info->is_ready = true;
+    
     if (!user_info->callback) {
         return;
     }
@@ -40,7 +43,44 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
     
     void *results = NULL;
     
-    if (user_info->type == MESSAGE_TYPE_NEXT_TRAINS) {
+    if (user_info->type == MESSAGE_TYPE_FAVORITE) {
+        count = MIN(2, count);
+        DataModelNextTrainFavorite *next_trains_simple_list = calloc(2, sizeof(DataModelNextTrainFavorite));
+        
+        for (size_t idx = 0; idx < count; ++idx) {
+            Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + idx);
+            if (tuple_payload && tuple_payload->type == TUPLE_BYTE_ARRAY) {
+                uint8_t *data = tuple_payload->value->data;
+                uint16_t size_left = tuple_payload->length;
+                size_t str_length = 0,offset = 0;
+                for (size_t data_index = 0; data_index < NEXT_TRAIN_RESPONSE_KEY_COUNT && size_left > 0; ++data_index) {
+                    data += offset;
+                    str_length = (data_index == NEXT_TRAIN_RESPONSE_KEY_HOUR)?4:strlen((char *)data);
+                    offset = str_length + 1;
+                    
+                    // Interger data
+                    if (data_index == NEXT_TRAIN_RESPONSE_KEY_HOUR) {
+                        long temp_int = 0;
+                        for (size_t i = 0; i < str_length; ++i) {
+                            temp_int += data[i] << (8 * (str_length - i - 1));
+                        }
+                        next_trains_simple_list[idx].hour = temp_int;
+                    }
+                    // C string data
+                    else if (data_index == NEXT_TRAIN_RESPONSE_KEY_PLATFORM) {
+                        strncpy(next_trains_simple_list[idx].platform, (char *)data, MIN(2, offset));
+                    } else if (data_index == NEXT_TRAIN_RESPONSE_KEY_MENTION) {
+                        next_trains_simple_list[idx].mentioned = (str_length > 0);
+                    }
+                    
+                    size_left -= (uint16_t)offset;
+                }
+            }
+        }
+
+        results = next_trains_simple_list;
+    }
+    else if (user_info->type == MESSAGE_TYPE_NEXT_TRAINS) {
         DataModelNextTrain *next_trains_list = malloc(sizeof(DataModelNextTrain) * count);
         
         for (size_t idx = 0; idx < count; ++idx) {
@@ -49,21 +89,21 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
                 uint8_t *data = tuple_payload->value->data;
                 uint16_t size_left = tuple_payload->length;
                 size_t str_length = 0,offset = 0;
-                for (size_t data_index = 0; data_index < NEXT_TRAIN_KEY_COUNT && size_left > 0; ++data_index) {
+                for (size_t data_index = 0; data_index < NEXT_TRAIN_RESPONSE_KEY_COUNT && size_left > 0; ++data_index) {
                     data += offset;
-                    str_length = (data_index == NEXT_TRAIN_KEY_HOUR)?4:strlen((char *)data);
+                    str_length = (data_index == NEXT_TRAIN_RESPONSE_KEY_HOUR)?4:strlen((char *)data);
                     offset = str_length + 1;
                     
                     // Interger data
-                    if (data_index == NEXT_TRAIN_KEY_HOUR ||
-                        data_index == NEXT_TRAIN_KEY_TERMINUS) {
+                    if (data_index == NEXT_TRAIN_RESPONSE_KEY_HOUR ||
+                        data_index == NEXT_TRAIN_RESPONSE_KEY_TERMINUS) {
                         long temp_int = 0;
                         for (size_t i = 0; i < str_length; ++i) {
                             temp_int += data[i] << (8 * (str_length - i - 1));
                         }
-                        if (data_index == NEXT_TRAIN_KEY_HOUR) {
+                        if (data_index == NEXT_TRAIN_RESPONSE_KEY_HOUR) {
                             next_trains_list[idx].hour = temp_int;
-                        } else if (data_index == NEXT_TRAIN_KEY_TERMINUS) {
+                        } else if (data_index == NEXT_TRAIN_RESPONSE_KEY_TERMINUS) {
                             next_trains_list[idx].terminus = temp_int;
                         }
                     }
@@ -71,13 +111,13 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
                     else {
                         char *string = calloc(offset, sizeof(char));
                         strncpy(string, (char *)data, offset);
-                        if (data_index == NEXT_TRAIN_KEY_CODE) {
+                        if (data_index == NEXT_TRAIN_RESPONSE_KEY_CODE) {
                             next_trains_list[idx].code = string;
-                        } else if (data_index == NEXT_TRAIN_KEY_PLATFORM) {
+                        } else if (data_index == NEXT_TRAIN_RESPONSE_KEY_PLATFORM) {
                             next_trains_list[idx].platform = string;
-                        } else if (data_index == NEXT_TRAIN_KEY_NUMBER) {
+                        } else if (data_index == NEXT_TRAIN_RESPONSE_KEY_NUMBER) {
                             next_trains_list[idx].number = string;
-                        } else if (data_index == NEXT_TRAIN_KEY_MENTION) {
+                        } else if (data_index == NEXT_TRAIN_RESPONSE_KEY_MENTION) {
                             next_trains_list[idx].mention = string;
                         }
                     }
@@ -98,18 +138,18 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
                 uint8_t *data = tuple_payload->value->data;
                 uint16_t size_left = tuple_payload->length;
                 size_t str_length = 0,offset = 0;
-                for (size_t data_index = 0; data_index < TRAIN_DETAIL_KEY_COUNT && size_left > 0; ++data_index) {
+                for (size_t data_index = 0; data_index < TRAIN_DETAIL_RESPONSE_KEY_COUNT && size_left > 0; ++data_index) {
                     data += offset;
-                    str_length = (data_index == TRAIN_DETAIL_KEY_TIME)?4:strlen((char *)data);
+                    str_length = (data_index == TRAIN_DETAIL_RESPONSE_KEY_TIME)?4:strlen((char *)data);
                     offset = str_length + 1;
                     
                     long temp_int = 0;
                     for (size_t i = 0; i < str_length; ++i) {
                         temp_int += data[i] << (8 * (str_length - i - 1));
                     }
-                    if (data_index == TRAIN_DETAIL_KEY_TIME) {
+                    if (data_index == TRAIN_DETAIL_RESPONSE_KEY_TIME) {
                         train_details_list[idx].time = temp_int;
-                    } else if (data_index == TRAIN_DETAIL_KEY_STATION) {
+                    } else if (data_index == TRAIN_DETAIL_RESPONSE_KEY_STATION) {
                         train_details_list[idx].station = temp_int;
                     }
                     
@@ -123,9 +163,6 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
     
     // Call callback
     user_info->callback(true, user_info->context, user_info->type, results, count);
-    
-    // Feedback
-    vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
 }
 
 // Called when an incoming message from PebbleKitJS is dropped
@@ -164,6 +201,13 @@ void message_deinit() {
     free(user_info);
 }
 
+// MARK: Routines
+
+bool message_is_ready() {
+    AppMessage *user_info = app_message_get_context();
+    return user_info->is_ready && connection_service_peek_pebble_app_connection();
+}
+
 // MARK: Send with callbacks
 
 static void write_station_index_to_dict(DictionaryIterator *iter, StationIndex station_index, MESSAGE_KEY message_key) {
@@ -192,7 +236,8 @@ void message_send(MESSAGE_TYPE type, MessageCallback callback, void *context, ..
     va_start(ap, context);
     
     dict_write_uint8(iter, MESSAGE_KEY_REQUEST_TYPE, type);
-    if (type == MESSAGE_TYPE_NEXT_TRAINS) {
+    if (type == MESSAGE_TYPE_NEXT_TRAINS ||
+        type == MESSAGE_TYPE_FAVORITE) {
         write_station_index_to_dict(iter, va_arg(ap, StationIndex), MESSAGE_KEY_REQUEST_CODE_FROM); // StationIndex for from
         write_station_index_to_dict(iter, va_arg(ap, StationIndex), MESSAGE_KEY_REQUEST_CODE_TO);   // StationIndex for to
     } else if (type == MESSAGE_TYPE_TRAIN_DETAILS) {

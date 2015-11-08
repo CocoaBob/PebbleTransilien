@@ -91,6 +91,48 @@ void draw_centered_title(GContext* ctx,
 
 // MARK: Draw From To Layer, layer height should be 44
 
+#define NEXT_TRAINS_TIME_STR_LENGTH 5
+#define NEXT_TRAINS_TIME_WIDTH 20
+#define NEXT_TRAINS_PLATFORM_WIDTH 15
+
+static void draw_from_to_next_train(GContext* ctx,
+#ifdef PBL_COLOR
+                                    bool is_highlighed,
+#endif
+                                    GRect station_frame,
+                                    DataModelNextTrainFavorite *next_trains,
+                                    bool is_first) {
+    GRect frame_next_train = GRect(station_frame.origin.x + station_frame.size.w,
+                                   station_frame.origin.y + 4,
+                                   NEXT_TRAINS_TIME_WIDTH,
+                                   station_frame.size.h);
+    char *str_next_train = calloc(NEXT_TRAINS_TIME_STR_LENGTH, sizeof(char));
+    if (next_trains && next_trains[is_first?0:1].hour) {
+        snprintf(str_next_train, NEXT_TRAINS_TIME_STR_LENGTH, "%ld'", relative_time((long)next_trains[is_first?0:1].hour));
+    } else {
+        snprintf(str_next_train, NEXT_TRAINS_TIME_STR_LENGTH, "--'");
+    }
+    draw_text(ctx, str_next_train, FONT_KEY_GOTHIC_14, frame_next_train, GTextAlignmentRight);
+    free(str_next_train);
+    
+    GRect frame_platform = GRect(frame_next_train.origin.x + frame_next_train.size.w + 2, // Intenal margin = 2
+                                 station_frame.origin.y + 6,
+                                 NEXT_TRAINS_PLATFORM_WIDTH,
+                                 NEXT_TRAINS_PLATFORM_WIDTH);
+#ifdef PBL_COLOR
+    graphics_context_set_stroke_color(ctx, is_highlighed?GColorWhite:GColorBlack);
+#else
+    graphics_context_set_stroke_color(ctx, GColorBlack);
+#endif
+    graphics_draw_round_rect(ctx, frame_platform, 2);
+    
+    // Draw platform text
+    if (next_trains) {
+        frame_platform.origin.y -= 2;
+        draw_text(ctx, next_trains[is_first?0:1].platform, FONT_KEY_GOTHIC_14, frame_platform, GTextAlignmentCenter);
+    }
+}
+
 void draw_from_to(GContext* ctx, Layer *display_layer,
 #if TEXT_SCROLL_IS_ENABLED
                   Layer *redraw_layer, bool is_selected,
@@ -101,7 +143,8 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
 #else
                   bool is_inverted,
 #endif
-                  DataModelFromTo from_to) {
+                  DataModelFromTo from_to,
+                  bool is_fav_list) {
 #ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, text_color);
 #else
@@ -110,7 +153,9 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     GRect bounds = layer_get_bounds(display_layer);
     bool is_from_to = (from_to.to != STATION_NON);
     
+    ////////////////////////////
     // Draw left icon
+    ////////////////////////////
     GRect frame_icon = GRect(CELL_MARGIN,
                              (CELL_HEIGHT - FROM_TO_ICON_HEIGHT) / 2,
                              FROM_TO_ICON_WIDTH,
@@ -129,19 +174,22 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     }
 #endif
     
+    ////////////////////////////
     // Draw stations
+    ////////////////////////////
+    // Prepare strings and frames
     char *str_from = calloc(1, sizeof(char) * STATION_NAME_MAX_LENGTH);
     char *str_to = calloc(1, sizeof(char) * STATION_NAME_MAX_LENGTH);
     
     stations_get_name(from_to.from, str_from, STATION_NAME_MAX_LENGTH);
     GRect frame_from = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
-                             TEXT_Y_OFFSET + 2, // +2 to get the two station names closer
-                             bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3,
+                             TEXT_Y_OFFSET + 2, // +2 to let the two station names be closer
+                             bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3 - (is_fav_list?NEXT_TRAINS_TIME_WIDTH+2+NEXT_TRAINS_PLATFORM_WIDTH:0),// Next train intenal margin = 2
                              CELL_HEIGHT_2);
     GRect frame_to = frame_from;
+    frame_to.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to let the two station names be closer
     if (is_from_to) {
         stations_get_name(from_to.to, str_to, STATION_NAME_MAX_LENGTH);
-        frame_to.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to get the two station names closer
     } else {
         frame_from.size.h = bounds.size.h;
         GSize text_size = size_of_text(str_from, FONT_KEY_GOTHIC_18_BOLD, frame_from);
@@ -149,7 +197,7 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     }
     
 #if TEXT_SCROLL_IS_ENABLED
-    // Scroll texts
+    // Scroll the station strings
     if (is_selected) {
         GRect frame_test = GRect(0, 0, INT16_MAX, frame_from.size.h);
 
@@ -172,7 +220,7 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     }
 #endif
     
-    // Draw texts
+    // Draw the station strings
     if (from_to.from != STATION_NON) {
         draw_text(ctx,
 #if TEXT_SCROLL_IS_ENABLED
@@ -184,7 +232,7 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
                   frame_from,
                   GTextAlignmentLeft);
     }
-    if (from_to.to != STATION_NON) {
+    if (is_from_to) {
         draw_text(ctx,
 #if TEXT_SCROLL_IS_ENABLED
                   is_selected?text_scroll_text(str_to, 1,FONT_KEY_GOTHIC_18_BOLD, frame_from, false):str_to,
@@ -199,6 +247,27 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     // Free memory
     free(str_from);
     free(str_to);
+    
+    ////////////////////////////
+    // Draw next train times
+    ////////////////////////////
+    if (is_fav_list) {
+        DataModelNextTrainFavorite *next_trains = fav_get_next_trains((Favorite)from_to);
+        draw_from_to_next_train(ctx,
+#ifdef PBL_COLOR
+                                is_highlighed,
+#endif
+                                frame_from,
+                                next_trains,
+                                true);
+        draw_from_to_next_train(ctx,
+#ifdef PBL_COLOR
+                                is_highlighed,
+#endif
+                                frame_to,
+                                next_trains,
+                                false);
+    }
 }
 
 // MARK: Draw Station layer, layer hight should be 22

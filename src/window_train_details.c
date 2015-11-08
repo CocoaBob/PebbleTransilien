@@ -54,7 +54,7 @@ static void click_config_provider(void *context) {
 // MARK: Message Request callbacks
 
 static void message_callback(bool succeeded, TrainDetails *user_info, MESSAGE_TYPE type, ...) {
-    if (succeeded) {
+    if (succeeded && type == MESSAGE_TYPE_TRAIN_DETAILS) {
         NULL_FREE(user_info->train_details_list);
         
         va_list ap;
@@ -75,6 +75,9 @@ static void message_callback(bool succeeded, TrainDetails *user_info, MESSAGE_TY
     }
     user_info->is_updating = false;
     menu_layer_reload_data(user_info->menu_layer);
+    
+    // Feedback
+    vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
 }
 
 static void request_train_details(TrainDetails *user_info) {

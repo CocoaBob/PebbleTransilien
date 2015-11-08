@@ -12,6 +12,11 @@
 
 #define FAV_MAX_COUNT 64// 4*64=256, 256 is persist data max length
 
+typedef void (*FavoriteRequestCallback)(void *context);
+DataModelNextTrainFavorite *fav_get_next_trains(Favorite favorite);
+void fav_start_requests(FavoriteRequestCallback callback, void *context);
+void fav_stop_requests();
+
 void favorites_init();
 void favorites_deinit();
 size_t fav_get_count();

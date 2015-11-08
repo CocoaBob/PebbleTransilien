@@ -8,6 +8,8 @@
 
 #pragma once
 
+long relative_time(long timestamp);
+
 //! Convert timestamp to string in format HH:MM
 //! @param time Timestamp with time zone offset for Aplite, timestamp of UTC for Basalt
 void time_2_str(time_t timestamp,

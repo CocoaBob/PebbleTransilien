@@ -10,7 +10,8 @@
 
 typedef enum {
     MESSAGE_TYPE_ERROR = -1,
-    MESSAGE_TYPE_NEXT_TRAINS = 0,
+    MESSAGE_TYPE_FAVORITE = 0,
+    MESSAGE_TYPE_NEXT_TRAINS,
     MESSAGE_TYPE_TRAIN_DETAILS
 } MESSAGE_TYPE;
 
@@ -25,20 +26,20 @@ typedef enum {
 } MESSAGE_KEY;
 
 typedef enum {
-    NEXT_TRAIN_KEY_CODE,
-    NEXT_TRAIN_KEY_HOUR,
-    NEXT_TRAIN_KEY_PLATFORM,
-    NEXT_TRAIN_KEY_TERMINUS,
-    NEXT_TRAIN_KEY_NUMBER,
-    NEXT_TRAIN_KEY_MENTION,
-    NEXT_TRAIN_KEY_COUNT
-} NEXT_TRAIN_KEY;
+    NEXT_TRAIN_RESPONSE_KEY_CODE,
+    NEXT_TRAIN_RESPONSE_KEY_HOUR,
+    NEXT_TRAIN_RESPONSE_KEY_PLATFORM,
+    NEXT_TRAIN_RESPONSE_KEY_TERMINUS,
+    NEXT_TRAIN_RESPONSE_KEY_NUMBER,
+    NEXT_TRAIN_RESPONSE_KEY_MENTION,
+    NEXT_TRAIN_RESPONSE_KEY_COUNT
+} NEXT_TRAIN_RESPONSE_KEY;
 
 typedef enum {
-    TRAIN_DETAIL_KEY_TIME,
-    TRAIN_DETAIL_KEY_STATION,
-    TRAIN_DETAIL_KEY_COUNT
-} TRAIN_DETAIL_KEY;
+    TRAIN_DETAIL_RESPONSE_KEY_TIME,
+    TRAIN_DETAIL_RESPONSE_KEY_STATION,
+    TRAIN_DETAIL_RESPONSE_KEY_COUNT
+} TRAIN_DETAIL_RESPONSE_KEY;
 
 typedef void (*MessageCallback)(bool succeeded, void *context, MESSAGE_TYPE type, ...);
 
@@ -49,6 +50,9 @@ typedef struct MessageCallbacks {
 // MARK: Setup
 void message_init();
 void message_deinit();
+
+// MARK: Routines
+bool message_is_ready();
 
 // MARK: Send with callbacks
 void message_send(MESSAGE_TYPE type, MessageCallback callback, void *context, ...);

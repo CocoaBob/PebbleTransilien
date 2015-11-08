@@ -83,6 +83,12 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     }
 }
 
+// MARK: Request next trains
+
+static void request_next_trains_callback(MainMenu *user_info) {
+    layer_mark_dirty(menu_layer_get_layer(user_info->menu_layer));
+}
+
 // MARK: Menu layer callbacks
 
 static uint16_t menu_layer_get_num_sections_callback(struct MenuLayer *menu_layer, void *context) {
@@ -135,7 +141,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #else
                      false,
 #endif
-                     favorite);
+                     favorite,
+                     true);
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
             menu_cell_basic_draw(ctx, cell_layer, _("Alphabetic..."), _("By choosing letters"), NULL);
@@ -309,12 +316,17 @@ static void window_appear(Window *window) {
     // Show the selected row
     menu_layer_set_selected_index(user_info->menu_layer, menu_layer_get_selected_index(user_info->menu_layer), MenuRowAlignCenter, false);
     
+    // Start next trains requests
+    fav_start_requests((FavoriteRequestCallback)request_next_trains_callback, user_info);
 }
 
 #if TEXT_SCROLL_IS_ENABLED
 static void window_disappear(Window *window) {
     // Stop scrolling text
     text_scroll_end();
+    
+    // Stop next trains requests
+    fav_stop_requests();
 }
 #endif
 
