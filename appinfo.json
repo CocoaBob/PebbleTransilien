@@ -44,16 +44,6 @@
       },
       {
         "type": "png",
-        "name": "IMG_FRAME_DARK",
-        "file": "images/img_frame_dark.png"
-      },
-      {
-        "type": "png",
-        "name": "IMG_FRAME_LIGHT",
-        "file": "images/img_frame_light.png"
-      },
-      {
-        "type": "png",
         "name": "IMG_MENTION_DARK",
         "file": "images/img_mention_dark.png"
       },

@@ -105,11 +105,14 @@ static void draw_menu_layer_cell(GContext *ctx,
                                  CELL_ICON_SIZE,
                                  CELL_ICON_SIZE);
     if (str_platform != NULL) {
+        
 #ifdef PBL_COLOR
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FRAME_DARK:RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
+        graphics_context_set_stroke_color(ctx, is_highlighed?GColorWhite:GColorBlack);
 #else
-        draw_image_in_rect(ctx, false, RESOURCE_ID_IMG_FRAME_LIGHT, frame_platform);
+        graphics_context_set_stroke_color(ctx, GColorBlack);
 #endif
+        graphics_draw_round_rect(ctx, frame_platform, 2);
+        graphics_draw_rect(ctx, grect_crop(frame_platform, 1));
         draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14_BOLD, frame_platform, GTextAlignmentCenter);
     } else {
         // TODO: No platform string
