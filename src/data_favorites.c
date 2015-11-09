@@ -44,10 +44,12 @@ static void message_callback(bool succeeded, void *context, MESSAGE_TYPE type, .
         va_list ap;
         va_start(ap, type);
         
-        DataModelNextTrainFavorite *next_train_favorites = fav_get_next_trains_from_tuple(s_current_next_trains_dict_tuple);
-        NULL_FREE(next_train_favorites);
-        next_train_favorites = va_arg(ap, void *);
-        memcpy(s_current_next_trains_dict_tuple->value->data, &next_train_favorites, sizeof(DataModelNextTrainFavorite *));
+        if (s_current_next_trains_dict_tuple) {
+            DataModelNextTrainFavorite *next_train_favorites = fav_get_next_trains_from_tuple(s_current_next_trains_dict_tuple);
+            NULL_FREE(next_train_favorites);
+            next_train_favorites = va_arg(ap, void *);
+            memcpy(s_current_next_trains_dict_tuple->value->data, &next_train_favorites, sizeof(DataModelNextTrainFavorite *));
+        }
         
         va_end(ap);
         
@@ -72,8 +74,9 @@ static void fav_request_next_trains(void *context) {
     if (s_next_trains_request_index < fav_get_count()) {
         Favorite favorite = fav_at_index(s_next_trains_request_index);
         ++s_next_trains_request_index;
-        
         s_current_next_trains_dict_tuple = dict_find(&s_next_trains_dict, KEY_OF_FAV(favorite));
+        
+        long key = KEY_OF_FAV(favorite);
         
         message_send(MESSAGE_TYPE_FAVORITE,
                      (MessageCallback)message_callback,
@@ -107,7 +110,7 @@ static void fav_reset_next_trains_dict_buffer() {
     fav_release_next_trains_values();
     // Calculate new dict size
     size_t fav_count = fav_get_count();
-    s_next_trains_dict_buffer_size = dict_calc_buffer_size(fav_count,sizeof(DataModelNextTrainFavorite *));
+    s_next_trains_dict_buffer_size = dict_calc_buffer_size(fav_count,sizeof(DataModelNextTrainFavorite *)*fav_count);
     // Realloc the memory
     s_next_trains_dict_buffer = s_next_trains_dict_buffer?realloc(s_next_trains_dict_buffer, s_next_trains_dict_buffer_size):malloc(s_next_trains_dict_buffer_size);
     
