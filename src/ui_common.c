@@ -91,6 +91,8 @@ void draw_centered_title(GContext* ctx,
 
 // MARK: Draw From To Layer, layer height should be 44
 
+#if MINI_TIMETABLE_IS_ENABLED
+
 #define NEXT_TRAINS_TIME_STR_LENGTH 5
 #define NEXT_TRAINS_TIME_WIDTH 20
 #define NEXT_TRAINS_PLATFORM_WIDTH 15
@@ -100,7 +102,7 @@ static void draw_from_to_next_train(GContext* ctx,
                                     bool is_highlighed,
 #endif
                                     GRect station_frame,
-                                    DataModelNextTrainFavorite *next_trains,
+                                    DataModelMiniTimetable *next_trains,
                                     bool is_first) {
     GRect frame_next_train = GRect(station_frame.origin.x + station_frame.size.w,
                                    station_frame.origin.y + 4,
@@ -133,6 +135,8 @@ static void draw_from_to_next_train(GContext* ctx,
     }
 }
 
+#endif
+
 void draw_from_to(GContext* ctx, Layer *display_layer,
 #if TEXT_SCROLL_IS_ENABLED
                   Layer *redraw_layer, bool is_selected,
@@ -143,8 +147,12 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
 #else
                   bool is_inverted,
 #endif
-                  DataModelFromTo from_to,
-                  bool is_fav_list) {
+                  DataModelFromTo from_to
+#if MINI_TIMETABLE_IS_ENABLED
+                  ,
+                  bool draw_mini_timetable
+#endif
+                  ) {
 #ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, text_color);
 #else
@@ -184,7 +192,11 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     stations_get_name(from_to.from, str_from, STATION_NAME_MAX_LENGTH);
     GRect frame_from = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
                              TEXT_Y_OFFSET + 2, // +2 to let the two station names be closer
-                             bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3 - (is_fav_list?NEXT_TRAINS_TIME_WIDTH+2+NEXT_TRAINS_PLATFORM_WIDTH:0),// Next train intenal margin = 2
+#if MINI_TIMETABLE_IS_ENABLED
+                             bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3 - (draw_mini_timetable?NEXT_TRAINS_TIME_WIDTH+2+NEXT_TRAINS_PLATFORM_WIDTH:0),// Next train intenal margin = 2
+#else
+                             bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3,
+#endif
                              CELL_HEIGHT_2);
     GRect frame_to = frame_from;
     frame_to.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to let the two station names be closer
@@ -247,12 +259,13 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     // Free memory
     free(str_from);
     free(str_to);
-    
+                      
+#if MINI_TIMETABLE_IS_ENABLED
     ////////////////////////////
     // Draw next train times
     ////////////////////////////
-    if (is_fav_list) {
-        DataModelNextTrainFavorite *next_trains = fav_get_next_trains((Favorite)from_to);
+    if (draw_mini_timetable) {
+        DataModelMiniTimetable *next_trains = fav_get_mini_timetables((Favorite)from_to);
         draw_from_to_next_train(ctx,
 #ifdef PBL_COLOR
                                 is_highlighed,
@@ -268,6 +281,7 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
                                 next_trains,
                                 false);
     }
+#endif
 }
 
 // MARK: Draw Station layer, layer hight should be 22

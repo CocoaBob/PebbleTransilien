@@ -43,9 +43,10 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
     
     void *results = NULL;
     
-    if (user_info->type == MESSAGE_TYPE_FAVORITE) {
+    if (user_info->type == MESSAGE_TYPE_MINI_TIMETABLE) {
+#if MINI_TIMETABLE_IS_ENABLED
         count = MIN(2, count);
-        DataModelNextTrainFavorite *next_trains_simple_list = calloc(2, sizeof(DataModelNextTrainFavorite));
+        DataModelMiniTimetable *mini_timetables_list = calloc(2, sizeof(DataModelMiniTimetable));
         
         for (size_t idx = 0; idx < count; ++idx) {
             Tuple *tuple_payload = dict_find(received, MESSAGE_KEY_RESPONSE_PAYLOAD + idx);
@@ -64,13 +65,13 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
                         for (size_t i = 0; i < str_length; ++i) {
                             temp_int += data[i] << (8 * (str_length - i - 1));
                         }
-                        next_trains_simple_list[idx].hour = temp_int;
+                        mini_timetables_list[idx].hour = temp_int;
                     }
                     // C string data
                     else if (data_index == NEXT_TRAIN_RESPONSE_KEY_PLATFORM) {
-                        strncpy(next_trains_simple_list[idx].platform, (char *)data, MIN(2, offset));
+                        strncpy(mini_timetables_list[idx].platform, (char *)data, MIN(2, offset));
                     } else if (data_index == NEXT_TRAIN_RESPONSE_KEY_MENTION) {
-                        next_trains_simple_list[idx].mentioned = (str_length > 0);
+                        mini_timetables_list[idx].mentioned = (str_length > 0);
                     }
                     
                     size_left -= (uint16_t)offset;
@@ -78,7 +79,8 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
             }
         }
 
-        results = next_trains_simple_list;
+        results = mini_timetables_list;
+#endif
     }
     else if (user_info->type == MESSAGE_TYPE_NEXT_TRAINS) {
         DataModelNextTrain *next_trains_list = malloc(sizeof(DataModelNextTrain) * count);
@@ -237,7 +239,7 @@ void message_send(MESSAGE_TYPE type, MessageCallback callback, void *context, ..
     
     dict_write_uint8(iter, MESSAGE_KEY_REQUEST_TYPE, type);
     if (type == MESSAGE_TYPE_NEXT_TRAINS ||
-        type == MESSAGE_TYPE_FAVORITE) {
+        type == MESSAGE_TYPE_MINI_TIMETABLE) {
         write_station_index_to_dict(iter, va_arg(ap, StationIndex), MESSAGE_KEY_REQUEST_CODE_FROM); // StationIndex for from
         write_station_index_to_dict(iter, va_arg(ap, StationIndex), MESSAGE_KEY_REQUEST_CODE_TO);   // StationIndex for to
     } else if (type == MESSAGE_TYPE_TRAIN_DETAILS) {

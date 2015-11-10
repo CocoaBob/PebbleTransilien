@@ -47,8 +47,12 @@ void draw_from_to(GContext* ctx, Layer *drawing_layer,
 #else
                   bool is_inverted,
 #endif
-                  DataModelFromTo from_to,
-                  bool is_fav_list);
+                  DataModelFromTo from_to
+#if MINI_TIMETABLE_IS_ENABLED
+                  ,
+                  bool draw_mini_timetable
+#endif
+                  );
 
 void draw_station(GContext *ctx, Layer *drawing_layer,
 #if TEXT_SCROLL_IS_ENABLED

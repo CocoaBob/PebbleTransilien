@@ -416,8 +416,12 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #else
                      false,
 #endif
-                     user_info->from_to,
-                     false);
+                     user_info->from_to
+#if MINI_TIMETABLE_IS_ENABLED
+                     ,
+                     false
+#endif
+                     );
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (user_info->is_updating) {
             draw_centered_title(ctx, cell_layer,

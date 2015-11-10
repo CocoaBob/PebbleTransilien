@@ -12,10 +12,12 @@
 
 #define FAV_MAX_COUNT 64// 4*64=256, 256 is persist data max length
 
-typedef void (*FavoriteRequestCallback)(void *context);
-DataModelNextTrainFavorite *fav_get_next_trains(Favorite favorite);
-void fav_start_requests(FavoriteRequestCallback callback, void *context);
+#if MINI_TIMETABLE_IS_ENABLED
+typedef void (*MiniTimetableRequestCallback)(void *context);
+DataModelMiniTimetable *fav_get_mini_timetables(Favorite favorite);
+void fav_start_requests(MiniTimetableRequestCallback callback, void *context);
 void fav_stop_requests();
+#endif
 
 void favorites_init();
 void favorites_deinit();

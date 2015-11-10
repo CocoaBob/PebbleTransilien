@@ -83,11 +83,14 @@ static void action_list_select_callback(Window *action_list_window, size_t index
     }
 }
 
+
+#if MINI_TIMETABLE_IS_ENABLED
 // MARK: Request next trains
 
 static void request_next_trains_callback(MainMenu *user_info) {
     layer_mark_dirty(menu_layer_get_layer(user_info->menu_layer));
 }
+#endif
 
 // MARK: Menu layer callbacks
 
@@ -141,8 +144,12 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #else
                      false,
 #endif
-                     favorite,
-                     true);
+                     favorite
+#if MINI_TIMETABLE_IS_ENABLED
+                     ,
+                     true
+#endif
+                     );
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
             menu_cell_basic_draw(ctx, cell_layer, _("Alphabetic..."), _("By choosing letters"), NULL);
@@ -316,8 +323,10 @@ static void window_appear(Window *window) {
     // Show the selected row
     menu_layer_set_selected_index(user_info->menu_layer, menu_layer_get_selected_index(user_info->menu_layer), MenuRowAlignCenter, false);
     
+#if MINI_TIMETABLE_IS_ENABLED
     // Start next trains requests
-    fav_start_requests((FavoriteRequestCallback)request_next_trains_callback, user_info);
+    fav_start_requests((MiniTimetableRequestCallback)request_next_trains_callback, user_info);
+#endif
 }
 
 #if TEXT_SCROLL_IS_ENABLED
@@ -325,8 +334,10 @@ static void window_disappear(Window *window) {
     // Stop scrolling text
     text_scroll_end();
     
+#if MINI_TIMETABLE_IS_ENABLED
     // Stop next trains requests
     fav_stop_requests();
+#endif
 }
 #endif
 

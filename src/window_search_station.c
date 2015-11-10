@@ -166,8 +166,12 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
 #else
                  layer_data->is_active,
 #endif
-                 layer_data->from_to,
-                 false);
+                 layer_data->from_to
+#if MINI_TIMETABLE_IS_ENABLED
+                 ,
+                 false
+#endif
+                 );
 }
 
 // MARK: Info Panel

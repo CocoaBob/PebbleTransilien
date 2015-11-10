@@ -11,74 +11,74 @@
 
 static Favorite *s_favorites;
 
-static FavoriteRequestCallback s_next_trains_request_callback;
-static AppTimer *s_next_trains_request_timer;
-static size_t s_next_trains_request_index;
-static Tuple *s_current_next_trains_dict_tuple;
-static DictionaryIterator s_next_trains_dict;
-static uint8_t *s_next_trains_dict_buffer;
-static uint8_t s_next_trains_dict_buffer_size;
+#if MINI_TIMETABLE_IS_ENABLED
+
+static MiniTimetableRequestCallback s_mini_timetable_request_callback;
+static AppTimer *s_mini_timetable_request_timer;
+static size_t s_mini_timetable_request_index;
+static Tuple *s_current_mini_timetable_dict_tuple;
+static DictionaryIterator s_mini_timetable_dict;
+static uint8_t *s_mini_timetable_dict_buffer;
+static uint8_t s_mini_timetable_dict_buffer_size;
 
 #define KEY_OF_FAV(x) ((x.from << 16) + x.to)
 
 // Request next trains for favorites
 
-static void fav_request_next_trains(void *context);
+static void fav_request_mini_timetable(void *context);
 
-DataModelNextTrainFavorite *fav_get_next_trains_from_tuple(Tuple *tuple) {
+DataModelMiniTimetable *fav_get_mini_timetable_from_tuple(Tuple *tuple) {
     if (tuple) {
-        DataModelNextTrainFavorite *data;
-        memcpy(&data, tuple->value->data, sizeof(DataModelNextTrainFavorite *));
+        DataModelMiniTimetable *data;
+        memcpy(&data, tuple->value->data, sizeof(DataModelMiniTimetable *));
         return data;
     }
     return NULL;
 }
 
-DataModelNextTrainFavorite *fav_get_next_trains(Favorite favorite) {
-    Tuple *tuple = dict_find(&s_next_trains_dict, KEY_OF_FAV(favorite));
-    return fav_get_next_trains_from_tuple(tuple);
+DataModelMiniTimetable *fav_get_mini_timetables(Favorite favorite) {
+    Tuple *tuple = dict_find(&s_mini_timetable_dict, KEY_OF_FAV(favorite));
+    return fav_get_mini_timetable_from_tuple(tuple);
 }
 
 static void message_callback(bool succeeded, void *context, MESSAGE_TYPE type, ...) {
-    if (succeeded && type == MESSAGE_TYPE_FAVORITE) {
+    if (succeeded && type == MESSAGE_TYPE_MINI_TIMETABLE) {
         va_list ap;
         va_start(ap, type);
         
-        if (s_current_next_trains_dict_tuple) {
-            DataModelNextTrainFavorite *next_train_favorites = fav_get_next_trains_from_tuple(s_current_next_trains_dict_tuple);
-            NULL_FREE(next_train_favorites);
-            next_train_favorites = va_arg(ap, void *);
-            memcpy(s_current_next_trains_dict_tuple->value->data, &next_train_favorites, sizeof(DataModelNextTrainFavorite *));
+        if (s_current_mini_timetable_dict_tuple) {
+            DataModelMiniTimetable *mini_timetables = fav_get_mini_timetable_from_tuple(s_current_mini_timetable_dict_tuple);
+            NULL_FREE(mini_timetables);
+            mini_timetables = va_arg(ap, void *);
+            memcpy(s_current_mini_timetable_dict_tuple->value->data, &mini_timetables, sizeof(DataModelMiniTimetable *));
         }
         
         va_end(ap);
         
-        s_next_trains_request_callback(context);
+        s_mini_timetable_request_callback(context);
     }
     
     // Continue the request loop
-    fav_request_next_trains(context);
+    fav_request_mini_timetable(context);
 }
 
-static void fav_request_next_trains(void *context) {
-    s_next_trains_request_timer = NULL;
+static void fav_request_mini_timetable(void *context) {
+    s_mini_timetable_request_timer = NULL;
     
     // On launch, or no network
     if (!message_is_ready()) {
-        s_next_trains_request_index = 0;
-        s_next_trains_request_timer = app_timer_register(1000, fav_request_next_trains, context);
+        s_mini_timetable_request_index = 0;
+        s_mini_timetable_request_timer = app_timer_register(1000, fav_request_mini_timetable, context);
         return;
     }
     
     // Request next favorite immediately
-    if (s_next_trains_request_index < fav_get_count()) {
-        Favorite favorite = fav_at_index(s_next_trains_request_index);
-        ++s_next_trains_request_index;
-        s_current_next_trains_dict_tuple = dict_find(&s_next_trains_dict, KEY_OF_FAV(favorite));
+    if (s_mini_timetable_request_index < fav_get_count()) {
+        Favorite favorite = fav_at_index(s_mini_timetable_request_index);
+        ++s_mini_timetable_request_index;
+        s_current_mini_timetable_dict_tuple = dict_find(&s_mini_timetable_dict, KEY_OF_FAV(favorite));
         
-        long key = KEY_OF_FAV(favorite);
-        
-        message_send(MESSAGE_TYPE_FAVORITE,
+        message_send(MESSAGE_TYPE_MINI_TIMETABLE,
                      (MessageCallback)message_callback,
                      context,
                      favorite.from,
@@ -86,61 +86,63 @@ static void fav_request_next_trains(void *context) {
     }
     // Wait for 15 seconds to start over again
     else {
-        if (s_next_trains_request_index > 0) {
+        if (s_mini_timetable_request_index > 0) {
             // Feedback
             vibes_enqueue_custom_pattern((VibePattern){.durations = (uint32_t[]) {50}, .num_segments = 1});
         }
         
-        s_next_trains_request_index = 0;
-        s_next_trains_request_timer = app_timer_register(15000, fav_request_next_trains, context);
+        s_mini_timetable_request_index = 0;
+        s_mini_timetable_request_timer = app_timer_register(15000, fav_request_mini_timetable, context);
     }
 }
 
-static void fav_release_next_trains_values() {
-    Tuple *tuple = dict_read_first(&s_next_trains_dict);
+static void fav_release_mini_timetable_values() {
+    Tuple *tuple = dict_read_first(&s_mini_timetable_dict);
     while (tuple) {
-        DataModelNextTrainFavorite *next_train_favorites = fav_get_next_trains_from_tuple(tuple);
-        NULL_FREE(next_train_favorites);
-        memset(tuple->value->data, 0, sizeof(DataModelNextTrainFavorite *));
-        tuple = dict_read_next(&s_next_trains_dict);
+        DataModelMiniTimetable *mini_timetables = fav_get_mini_timetable_from_tuple(tuple);
+        NULL_FREE(mini_timetables);
+        memset(tuple->value->data, 0, sizeof(DataModelMiniTimetable *));
+        tuple = dict_read_next(&s_mini_timetable_dict);
     }
 }
 
-static void fav_reset_next_trains_dict_buffer() {
-    fav_release_next_trains_values();
+static void fav_reset_mini_timetable_dict_buffer() {
+    fav_release_mini_timetable_values();
     // Calculate new dict size
     size_t fav_count = fav_get_count();
-    s_next_trains_dict_buffer_size = dict_calc_buffer_size(fav_count,sizeof(DataModelNextTrainFavorite *)*fav_count);
+    s_mini_timetable_dict_buffer_size = dict_calc_buffer_size(fav_count,sizeof(DataModelMiniTimetable *)*fav_count);
     // Realloc the memory
-    s_next_trains_dict_buffer = s_next_trains_dict_buffer?realloc(s_next_trains_dict_buffer, s_next_trains_dict_buffer_size):malloc(s_next_trains_dict_buffer_size);
+    s_mini_timetable_dict_buffer = s_mini_timetable_dict_buffer?realloc(s_mini_timetable_dict_buffer, s_mini_timetable_dict_buffer_size):malloc(s_mini_timetable_dict_buffer_size);
     
     // Empty old data
-    memset(s_next_trains_dict_buffer, 0, s_next_trains_dict_buffer_size);
+    memset(s_mini_timetable_dict_buffer, 0, s_mini_timetable_dict_buffer_size);
     
     // Fill with empty data
-    void *temp_data = calloc(1, sizeof(DataModelNextTrainFavorite *));
-    dict_write_begin(&s_next_trains_dict, s_next_trains_dict_buffer, s_next_trains_dict_buffer_size);
+    void *temp_data = calloc(1, sizeof(DataModelMiniTimetable *));
+    dict_write_begin(&s_mini_timetable_dict, s_mini_timetable_dict_buffer, s_mini_timetable_dict_buffer_size);
     for (size_t i = 0 ; i < fav_get_count(); ++i) {
-        dict_write_data(&s_next_trains_dict, KEY_OF_FAV(fav_at_index(i)), temp_data, sizeof(DataModelNextTrainFavorite *));
+        dict_write_data(&s_mini_timetable_dict, KEY_OF_FAV(fav_at_index(i)), temp_data, sizeof(DataModelMiniTimetable *));
     }
-    dict_write_end(&s_next_trains_dict);
+    dict_write_end(&s_mini_timetable_dict);
     free(temp_data);
 }
 
-void fav_start_requests(FavoriteRequestCallback callback, void *context) {
-    s_next_trains_request_callback = callback;
-    fav_request_next_trains(context);
+void fav_start_requests(MiniTimetableRequestCallback callback, void *context) {
+    s_mini_timetable_request_callback = callback;
+    fav_request_mini_timetable(context);
 }
 
 void fav_stop_requests() {
-    if (s_next_trains_request_timer) {
-        app_timer_cancel(s_next_trains_request_timer);
-        s_next_trains_request_timer = NULL;
+    if (s_mini_timetable_request_timer) {
+        app_timer_cancel(s_mini_timetable_request_timer);
+        s_mini_timetable_request_timer = NULL;
     }
     message_clear_callbacks();
-    fav_release_next_trains_values();
-    s_next_trains_request_index = 0;
+    fav_release_mini_timetable_values();
+    s_mini_timetable_request_index = 0;
 }
+
+#endif
 
 // Routines of Favorites
 
@@ -167,19 +169,23 @@ void favorites_init() {
         persist_read_data(SETTING_KEY_FAVORITES, s_favorites, buffer_size) == E_DOES_NOT_EXIST) {
         favorites_deinit();
     }
-    fav_reset_next_trains_dict_buffer();
+#if MINI_TIMETABLE_IS_ENABLED
+    fav_reset_mini_timetable_dict_buffer();
+#endif
 }
 
 void favorites_deinit() {
     NULL_FREE(s_favorites);
     
-    fav_release_next_trains_values();
-    NULL_FREE(s_next_trains_dict_buffer);
+#if MINI_TIMETABLE_IS_ENABLED
+    fav_release_mini_timetable_values();
+    NULL_FREE(s_mini_timetable_dict_buffer);
     
-    if (s_next_trains_request_timer) {
-        app_timer_cancel(s_next_trains_request_timer);
-        s_next_trains_request_timer = NULL;
+    if (s_mini_timetable_request_timer) {
+        app_timer_cancel(s_mini_timetable_request_timer);
+        s_mini_timetable_request_timer = NULL;
     }
+#endif
 }
 
 size_t fav_get_count() {
@@ -231,8 +237,10 @@ bool fav_add(StationIndex from, StationIndex to) {
     persist_write_int(SETTING_KEY_FAVORITES_COUNT, fav_count);
     storage_set_favorites(s_favorites, fav_count);
     
+#if MINI_TIMETABLE_IS_ENABLED
     // Reset request trains dict
-    fav_reset_next_trains_dict_buffer();
+    fav_reset_mini_timetable_dict_buffer();
+#endif
     
     return true;
 }
@@ -255,8 +263,10 @@ bool fav_delete_at_index(size_t index) {
     s_favorites = realloc(s_favorites, sizeof(Favorite) * new_fav_count);
     storage_set_favorites(s_favorites, new_fav_count);
     
+#if MINI_TIMETABLE_IS_ENABLED
     // Reset request trains dict
-    fav_reset_next_trains_dict_buffer();
+    fav_reset_mini_timetable_dict_buffer();
+#endif
     
     return true;
 }

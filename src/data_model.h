@@ -19,11 +19,13 @@ typedef struct DataModelFromTo {
 
 typedef DataModelFromTo Favorite;
 
-typedef struct DataModelNextTrainFavorite {
+#if MINI_TIMETABLE_IS_ENABLED
+typedef struct DataModelMiniTimetable {
     time_t hour;                        // Train hour, 8 Bytes unsigned integer, seconds since January 1st 1970, e.g. "1437738167"
     char platform[3];                   // Train dock or Train lane, null-terminated string, e.g. "C"
     bool mentioned;                     // If the train has a mention like "supprimé" or retardé", it's true
-} DataModelNextTrainFavorite;
+} DataModelMiniTimetable;
+#endif
 
 typedef struct DataModelNextTrain {
     char *code;                         // Train mission code, null-terminated string, e.g. "POBI"
