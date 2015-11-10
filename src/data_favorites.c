@@ -128,8 +128,10 @@ static void fav_reset_mini_timetable_dict_buffer() {
 }
 
 void fav_start_requests(MiniTimetableRequestCallback callback, void *context) {
-    s_mini_timetable_request_callback = callback;
-    fav_request_mini_timetable(context);
+    if (s_mini_timetable_request_callback != callback) {
+        s_mini_timetable_request_callback = callback;
+        fav_request_mini_timetable(context);
+    }
 }
 
 void fav_stop_requests() {
@@ -140,6 +142,7 @@ void fav_stop_requests() {
     message_clear_callbacks();
     fav_release_mini_timetable_values();
     s_mini_timetable_request_index = 0;
+    s_mini_timetable_request_callback = NULL;
 }
 
 #endif

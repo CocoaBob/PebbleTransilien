@@ -25,6 +25,9 @@ enum {
 enum {
     MAIN_MENU_SECTION_SETTING_ROW_THEME,
     MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE,
+#if MINI_TIMETABLE_IS_ENABLED
+    MAIN_MENU_SECTION_SETTING_ROW_MINI_TIMETABLE,
+#endif
     MAIN_MENU_SECTION_SETTING_ROW_COUNT
 };
 
@@ -147,7 +150,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                      favorite
 #if MINI_TIMETABLE_IS_ENABLED
                      ,
-                     true
+                     settings_mini_timetable_is_enabled()
 #endif
                      );
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
@@ -160,6 +163,11 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         } else if (row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             menu_cell_basic_draw(ctx, cell_layer, _("Language"), _("English"), NULL);
         }
+#if MINI_TIMETABLE_IS_ENABLED
+        else if (row == MAIN_MENU_SECTION_SETTING_ROW_MINI_TIMETABLE) {
+            menu_cell_basic_draw(ctx, cell_layer, _("Mini Timetable"), settings_mini_timetable_is_enabled()?_("Enabled"):_("Disabled"), NULL);
+        }
+#endif
     } else if (section == MAIN_MENU_SECTION_ABOUT) {
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
             menu_cell_basic_draw(ctx, cell_layer, _("Developer"), "@CocoaBob", NULL);
@@ -209,7 +217,6 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
         }
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
-            // Change theme
             settings_set_theme(!settings_is_dark_theme());
 #ifdef PBL_COLOR
             ui_setup_theme(user_info->window, user_info->menu_layer);
@@ -220,6 +227,16 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             settings_toggle_locale();
         }
+#if MINI_TIMETABLE_IS_ENABLED
+        else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_MINI_TIMETABLE) {
+            settings_set_mini_timetable_enable(!settings_mini_timetable_is_enabled());
+            if (settings_mini_timetable_is_enabled()) {
+                fav_start_requests((MiniTimetableRequestCallback)request_next_trains_callback, user_info);
+            } else {
+                fav_stop_requests();
+            }
+        }
+#endif
         menu_layer_reload_data(user_info->menu_layer);
     }
 }
@@ -325,7 +342,9 @@ static void window_appear(Window *window) {
     
 #if MINI_TIMETABLE_IS_ENABLED
     // Start next trains requests
-    fav_start_requests((MiniTimetableRequestCallback)request_next_trains_callback, user_info);
+    if (settings_mini_timetable_is_enabled()) {
+        fav_start_requests((MiniTimetableRequestCallback)request_next_trains_callback, user_info);
+    }
 #endif
 }
 
