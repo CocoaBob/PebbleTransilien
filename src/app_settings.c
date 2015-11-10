@@ -9,7 +9,6 @@
 #include <pebble.h>
 #include "headers.h"
 
-
 typedef struct {
     bool is_dark_theme;
     char* curr_locale;
