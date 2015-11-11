@@ -177,7 +177,7 @@ void favorites_init() {
     s_favorite_data->favorites = malloc(buffer_size);
     if (!persist_exists(SETTING_KEY_FAVORITES) ||
         persist_read_data(SETTING_KEY_FAVORITES, s_favorite_data->favorites, buffer_size) == E_DOES_NOT_EXIST) {
-        favorites_deinit();
+        NULL_FREE(s_favorite_data->favorites);
     }
 #if MINI_TIMETABLE_IS_ENABLED
     fav_reset_mini_timetable_dict_buffer();
