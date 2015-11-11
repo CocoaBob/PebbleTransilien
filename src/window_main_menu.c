@@ -172,7 +172,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
             menu_cell_basic_draw(ctx, cell_layer, _("Developer"), "@CocoaBob", NULL);
         } else if (row == MAIN_MENU_SECTION_ABOUT_ROW_VERSION) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.3", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.4", NULL);
         }
     }
 }
