@@ -107,7 +107,7 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
             graphics_context_set_stroke_color(ctx, GColorWhite);
             graphics_draw_rect(ctx, rect);
         }
-#elif PBL_SDK_2
+#elif PBL_SDK_2 /* #ifdef PBL_SDK_3 */
         graphics_context_set_stroke_color(ctx, GColorBlack);
         graphics_draw_rect(ctx, rect);
         
@@ -176,7 +176,7 @@ static void prv_draw_slider_slide(Layer *layer, GContext *ctx) {
     graphics_fill_rect(ctx, rect, 1, GCornerNone);
     graphics_context_set_stroke_color(ctx, GColorWhite);
     graphics_draw_rect(ctx, rect);
-#else
+#elif IS_BW_AND_SDK_2
     layer_set_frame(inverter_layer_get_layer(data->inverter), rect);
 #endif
 }
@@ -212,7 +212,7 @@ static void prv_draw_slider_settle(Layer *layer, GContext *ctx) {
 #ifdef PBL_COLOR
     graphics_context_set_fill_color(ctx, data->active_background_color);
     graphics_fill_rect(ctx, rect, 1, GCornerNone);
-#else
+#elif IS_BW_AND_SDK_2
     if (data->slide_is_forward) {
         rect.origin.x -= data->cell_widths[data->selected_cell_idx];
         rect.size.w += data->cell_widths[data->selected_cell_idx];
@@ -650,7 +650,7 @@ Layer* selection_layer_create(GRect frame, int num_cells) {
 #ifdef PBL_COLOR
         .active_background_color = DEFAULT_ACTIVE_COLOR,
         .inactive_background_color = DEFAULT_INACTIVE_COLOR,
-#else
+#elif IS_BW_AND_SDK_2
         .inverter = inverter_layer_create(GRect(0, 0, 0, frame.size.h)),
 #endif
         .num_cells = num_cells,
@@ -666,7 +666,7 @@ Layer* selection_layer_create(GRect frame, int num_cells) {
     layer_set_clips(layer, false);
     layer_set_update_proc(layer, (LayerUpdateProc)prv_draw_selection_layer);
     
-#ifndef PBL_COLOR
+#if IS_BW_AND_SDK_2
     layer_add_child(layer, inverter_layer_get_layer(selection_layer_data->inverter));
 #endif
     
@@ -680,11 +680,11 @@ void selection_layer_destroy(Layer* layer) {
     animation_unschedule_all();
 #endif /* ANIMATION_IS_ENABLED */
     
+#if IS_BW_AND_SDK_2
     if (data) {
-#ifndef PBL_COLOR
         inverter_layer_destroy(data->inverter);
-#endif
     }
+#endif
     
     layer_destroy(layer);
 }
@@ -695,7 +695,7 @@ void selection_layer_set_cell_width(Layer *layer, int idx, int width) {
     if (data && idx < data->num_cells) {
         data->cell_widths[idx] = width;
     }
-#ifndef PBL_COLOR
+#if IS_BW_AND_SDK_2
     layer_set_bounds(inverter_layer_get_layer(data->inverter), GRect(0, 0, width, layer_get_bounds(inverter_layer_get_layer(data->inverter)).size.h));
 #endif
 }
@@ -738,12 +738,12 @@ void selection_layer_set_active(Layer *layer, bool is_active) {
     if (data) {
         if (is_active && !data->is_active) {
             data->selected_cell_idx = 0;
-#ifndef PBL_COLOR
+#if IS_BW_AND_SDK_2
             layer_add_child(layer, inverter_layer_get_layer(data->inverter));
 #endif
         } if (!is_active && data->is_active) {
             data->selected_cell_idx = MAX_SELECTION_LAYER_CELLS;
-#ifndef PBL_COLOR
+#if IS_BW_AND_SDK_2
             layer_remove_from_parent(inverter_layer_get_layer(data->inverter));
 #endif
         }

@@ -6,6 +6,10 @@
 
 #define ANIMATION_IS_ENABLED (!defined(PBL_PLATFORM_APLITE) || defined(ENABLE_ANIMATION_FOR_APLITE))
 
+#ifndef IS_BW_AND_SDK_2
+#define IS_BW_AND_SDK_2 (defined(PBL_BW) && defined(PBL_SDK_2))
+#endif
+
 #define MAX_SELECTION_LAYER_CELLS 10
 
 typedef char* (*SelectionLayerGetCellText)(int index, void *context);
@@ -27,7 +31,7 @@ typedef struct SelectionLayerCallbacks {
 } SelectionLayerCallbacks;
 
 typedef struct SelectionLayerData {
-#ifndef PBL_COLOR
+#if IS_BW_AND_SDK_2
   InverterLayer *inverter;
 #endif
   int num_cells;

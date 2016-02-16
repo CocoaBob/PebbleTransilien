@@ -46,7 +46,7 @@ typedef struct {
     MenuLayer *menu_layer;
     Layer *panel_layer;
     ClickConfigProvider last_ccp;
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     InverterLayer *inverter_layer;
 #endif
     // Searching
@@ -194,7 +194,7 @@ static void panel_show(SearchStation *user_info) {
 #ifdef PBL_COLOR
         Layer *window_layer = window_get_root_layer(user_info->window);
         layer_add_child(window_layer, user_info->panel_layer);
-#else
+#elif IS_BW_AND_SDK_2
         // To make sure the panel layer is under the inverter layer
         // But we can't just insert it below the inverter layer which isn't always there
         layer_insert_above_sibling(user_info->panel_layer, menu_layer_get_layer(user_info->menu_layer));
@@ -376,7 +376,7 @@ static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
         // Display selected station if departure & destination are STATION_NON
         panel_update_with_menu_layer_selection(user_info);
     }
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     else {
         // Select the first row to make it easier to set inverter layer's position
         menu_layer_set_selected_index(user_info->menu_layer, MenuIndex(0, 0), MenuRowAlignTop, false);
@@ -669,14 +669,14 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, user_info->selection_layer);
     
     // Prepare inverter layers for Aplite
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     user_info->inverter_layer = inverter_layer_create(window_bounds);
 #endif
     
     // Setup theme
 #ifdef PBL_COLOR
     ui_setup_theme(user_info->window, user_info->menu_layer);
-#else
+#elif IS_BW_AND_SDK_2
     ui_setup_theme(user_info->window, user_info->inverter_layer);
 #endif
 }
@@ -690,7 +690,7 @@ static void window_unload(Window *window) {
     menu_layer_destroy(user_info->menu_layer);
     window_destroy(user_info->window);
     
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     inverter_layer_destroy(user_info->inverter_layer);
 #endif
     

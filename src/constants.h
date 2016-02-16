@@ -17,6 +17,8 @@
 //#define ENABLE_MINI_TIMETABLE_FOR_APLITE // (-1457B)
 #define MINI_TIMETABLE_IS_ENABLED (!defined(PBL_PLATFORM_APLITE) || defined(ENABLE_MINI_TIMETABLE_FOR_APLITE))
 
+#define IS_BW_AND_SDK_2 (defined(PBL_BW) && defined(PBL_SDK_2))
+
 #ifndef MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif

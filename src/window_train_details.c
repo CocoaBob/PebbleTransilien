@@ -15,7 +15,7 @@ typedef struct {
     
     ClickConfigProvider last_ccp;
     
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     InverterLayer *inverter_layer;
 #endif
     
@@ -257,14 +257,14 @@ static void window_load(Window *window) {
     window_set_click_config_provider_with_context(window, click_config_provider, user_info->menu_layer);
     
     // Add inverter layer for Aplite
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     user_info->inverter_layer = inverter_layer_create(window_bounds);
 #endif
     
     // Setup theme
 #ifdef PBL_COLOR
     ui_setup_theme(user_info->window, user_info->menu_layer);
-#else
+#elif IS_BW_AND_SDK_2
     ui_setup_theme(user_info->window, user_info->inverter_layer);
 #endif
 }
@@ -280,7 +280,7 @@ static void window_unload(Window *window) {
     menu_layer_destroy(user_info->menu_layer);
     window_destroy(user_info->window);
     
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     inverter_layer_destroy(user_info->inverter_layer);
 #endif
     

@@ -47,7 +47,7 @@ enum {
 typedef struct {
     Window *window;
     MenuLayer *menu_layer;
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     InverterLayer *inverter_layer;
 #endif
 } MainMenu;
@@ -220,7 +220,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             settings_set_theme(!settings_is_dark_theme());
 #ifdef PBL_COLOR
             ui_setup_theme(user_info->window, user_info->menu_layer);
-#else
+#elif IS_BW_AND_SDK_2
             ui_setup_theme(user_info->window, user_info->inverter_layer);
 #endif
             status_bar_update();
@@ -314,14 +314,14 @@ static void window_load(Window *window) {
     menu_layer_set_click_config_onto_window(user_info->menu_layer, user_info->window);
     
     // Add inverter layer for Aplite
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     user_info->inverter_layer = inverter_layer_create(window_bounds);
 #endif
     
     // Setup theme
 #ifdef PBL_COLOR
     ui_setup_theme(user_info->window, user_info->menu_layer);
-#else
+#elif IS_BW_AND_SDK_2
     ui_setup_theme(user_info->window, user_info->inverter_layer);
 #endif
 }
@@ -364,7 +364,7 @@ static void window_unload(Window *window) {
     MainMenu *user_info = window_get_user_data(window);
     
     menu_layer_destroy(user_info->menu_layer);
-#ifdef PBL_BW
+#if IS_BW_AND_SDK_2
     inverter_layer_destroy(user_info->inverter_layer);
 #endif
     window_destroy(user_info->window);
