@@ -87,6 +87,7 @@
 		4599DF591B4BE0E7007C5729 /* appinfo.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = appinfo.json; sourceTree = "<group>"; };
 		45B585671BD7958800DBBC82 /* ui_status_bar.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ui_status_bar.c; sourceTree = "<group>"; };
 		45B585681BD7958800DBBC82 /* ui_status_bar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_status_bar.h; sourceTree = "<group>"; };
+		45D9B32A1C37415100D7E899 /* Device CloudPebble */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Device CloudPebble"; sourceTree = BUILT_PRODUCTS_DIR; };
 		45EAAF301BD64FB600445244 /* app_services.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = app_services.c; sourceTree = "<group>"; };
 		45EAAF311BD64FB600445244 /* app_services.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = app_services.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -111,6 +112,7 @@
 				457D34C41BCE469F0057BC11 /* src */,
 				4587C5FF1BC976E100FEC09B /* Products */,
 				459536851BCFD43C0028235C /* Device BT */,
+				45D9B32A1C37415100D7E899 /* Device CloudPebble */,
 			);
 			sourceTree = "<group>";
 		};
@@ -291,6 +293,21 @@
 			productReference = 4587C5FC1BC976BE00FEC09B /* Chalk */;
 			productType = "com.apple.product-type.tool";
 		};
+		45D9B3251C37415100D7E899 /* Device CloudPebble */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 45D9B3271C37415100D7E899 /* Build configuration list for PBXNativeTarget "Device CloudPebble" */;
+			buildPhases = (
+				45D9B3261C37415100D7E899 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Device CloudPebble";
+			productName = App;
+			productReference = 45D9B32A1C37415100D7E899 /* Device CloudPebble */;
+			productType = "com.apple.product-type.tool";
+		};
 		45EC75511B4C0FFA00524DDA /* HiddenTarget */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 45EC75561B4C0FFA00524DDA /* Build configuration list for PBXNativeTarget "HiddenTarget" */;
@@ -340,6 +357,7 @@
 				4517F3351B4C04DD0078F1A0 /* Aplite */,
 				4563F1D11B4BFC0B004709EA /* Basalt */,
 				45AC6FB91BC7C67000E7BC90 /* Chalk */,
+				45D9B3251C37415100D7E899 /* Device CloudPebble */,
 				4517F3401B4C04F90078F1A0 /* Device Wifi */,
 				459536801BCFD43C0028235C /* Device BT */,
 				45EC75511B4C0FFA00524DDA /* HiddenTarget */,
@@ -412,6 +430,19 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "osascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble build\" in ctx' -e 'do script \"pebble install --emulator chalk\" in ctx' -e 'do script \"pebble logs --emulator chalk\" in ctx' -e 'end tell'    ";
+		};
+		45D9B3261C37415100D7E899 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "osascript -e 'tell app \"Terminal\"' -e 'if not (exists window 1) then' -e 'do script \"\"' -e 'end if' -e 'activate' -e 'end tell' -e 'tell app \"System Events\" to keystroke \"c\" using control down' -e 'tell app \"Terminal\"' -e 'set ctx to do script \"\" in window 1' -e \"do script \\\"cd ${SRCROOT}\\\" in ctx\" -e 'do script \"pebble build\" in ctx' -e \"do script \\\"pebble install -v --cloudpebble --logs\\\" in ctx\" -e \"do script \\\"pebble logs -v --cloudpebble\\\" in ctx\" -e 'end tell'";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -550,6 +581,22 @@
 			};
 			name = Release;
 		};
+		45D9B3281C37415100D7E899 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		45D9B3291C37415100D7E899 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		45EC75571B4C0FFA00524DDA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -585,7 +632,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"~/pebble-dev/**",
+					"~/Library/Application\\ Support/Pebble\\ SDK/SDKs/current/**",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -628,7 +675,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"~/pebble-dev/**",
+					"~/Library/Application\\ Support/Pebble\\ SDK/SDKs/current/**",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -690,6 +737,15 @@
 			buildConfigurations = (
 				45AC6FBC1BC7C67000E7BC90 /* Debug */,
 				45AC6FBD1BC7C67000E7BC90 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		45D9B3271C37415100D7E899 /* Build configuration list for PBXNativeTarget "Device CloudPebble" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				45D9B3281C37415100D7E899 /* Debug */,
+				45D9B3291C37415100D7E899 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
