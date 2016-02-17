@@ -334,13 +334,22 @@ function sendAppMessageForNextTrains(responseText) {
         sendAppMessageForError(2);
         return;
     }
+    
     var payloadLength = dataArray.length;
+    // To avoid consuming too much ram of Aplite, limit to 6 trains
+    if (Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'aplite' && payloadLength > 6) {
+        payloadLength = 6;
+    }
     var message = {
         "MESSAGE_KEY_RESPONSE_TYPE": _request_type,
         "MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT":payloadLength
     };
     var payloadKey = 1000;// 1000 = "MESSAGE_KEY_RESPONSE_PAYLOAD";
     for(var index in dataArray){
+        if (index >= payloadLength) {
+            console.log(index + " " + payloadLength);
+            break;
+        }
         var nextTrainDict = dataArray[index];
         
         var itemData = [];
@@ -352,7 +361,7 @@ function sendAppMessageForNextTrains(responseText) {
         var trainHour = nextTrainDict["trainHour"];
         trainHour = parseTrainHour(trainHour);
         if (trainHour != null) {
-            if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
+            if (Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
                 trainHour = trainHour.getTime() / 1000;
             } else {
                 trainHour = trainHour.getTime() / 1000 - trainHour.getTimezoneOffset() * 60;
