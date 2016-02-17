@@ -385,7 +385,7 @@ static uint16_t menu_layer_get_num_sections_callback(struct MenuLayer *menu_laye
 }
 
 static uint16_t menu_layer_get_num_rows_callback(struct MenuLayer *menu_layer, uint16_t section_index, NextTrains *user_info) {
-    if (section_index == NEXT_TRAINS_SECTION_INFO) {
+    if (section_index == NEXT_TRAINS_SECTION_INFO || user_info->is_updating) {
         return 1;
     } else if (section_index == NEXT_TRAINS_SECTION_TRAINS) {
         return (user_info->next_trains_list_count > 0)?user_info->next_trains_list_count:1;
