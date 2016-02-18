@@ -31,7 +31,6 @@ long relative_time(long timestamp) {
         o_time = -o_time;
     }
     o_time /= 60;
-    o_time = MAX(-99, MIN(99, o_time));
     return o_time;
 }
 
@@ -51,13 +50,14 @@ void time_2_str(time_t timestamp,
     
 #if RELATIVE_TIME_IS_ENABLED
     if (is_relative_to_now) {
-        snprintf(o_str, o_str_size, "%ldmin", relative_time((long)timestamp));
-    } else {
-        strftime(o_str, o_str_size, "%H:%M", localtime(&timestamp)); // Show local time
+        long r_time = relative_time((long)timestamp);
+        if (-99 <= r_time && r_time <= 99) {
+            snprintf(o_str, o_str_size, "%ldmin", r_time);
+            return;
+        }
     }
-#else
-    strftime(o_str, o_str_size, "%H:%M", localtime(&timestamp));
 #endif
+    strftime(o_str, o_str_size, "%H:%M", localtime(&timestamp)); // Show local time
 }
 
 bool string_contains_sub_string(char *string_a, size_t size_a, char *string_b, size_t size_b) {
