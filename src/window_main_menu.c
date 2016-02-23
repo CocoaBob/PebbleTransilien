@@ -175,13 +175,13 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 
 static void menu_layer_draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, MainMenu *user_info) {
     if (section_index == MAIN_MENU_SECTION_FAV) {
-        menu_cell_basic_header_draw(ctx, cell_layer, _("Favorites"));
+        draw_menu_header(ctx, cell_layer, _("Favorites"), curr_fg_color());
     } else if (section_index == MAIN_MENU_SECTION_SEARCH) {
-        menu_cell_basic_header_draw(ctx, cell_layer, _("Search"));
+        draw_menu_header(ctx, cell_layer, _("Search"), curr_fg_color());
     } else if (section_index == MAIN_MENU_SECTION_SETTING) {
-        menu_cell_basic_header_draw(ctx, cell_layer, _("Settings"));
+        draw_menu_header(ctx, cell_layer, _("Settings"), curr_fg_color());
     } else if (section_index == MAIN_MENU_SECTION_ABOUT) {
-        menu_cell_basic_header_draw(ctx, cell_layer, _("About"));
+        draw_menu_header(ctx, cell_layer, _("About"), curr_fg_color());
     }
 }
 

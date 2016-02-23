@@ -16,9 +16,7 @@ GSize size_of_text(const char *text, const char *font_key, GRect frame);
 
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment);
 
-#if !defined(PBL_PLATFORM_APLITE)
-void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color);
-#endif
+void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color);
 
 void draw_image_in_rect(GContext* ctx,
                         uint32_t resource_id,

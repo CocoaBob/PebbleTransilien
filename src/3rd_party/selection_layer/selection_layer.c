@@ -163,7 +163,7 @@ static void prv_draw_slider_slide(Layer *layer, GContext *ctx) {
     
     graphics_context_set_fill_color(ctx, data->active_background_color);
     graphics_fill_rect(ctx, rect, 1, GCornerNone);
-    graphics_context_set_stroke_color(ctx, GColorWhite);
+    graphics_context_set_stroke_color(ctx, data->active_text_color);
     graphics_draw_rect(ctx, rect);
 }
 

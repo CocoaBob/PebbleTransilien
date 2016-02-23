@@ -23,6 +23,21 @@ void draw_text(GContext *ctx, const char * text, const char * font_key, GRect fr
 
 // MARK: Draw header and separators
 
+void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color) {
+    GRect bounds = layer_get_bounds(cell_layer);
+    GRect frame = GRect(2,
+                        TEXT_Y_OFFSET,
+                        bounds.size.w - CELL_MARGIN_2,
+                        bounds.size.h);
+    
+    graphics_context_set_text_color(ctx, color);
+#ifdef PBL_ROUND
+    draw_text(ctx, title, FONT_KEY_GOTHIC_14_BOLD, frame, GTextAlignmentCenter);
+#else
+    draw_text(ctx, title, FONT_KEY_GOTHIC_14_BOLD, frame, GTextAlignmentLeft);
+#endif
+}
+
 void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color) {
     graphics_context_set_stroke_color(ctx, color);
     for (int16_t dx = 0; dx < layer_get_bounds(cell_layer).size.w; dx+=2) {
@@ -309,11 +324,24 @@ void common_menu_layer_button_up_handler(ClickRecognizerRef recognizer, void *co
 
 void common_menu_layer_button_down_handler(ClickRecognizerRef recognizer, void *context) {
     MenuIndex old_index = menu_layer_get_selected_index(context);
+    
+#ifdef PBL_ROUND // Workaround for Round, if the selection is animated, the new_index won't be changed until the animation is finished
+    menu_layer_set_selected_next(context, false, MenuRowAlignCenter, false);
+    MenuIndex new_index = menu_layer_get_selected_index(context);
+    menu_layer_set_selected_index(context, old_index, MenuRowAlignBottom, false);
+#else
     menu_layer_set_selected_next(context, false, MenuRowAlignCenter, true);
     MenuIndex new_index = menu_layer_get_selected_index(context);
+#endif
+    
     if (menu_index_compare(&old_index, &new_index) == 0) {
         menu_layer_set_selected_index(context, MenuIndex(0, 0), MenuRowAlignTop, true);
     }
+#ifdef PBL_ROUND
+    else {
+        menu_layer_set_selected_next(context, false, MenuRowAlignCenter, true);
+    }
+#endif
 }
 
 int16_t common_menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
