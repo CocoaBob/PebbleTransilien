@@ -122,20 +122,12 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     
     // Background or Highlight
     if (layer_data->is_active) {
-#ifdef PBL_COLOR
-        graphics_context_set_fill_color(ctx, GColorCobaltBlue);
-#else
-        graphics_context_set_fill_color(ctx, curr_fg_color());
-#endif
+        graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorCobaltBlue, curr_fg_color()));
         graphics_fill_rect(ctx, bounds, 0, GCornerNone);
         graphics_context_set_stroke_color(ctx, GColorWhite);
         graphics_draw_rect(ctx, GRect(bounds.origin.x, bounds.origin.y + 1, bounds.size.w, bounds.size.h - 1));
     } else {
-#ifdef PBL_COLOR
-        graphics_context_set_fill_color(ctx, GColorDarkGray);
-#else
-        graphics_context_set_fill_color(ctx, curr_bg_color());
-#endif
+        graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorDarkGray, curr_bg_color()));
         graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     }
     
@@ -349,13 +341,8 @@ static void search_selection_layer_set_active(bool is_active, SearchStation *use
 static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
     // Update menu layer
     menu_layer_set_highlight_colors(user_info->menu_layer,
-#ifdef PBL_COLOR
-                                    is_active ? GColorCobaltBlue : curr_bg_color(),
-                                    is_active ? GColorWhite      : curr_fg_color());
-#else
-                                    is_active ? curr_fg_color()  : curr_bg_color(),
-                                    is_active ? curr_bg_color()  : curr_fg_color());
-#endif
+                                    is_active ? PBL_IF_COLOR_ELSE(GColorCobaltBlue, curr_fg_color()) : curr_bg_color(),
+                                    is_active ? PBL_IF_COLOR_ELSE(GColorWhite,      curr_bg_color()) : curr_fg_color());
     
     if (is_active) {
         // Display selected station if departure & destination are STATION_NON
@@ -625,13 +612,8 @@ static void window_load(Window *window) {
     }
     selection_layer_set_cell_padding(user_info->selection_layer, 0);
     selection_layer_set_font(user_info->selection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-#ifdef PBL_COLOR
-    selection_layer_set_inactive_color(user_info->selection_layer, GColorWhite, GColorDarkGray);
-    selection_layer_set_active_color(user_info->selection_layer, GColorWhite, GColorCobaltBlue);
-#else
-    selection_layer_set_inactive_color(user_info->selection_layer, curr_fg_color(), curr_bg_color());
-    selection_layer_set_active_color(user_info->selection_layer, curr_bg_color(), curr_fg_color());
-#endif
+    selection_layer_set_inactive_color(user_info->selection_layer,  PBL_IF_COLOR_ELSE(GColorWhite, curr_fg_color()), PBL_IF_COLOR_ELSE(GColorDarkGray,   curr_bg_color()));
+    selection_layer_set_active_color(user_info->selection_layer,    PBL_IF_COLOR_ELSE(GColorWhite, curr_bg_color()), PBL_IF_COLOR_ELSE(GColorCobaltBlue, curr_fg_color()));
     
     selection_layer_set_callbacks(user_info->selection_layer, user_info, (SelectionLayerCallbacks) {
         .get_cell_text = (SelectionLayerGetCellText)selection_handle_get_text,

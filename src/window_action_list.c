@@ -35,17 +35,11 @@ static void action_list_bar_layer_proc(Layer *layer, GContext *ctx) {
     
 #ifdef PBL_COLOR
     ActionList *user_info = *((ActionList**)layer_get_data(layer));
-    graphics_context_set_fill_color(ctx, user_info->config->colors.background);
-#else
-    graphics_context_set_fill_color(ctx, GColorWhite);
 #endif
+    graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(user_info->config->colors.background, GColorWhite));
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     
-#ifdef PBL_COLOR
-    graphics_context_set_fill_color(ctx, user_info->config->colors.foreground);
-#else
-    graphics_context_set_fill_color(ctx, GColorBlack);
-#endif
+    graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(user_info->config->colors.foreground, GColorBlack));
     graphics_fill_circle(ctx, GPoint(ACTION_LIST_BAR_POINT_X, ACTION_LIST_BAR_POINT_Y), 2);
 }
 
@@ -136,13 +130,8 @@ static void window_load(Window *window) {
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)get_separator_height_callback
     });
     
-#ifdef PBL_COLOR
-    menu_layer_set_normal_colors(user_info->menu_layer, GColorBlack, user_info->config->colors.text);
-    menu_layer_set_highlight_colors(user_info->menu_layer, GColorBlack, user_info->config->colors.text_selected);
-#else
-    menu_layer_set_normal_colors(user_info->menu_layer, GColorBlack, GColorWhite);
-    menu_layer_set_highlight_colors(user_info->menu_layer, GColorBlack, GColorWhite);
-#endif
+    menu_layer_set_normal_colors(user_info->menu_layer, GColorBlack, PBL_IF_COLOR_ELSE(user_info->config->colors.text, GColorWhite));
+    menu_layer_set_highlight_colors(user_info->menu_layer, GColorBlack, PBL_IF_COLOR_ELSE(user_info->config->colors.text_selected, GColorWhite));
     
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(user_info->menu_layer, window);
