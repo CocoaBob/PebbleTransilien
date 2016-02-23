@@ -68,5 +68,4 @@ char *text_scroll_text(char* text, size_t text_index, const char * font_key, con
 #endif
 
 // MARK: Push windows
-bool ui_can_push_window();
 void ui_push_window(Window *window);

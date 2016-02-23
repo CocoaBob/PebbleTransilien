@@ -260,9 +260,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         window_stack_pop(true);
         return;
     } else { // SEARCH_STATION_ACTIONS_TIMETABLE
-        if (ui_can_push_window()) {
-            ui_push_window(new_window_next_trains(from_to));
-        }
+        ui_push_window(new_window_next_trains(from_to));
         return;
     }
     // Update UI for SEARCH_STATION_ACTIONS_REVERSE & SEARCH_STATION_ACTIONS_DESTINATION
@@ -597,6 +595,7 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer
+    menu_layer_pad_bottom_enable(user_info->menu_layer, false);
     menu_layer_set_callbacks(user_info->menu_layer, user_info, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,

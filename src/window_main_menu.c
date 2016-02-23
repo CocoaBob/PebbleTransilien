@@ -77,9 +77,7 @@ static void action_list_select_callback(Window *action_list_window, size_t index
         fav_delete_at_index(current_selection.row);
     } else { // MAIN_MENU_ACTIONS_EDIT
         Favorite favorite = fav_at_index(current_selection.row);
-        if (ui_can_push_window()) {
-            ui_push_window(new_window_search_train(favorite.from, favorite.to));
-        }
+        ui_push_window(new_window_search_train(favorite.from, favorite.to));
     }
 }
 
@@ -188,14 +186,10 @@ static void menu_layer_draw_header_callback(GContext *ctx, const Layer *cell_lay
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, MainMenu *user_info) {
     if (cell_index->section == MAIN_MENU_SECTION_FAV) {
         Favorite favorite = fav_at_index(cell_index->row);
-        if (ui_can_push_window()) {
-            ui_push_window(new_window_next_trains(favorite));
-        }
+        ui_push_window(new_window_next_trains(favorite));
     } else if (cell_index->section == MAIN_MENU_SECTION_SEARCH) {
         if (cell_index->row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {
-            if (ui_can_push_window()) {
-                ui_push_window(new_window_search_train(STATION_NON, STATION_NON));
-            }
+            ui_push_window(new_window_search_train(STATION_NON, STATION_NON));
         } else {
             // TODO: Nearby stations
         }

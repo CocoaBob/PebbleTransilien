@@ -459,9 +459,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (!user_info->is_updating && user_info->next_trains_list_count > 0) {
             DataModelNextTrain next_train = user_info->next_trains_list[cell_index->row];
-            if (ui_can_push_window()) {
-                ui_push_window(new_window_train_details(next_train.number, user_info->from_to.from));
-            }
+            ui_push_window(new_window_train_details(next_train.number, user_info->from_to.from));
         }
     }
 }
@@ -490,6 +488,7 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer
+    menu_layer_pad_bottom_enable(user_info->menu_layer, false);
     menu_layer_set_callbacks(user_info->menu_layer, user_info, (MenuLayerCallbacks) {
         .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)menu_layer_get_num_sections_callback,
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,

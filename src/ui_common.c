@@ -480,7 +480,7 @@ bool ui_can_push_window() {
 }
 
 void ui_push_window(Window *window) {
-    if (window != NULL) {
+    if (window != NULL && ui_can_push_window()) {
         window_stack_push(window, true);
     }
 }

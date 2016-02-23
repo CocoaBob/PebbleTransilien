@@ -198,9 +198,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, TrainDetails *user_info) {
     MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-    if (ui_can_push_window()) {
-        ui_push_window(new_window_next_trains((DataModelFromTo){user_info->train_details_list[selected_index.row].station, STATION_NON}));
-    }
+    ui_push_window(new_window_next_trains((DataModelFromTo){user_info->train_details_list[selected_index.row].station, STATION_NON}));
 }
 
 #if TEXT_SCROLL_IS_ENABLED
