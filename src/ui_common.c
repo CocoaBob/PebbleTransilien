@@ -434,7 +434,7 @@ bool ui_can_push_window() {
 #if !defined(PBL_PLATFORM_APLITE)
     size_t critical_memory = 3200;
 #else
-    size_t critical_memory = 1600;
+    size_t critical_memory = 2000;
 #endif
         
     if (heap_bytes_free() < critical_memory) {

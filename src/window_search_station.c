@@ -513,8 +513,9 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, SearchStation *user_info) {
-    bool is_highlighted = menu_cell_layer_is_highlighted(cell_layer);
-    bool is_selected = (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER)?is_highlighted:false;
+    MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
+    bool is_selected = (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER)?(selected_index.row == cell_index->row):false;
+    bool is_highlighted = settings_is_dark_theme() || is_selected;
     
 #ifdef PBL_COLOR
     bool is_inverted = settings_is_dark_theme() || is_selected;
