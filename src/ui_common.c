@@ -23,42 +23,22 @@ void draw_text(GContext *ctx, const char * text, const char * font_key, GRect fr
 
 // MARK: Draw header and separators
 
-#ifdef PBL_COLOR
-void draw_menu_header(GContext *ctx, const Layer *cell_layer, const char * title, GColor color) {
-    GRect bounds = layer_get_bounds(cell_layer);
-    GRect frame = GRect(2,
-                        TEXT_Y_OFFSET,
-                        bounds.size.w - CELL_MARGIN_2,
-                        bounds.size.h);
-    
-    graphics_context_set_text_color(ctx, color);
-    draw_text(ctx, title, FONT_KEY_GOTHIC_14_BOLD, frame, GTextAlignmentLeft);
-}
-#endif
-
-#if !defined(PBL_PLATFORM_APLITE)
 void draw_separator(GContext *ctx, const Layer *cell_layer, GColor color) {
     graphics_context_set_stroke_color(ctx, color);
     for (int16_t dx = 0; dx < layer_get_bounds(cell_layer).size.w; dx+=2) {
         graphics_draw_pixel(ctx, GPoint(dx, 0));
     }
 }
-#endif
 
 // MARK: Draw images
 
 void draw_image_in_rect(GContext* ctx,
-#ifdef PBL_BW
-                        bool is_inverted,
-#endif
                         uint32_t resource_id,
                         GRect rect) {
     GBitmap *bitmap = gbitmap_create_with_resource(resource_id);
-#ifdef PBL_COLOR
+
     graphics_context_set_compositing_mode(ctx, GCompOpSet);
-#else
-    graphics_context_set_compositing_mode(ctx, is_inverted?GCompOpAssignInverted:GCompOpAssign);
-#endif
+
     graphics_draw_bitmap_in_rect(ctx, bitmap, rect);
     gbitmap_destroy(bitmap);
 }
@@ -75,17 +55,12 @@ void draw_centered_title(GContext* ctx,
                         (bounds.size.h - 20) / 2 + TEXT_Y_OFFSET,
                         bounds.size.w - CELL_MARGIN_2,
                         18);
-#ifdef PBL_COLOR
     if (is_inverted) {
         graphics_context_set_fill_color(ctx, curr_bg_color());
         graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     }
     graphics_context_set_text_color(ctx, curr_fg_color());
-#else
-    graphics_context_set_fill_color(ctx, is_inverted?curr_fg_color():curr_bg_color());
-    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-    graphics_context_set_text_color(ctx, is_inverted?curr_bg_color():curr_fg_color());
-#endif
+
     draw_text(ctx, title, font_id?font_id:FONT_KEY_GOTHIC_18_BOLD, frame, GTextAlignmentCenter);
 }
 
@@ -98,9 +73,7 @@ void draw_centered_title(GContext* ctx,
 #define NEXT_TRAINS_PLATFORM_WIDTH 15
 
 static void draw_from_to_next_train(GContext* ctx,
-#ifdef PBL_COLOR
-                                    bool is_highlighed,
-#endif
+                                    bool is_inverted,
                                     GRect station_frame,
                                     DataModelMiniTimetable *next_trains,
                                     bool is_first) {
@@ -121,11 +94,7 @@ static void draw_from_to_next_train(GContext* ctx,
                                  station_frame.origin.y + 6,
                                  NEXT_TRAINS_PLATFORM_WIDTH,
                                  NEXT_TRAINS_PLATFORM_WIDTH);
-#ifdef PBL_COLOR
-    graphics_context_set_stroke_color(ctx, is_highlighed?GColorWhite:GColorBlack);
-#else
-    graphics_context_set_stroke_color(ctx, GColorBlack);
-#endif
+    graphics_context_set_stroke_color(ctx, is_inverted?GColorWhite:GColorBlack);
     graphics_draw_round_rect(ctx, frame_platform, 2);
     
     // Draw platform text
@@ -141,23 +110,15 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
 #if TEXT_SCROLL_IS_ENABLED
                   Layer *redraw_layer, bool is_selected,
 #endif
-#ifdef PBL_COLOR
-                  bool is_highlighed,
-                  GColor text_color,
-#else
                   bool is_inverted,
-#endif
+                  GColor text_color,
                   DataModelFromTo from_to
 #if MINI_TIMETABLE_IS_ENABLED
                   ,
                   bool draw_mini_timetable
 #endif
                   ) {
-#ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, text_color);
-#else
-    graphics_context_set_text_color(ctx, is_inverted?GColorWhite:GColorBlack);
-#endif
     GRect bounds = layer_get_bounds(display_layer);
     bool is_from_to = (from_to.to != STATION_NON);
     
@@ -168,19 +129,11 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
                              (CELL_HEIGHT - FROM_TO_ICON_HEIGHT) / 2,
                              FROM_TO_ICON_WIDTH,
                              is_from_to?FROM_TO_ICON_HEIGHT:FROM_TO_ICON_WIDTH);
-#ifdef PBL_COLOR
     if (is_from_to) {
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
+        draw_image_in_rect(ctx, is_inverted?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
     } else {
-        draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+        draw_image_in_rect(ctx, is_inverted?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
     }
-#else
-    if (is_from_to) {
-        draw_image_in_rect(ctx, is_inverted, RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
-    } else {
-        draw_image_in_rect(ctx, is_inverted, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-    }
-#endif
     
     ////////////////////////////
     // Draw stations
@@ -267,16 +220,12 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     if (draw_mini_timetable) {
         DataModelMiniTimetable *next_trains = fav_get_mini_timetables((Favorite)from_to);
         draw_from_to_next_train(ctx,
-#ifdef PBL_COLOR
-                                is_highlighed,
-#endif
+                                is_inverted,
                                 frame_from,
                                 next_trains,
                                 true);
         draw_from_to_next_train(ctx,
-#ifdef PBL_COLOR
-                                is_highlighed,
-#endif
+                                is_inverted,
                                 frame_to,
                                 next_trains,
                                 false);
@@ -290,35 +239,20 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
 #if TEXT_SCROLL_IS_ENABLED
                   Layer *redraw_layer, bool is_selected,
 #endif
-#ifdef PBL_COLOR
                   GColor text_color,
-                  bool is_highlighed,
-#else
                   bool is_inverted,
-#endif
                   char * str_time,
                   char * str_station) {
     GRect bounds = layer_get_bounds(drawing_layer);
-#ifdef PBL_COLOR
+
     graphics_context_set_text_color(ctx, text_color);
-#else
-    if (is_inverted) {
-        graphics_context_set_fill_color(ctx, GColorBlack);
-        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-    }
-    graphics_context_set_text_color(ctx, is_inverted?GColorWhite:GColorBlack);
-#endif
     
     // Icon
     GRect frame_icon = GRect(CELL_MARGIN,
                              (CELL_HEIGHT_2 - FROM_TO_ICON_WIDTH) / 2,
                              FROM_TO_ICON_WIDTH,
                              FROM_TO_ICON_WIDTH);
-#ifdef PBL_COLOR
-    draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-#else
-    draw_image_in_rect(ctx, is_inverted, RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
-#endif
+    draw_image_in_rect(ctx, is_inverted?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
     
     // Time
     GRect frame_time = GRect(0,
@@ -382,8 +316,6 @@ void common_menu_layer_button_down_handler(ClickRecognizerRef recognizer, void *
     }
 }
 
-#if !defined(PBL_PLATFORM_APLITE)
-
 int16_t common_menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     return 1;
 }
@@ -397,8 +329,6 @@ void common_menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_l
     graphics_context_set_fill_color(ctx, curr_bg_color());
     graphics_fill_rect(ctx, frame, 0, GCornerNone);
 }
-
-#endif
 
 #if TEXT_SCROLL_IS_ENABLED
 

@@ -75,17 +75,9 @@ void settings_toggle_locale() {
 }
 
 GColor curr_fg_color() {
-#ifdef PBL_COLOR
     return s_settings->is_dark_theme?GColorWhite:GColorBlack;
-#else
-    return GColorBlack;
-#endif
 }
 
 GColor curr_bg_color() {
-#ifdef PBL_COLOR
     return s_settings->is_dark_theme?GColorBlack:GColorWhite;
-#else
-    return GColorWhite;
-#endif
 }

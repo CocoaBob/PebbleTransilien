@@ -47,9 +47,6 @@ enum {
 typedef struct {
     Window *window;
     MenuLayer *menu_layer;
-#if IS_BW_AND_SDK_2
-    InverterLayer *inverter_layer;
-#endif
 } MainMenu;
 
 // MARK: Action list callbacks
@@ -125,14 +122,16 @@ static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_laye
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, MainMenu *user_info) {
-    MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-#if TEXT_SCROLL_IS_ENABLED || PBL_COLOR
-    bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
-#endif
+    bool is_selected = menu_cell_layer_is_highlighted(cell_layer);
+
 #ifdef PBL_COLOR
-    bool is_highlighed = settings_is_dark_theme() || is_selected;
+    bool is_inverted = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
+#else
+    bool is_inverted = settings_is_dark_theme()?!is_selected:is_selected;
+    GColor text_color = is_selected?curr_bg_color():curr_fg_color();
 #endif
+
     uint16_t section = cell_index->section;
     uint16_t row = cell_index->row;
     if (section == MAIN_MENU_SECTION_FAV ) {
@@ -141,12 +140,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #if TEXT_SCROLL_IS_ENABLED
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
-#ifdef PBL_COLOR
-                     is_highlighed,
+                     is_inverted,
                      text_color,
-#else
-                     false,
-#endif
                      favorite
 #if MINI_TIMETABLE_IS_ENABLED
                      ,
@@ -172,23 +167,12 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
             menu_cell_basic_draw(ctx, cell_layer, _("Developer"), "@CocoaBob", NULL);
         } else if (row == MAIN_MENU_SECTION_ABOUT_ROW_VERSION) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.5", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.6", NULL);
         }
     }
 }
 
 static void menu_layer_draw_header_callback(GContext *ctx, const Layer *cell_layer, uint16_t section_index, MainMenu *user_info) {
-#ifdef PBL_COLOR
-    if (section_index == MAIN_MENU_SECTION_FAV) {
-        draw_menu_header(ctx, cell_layer, _("Favorites"), curr_fg_color());
-    } else if (section_index == MAIN_MENU_SECTION_SEARCH) {
-        draw_menu_header(ctx, cell_layer, _("Search"), curr_fg_color());
-    } else if (section_index == MAIN_MENU_SECTION_SETTING) {
-        draw_menu_header(ctx, cell_layer, _("Settings"), curr_fg_color());
-    } else if (section_index == MAIN_MENU_SECTION_ABOUT) {
-        draw_menu_header(ctx, cell_layer, _("About"), curr_fg_color());
-    }
-#else
     if (section_index == MAIN_MENU_SECTION_FAV) {
         menu_cell_basic_header_draw(ctx, cell_layer, _("Favorites"));
     } else if (section_index == MAIN_MENU_SECTION_SEARCH) {
@@ -198,7 +182,6 @@ static void menu_layer_draw_header_callback(GContext *ctx, const Layer *cell_lay
     } else if (section_index == MAIN_MENU_SECTION_ABOUT) {
         menu_cell_basic_header_draw(ctx, cell_layer, _("About"));
     }
-#endif
 }
 
 static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, MainMenu *user_info) {
@@ -218,11 +201,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             settings_set_theme(!settings_is_dark_theme());
-#ifdef PBL_COLOR
             ui_setup_theme(user_info->window, user_info->menu_layer);
-#elif IS_BW_AND_SDK_2
-            ui_setup_theme(user_info->window, user_info->inverter_layer);
-#endif
             status_bar_update();
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             settings_toggle_locale();
@@ -302,28 +281,17 @@ static void window_load(Window *window) {
         ,
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
 #endif
-#if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
-#endif
     });
     
     // Setup Click Config Providers
     menu_layer_set_click_config_onto_window(user_info->menu_layer, user_info->window);
     
-    // Add inverter layer for Aplite
-#if IS_BW_AND_SDK_2
-    user_info->inverter_layer = inverter_layer_create(window_bounds);
-#endif
-    
     // Setup theme
-#ifdef PBL_COLOR
     ui_setup_theme(user_info->window, user_info->menu_layer);
-#elif IS_BW_AND_SDK_2
-    ui_setup_theme(user_info->window, user_info->inverter_layer);
-#endif
 }
 
 static void window_appear(Window *window) {
@@ -364,9 +332,6 @@ static void window_unload(Window *window) {
     MainMenu *user_info = window_get_user_data(window);
     
     menu_layer_destroy(user_info->menu_layer);
-#if IS_BW_AND_SDK_2
-    inverter_layer_destroy(user_info->inverter_layer);
-#endif
     window_destroy(user_info->window);
     
     free(user_info);
@@ -387,11 +352,6 @@ Window* new_window_main_menu() {
 #endif
             .unload = window_unload
         });
-        
-#ifdef PBL_SDK_2
-        // Fullscreen
-        window_set_fullscreen(user_info->window, true);
-#endif
         
         // Return the window
         return user_info->window;

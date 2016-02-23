@@ -60,26 +60,25 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 }
 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, ActionList *user_info) {
-    bool is_selected = (menu_layer_get_selected_index(user_info->menu_layer).row == cell_index->row);
+    bool is_selected = menu_cell_layer_is_highlighted(cell_layer);
     bool is_enabled = true;
     if (user_info->config->callbacks.is_enabled && !user_info->config->callbacks.is_enabled(cell_index->row, user_info->config->context)) {
         is_enabled = false;
     }
     GRect bounds = layer_get_bounds(cell_layer);
     
-#ifdef PBL_BW
-    // Selected item's background for BW
-    if (is_selected) {
-        graphics_context_set_fill_color(ctx, GColorWhite);
-        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-        
-        graphics_context_set_fill_color(ctx, GColorBlack);
-        graphics_fill_rect(ctx, grect_crop(bounds, ACTION_LIST_SELECTION_MARGIN), 4, GCornersAll);
-    }
-#endif
-    
 #ifdef PBL_COLOR
     graphics_context_set_text_color(ctx, is_selected?user_info->config->colors.text_selected:(is_enabled?user_info->config->colors.text:user_info->config->colors.text_disabled));
+#else
+    // Selected item's background for BW
+    if (is_selected) {
+        graphics_context_set_fill_color(ctx, GColorBlack);
+        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+        
+        graphics_context_set_fill_color(ctx, GColorWhite);
+        graphics_fill_rect(ctx, grect_crop(bounds, ACTION_LIST_SELECTION_MARGIN), 4, GCornersAll);
+    }
+    graphics_context_set_text_color(ctx, is_selected?GColorBlack:GColorWhite);
 #endif
     
     GFont font = fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
@@ -127,9 +126,7 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer
-#if !defined(PBL_PLATFORM_APLITE)
     menu_layer_pad_bottom_enable(user_info->menu_layer, false);
-#endif
     
     menu_layer_set_callbacks(user_info->menu_layer, user_info, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)get_num_rows_callback,
@@ -143,7 +140,8 @@ static void window_load(Window *window) {
     menu_layer_set_normal_colors(user_info->menu_layer, GColorBlack, user_info->config->colors.text);
     menu_layer_set_highlight_colors(user_info->menu_layer, GColorBlack, user_info->config->colors.text_selected);
 #else
-    window_set_background_color(window, GColorBlack);
+    menu_layer_set_normal_colors(user_info->menu_layer, GColorBlack, GColorWhite);
+    menu_layer_set_highlight_colors(user_info->menu_layer, GColorBlack, GColorWhite);
 #endif
     
     // Setup Click Config Providers
@@ -204,11 +202,6 @@ void action_list_open(ActionListConfig *config) {
             .appear = window_appear,
             .unload = window_unload
         });
-        
-#ifdef PBL_SDK_2
-        // Fullscreen
-        window_set_fullscreen(user_info->window, true);
-#endif
         
         window_stack_push(user_info->window, true);
     }

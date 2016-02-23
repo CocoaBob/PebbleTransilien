@@ -7,10 +7,11 @@
 #define DEFAULT_CELL_PADDING 10
 #define DEFAULT_SELECTED_INDEX 0
 #define DEFAULT_FONT FONT_KEY_GOTHIC_28_BOLD
-#ifdef PBL_COLOR
-#define DEFAULT_ACTIVE_COLOR GColorWhite
-#define DEFAULT_INACTIVE_COLOR GColorDarkGray
-#endif
+
+#define DEFAULT_ACTIVE_TEXT_COLOR GColorWhite
+#define DEFAULT_INACTIVE_TEXT_COLOR GColorBlack
+#define DEFAULT_ACTIVE_BG_COLOR GColorBlack
+#define DEFAULT_INACTIVE_BG_COLOR GColorWhite
 
 #define BUTTON_HOLD_REPEAT_MS 100
 #define SETTLE_HEIGHT_DIFF 6
@@ -87,7 +88,7 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
         
         const GRect rect = GRect(current_x_offset, y_offset, data->cell_widths[i], height);
         
-#ifdef PBL_SDK_3
+        GColor text_color = data->inactive_text_color;
         GColor bg_color = data->inactive_background_color;
         
         if (data->selected_cell_idx == i
@@ -95,6 +96,7 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
             && !data->slide_amin_progress
 #endif /* ANIMATION_IS_ENABLED */
             ) {
+            text_color = data->active_text_color;
             bg_color = data->active_background_color;
         }
         graphics_context_set_fill_color(ctx, bg_color);
@@ -104,21 +106,9 @@ static void prv_draw_cell_backgrounds(Layer *layer, GContext *ctx) {
             && !data->slide_amin_progress
 #endif /* ANIMATION_IS_ENABLED */
             ) {
-            graphics_context_set_stroke_color(ctx, GColorWhite);
+            graphics_context_set_stroke_color(ctx, text_color);
             graphics_draw_rect(ctx, rect);
         }
-#elif PBL_SDK_2 /* #ifdef PBL_SDK_3 */
-        graphics_context_set_stroke_color(ctx, GColorBlack);
-        graphics_draw_rect(ctx, rect);
-        
-        if (data->selected_cell_idx == i
-#if ANIMATION_IS_ENABLED
-            && !data->slide_amin_progress
-#endif /* ANIMATION_IS_ENABLED */
-            ){
-            layer_set_frame(inverter_layer_get_layer(data->inverter), rect);
-        }
-#endif
         
         current_x_offset += data->cell_widths[i] + data->cell_padding;
     }
@@ -171,14 +161,10 @@ static void prv_draw_slider_slide(Layer *layer, GContext *ctx) {
     
     GRect rect = GRect(current_x_offset, 0, current_cell_width, layer_get_bounds(layer).size.h);
     
-#ifdef PBL_COLOR
     graphics_context_set_fill_color(ctx, data->active_background_color);
     graphics_fill_rect(ctx, rect, 1, GCornerNone);
     graphics_context_set_stroke_color(ctx, GColorWhite);
     graphics_draw_rect(ctx, rect);
-#elif IS_BW_AND_SDK_2
-    layer_set_frame(inverter_layer_get_layer(data->inverter), rect);
-#endif
 }
 
 static void prv_draw_slider_settle(Layer *layer, GContext *ctx) {
@@ -209,26 +195,12 @@ static void prv_draw_slider_settle(Layer *layer, GContext *ctx) {
     
     GRect rect = GRect(x_offset, 0, current_width, layer_get_bounds(layer).size.h);
     
-#ifdef PBL_COLOR
     graphics_context_set_fill_color(ctx, data->active_background_color);
     graphics_fill_rect(ctx, rect, 1, GCornerNone);
-#elif IS_BW_AND_SDK_2
-    if (data->slide_is_forward) {
-        rect.origin.x -= data->cell_widths[data->selected_cell_idx];
-        rect.size.w += data->cell_widths[data->selected_cell_idx];
-    } else {
-        rect.size.w += data->cell_widths[data->selected_cell_idx];
-    }
-    layer_set_frame(inverter_layer_get_layer(data->inverter), rect);
-#endif
 }
 #endif /* ANIMATION_IS_ENABLED */
 
 static void prv_draw_text(Layer *layer, GContext *ctx) {
-#ifndef PBL_COLOR
-    graphics_context_set_text_color(ctx, GColorBlack);
-#endif
-    
     SelectionLayerData *data = layer_get_data(layer);
     for (int i = 0, current_x_offset = 0; i < data->num_cells; i++) {
         if (data->callbacks.get_cell_text) {
@@ -247,16 +219,17 @@ static void prv_draw_text(Layer *layer, GContext *ctx) {
                 }
 #endif /* ANIMATION_IS_ENABLED */
                 
-                if (data->selected_cell_idx == i) {
 #if ANIMATION_IS_ENABLED
+                if (data->selected_cell_idx == i) {
                     int delta = (data->bump_text_anim_progress * prv_get_font_top_padding(data->font)) / 100;
                     if (data->bump_is_upwards) {
                         delta *= -1;
                     }
                     y_offset += delta;
-#endif /* ANIMATION_IS_ENABLED */
                 }
+#endif /* ANIMATION_IS_ENABLED */
                 
+                graphics_context_set_text_color(ctx, (data->selected_cell_idx == i)?data->active_text_color:data->inactive_text_color);
                 GRect rect = GRect(current_x_offset, y_offset, data->cell_widths[i], height);
                 char *text_to_draw = calloc(2, sizeof(char));
                 strncpy(text_to_draw, text, 1);
@@ -272,10 +245,6 @@ static void prv_draw_text(Layer *layer, GContext *ctx) {
 static void prv_draw_selection_layer(Layer *layer, GContext *ctx) {
     prv_draw_cell_backgrounds(layer, ctx);
     
-#ifndef PBL_COLOR
-    prv_draw_text(layer, ctx);
-#endif
-    
 #if ANIMATION_IS_ENABLED
     SelectionLayerData *data = layer_get_data(layer);
     if (data->slide_amin_progress) {
@@ -286,9 +255,7 @@ static void prv_draw_selection_layer(Layer *layer, GContext *ctx) {
     }
 #endif /* ANIMATION_IS_ENABLED */
 
-#ifdef PBL_COLOR
     prv_draw_text(layer, ctx);
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -340,11 +307,6 @@ static void prv_bump_text_stopped(Animation *animation, bool finished, void *con
     prv_did_change_text(data, 1, data->bump_is_upwards);
     
     animation_destroy(animation);
-    
-#ifndef PBL_SDK_3
-    Animation *bump_settle = prv_create_bump_settle_animation(layer);
-    animation_schedule(bump_settle);
-#endif
 }
 
 static void prv_bump_settle_impl(struct Animation *animation, const AnimationProgress distance_normalized) {
@@ -405,14 +367,11 @@ static Animation* prv_create_bump_settle_animation(Layer *layer) {
 
 static void prv_run_value_change_animation(Layer *layer) {
     Animation *bump_text = prv_create_bump_text_animation(layer);
-#ifdef PBL_SDK_3
+
     SelectionLayerData *data = layer_get_data(layer);
     Animation *bump_settle = prv_create_bump_settle_animation(layer);
     data->value_change_animation = animation_sequence_create(bump_text, bump_settle, NULL);
     animation_schedule(data->value_change_animation);
-#else
-    animation_schedule(bump_text);
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -447,11 +406,6 @@ static void prv_slide_stopped(Animation *animation, bool finished, void *context
     prv_did_change_selection(data);
     
     animation_destroy(animation);
-    
-#ifndef PBL_SDK_3
-    Animation *settle_animation = prv_create_slide_settle_animation(layer);
-    animation_schedule(settle_animation);
-#endif
 }
 
 static void prv_slide_settle_impl(struct Animation *animation, const AnimationProgress distance_normalized) {
@@ -511,14 +465,11 @@ static Animation* prv_create_slide_settle_animation(Layer *layer) {
 
 static void prv_run_slide_animation(Layer *layer) {
     Animation *over_animation = prv_create_slide_animation(layer);
-#ifdef PBL_SDK_3
+    
     SelectionLayerData *data = layer_get_data(layer);
     Animation *settle_animation = prv_create_slide_settle_animation(layer);
     data->next_cell_animation = animation_sequence_create(over_animation, settle_animation, NULL);
     animation_schedule(data->next_cell_animation);
-#else
-    animation_schedule(over_animation);
-#endif
 }
 
 #endif /* ANIMATION_IS_ENABLED */
@@ -647,12 +598,10 @@ Layer* selection_layer_create(GRect frame, int num_cells) {
     
     // Set layer defaults
     *selection_layer_data = (SelectionLayerData) {
-#ifdef PBL_COLOR
-        .active_background_color = DEFAULT_ACTIVE_COLOR,
-        .inactive_background_color = DEFAULT_INACTIVE_COLOR,
-#elif IS_BW_AND_SDK_2
-        .inverter = inverter_layer_create(GRect(0, 0, 0, frame.size.h)),
-#endif
+        .active_text_color = DEFAULT_ACTIVE_TEXT_COLOR,
+        .active_background_color = DEFAULT_ACTIVE_BG_COLOR,
+        .inactive_text_color = DEFAULT_INACTIVE_TEXT_COLOR,
+        .inactive_background_color = DEFAULT_INACTIVE_BG_COLOR,
         .num_cells = num_cells,
         .cell_padding = DEFAULT_CELL_PADDING,
         .selected_cell_idx = DEFAULT_SELECTED_INDEX,
@@ -666,10 +615,6 @@ Layer* selection_layer_create(GRect frame, int num_cells) {
     layer_set_clips(layer, false);
     layer_set_update_proc(layer, (LayerUpdateProc)prv_draw_selection_layer);
     
-#if IS_BW_AND_SDK_2
-    layer_add_child(layer, inverter_layer_get_layer(selection_layer_data->inverter));
-#endif
-    
     return layer;
 }
 
@@ -680,12 +625,6 @@ void selection_layer_destroy(Layer* layer) {
     animation_unschedule_all();
 #endif /* ANIMATION_IS_ENABLED */
     
-#if IS_BW_AND_SDK_2
-    if (data) {
-        inverter_layer_destroy(data->inverter);
-    }
-#endif
-    
     layer_destroy(layer);
 }
 
@@ -695,9 +634,6 @@ void selection_layer_set_cell_width(Layer *layer, int idx, int width) {
     if (data && idx < data->num_cells) {
         data->cell_widths[idx] = width;
     }
-#if IS_BW_AND_SDK_2
-    layer_set_bounds(inverter_layer_get_layer(data->inverter), GRect(0, 0, width, layer_get_bounds(inverter_layer_get_layer(data->inverter)).size.h));
-#endif
 }
 
 void selection_layer_set_font(Layer *layer, GFont font) {
@@ -708,19 +644,21 @@ void selection_layer_set_font(Layer *layer, GFont font) {
     }
 }
 
-void selection_layer_set_inactive_bg_color(Layer *layer, GColor color) {
+void selection_layer_set_inactive_color(Layer *layer, GColor text_color, GColor bg_color) {
     SelectionLayerData *data = layer_get_data(layer);
     
     if (data) {
-        data->inactive_background_color = color;
+        data->inactive_text_color = text_color;
+        data->inactive_background_color = bg_color;
     }
 }
 
-void selection_layer_set_active_bg_color(Layer *layer, GColor color) {
+void selection_layer_set_active_color(Layer *layer, GColor text_color, GColor bg_color) {
     SelectionLayerData *data = layer_get_data(layer);
     
     if (data) {
-        data->active_background_color = color;
+        data->active_text_color = text_color;
+        data->active_background_color = bg_color;
     }
 }
 
@@ -738,14 +676,8 @@ void selection_layer_set_active(Layer *layer, bool is_active) {
     if (data) {
         if (is_active && !data->is_active) {
             data->selected_cell_idx = 0;
-#if IS_BW_AND_SDK_2
-            layer_add_child(layer, inverter_layer_get_layer(data->inverter));
-#endif
         } if (!is_active && data->is_active) {
             data->selected_cell_idx = MAX_SELECTION_LAYER_CELLS;
-#if IS_BW_AND_SDK_2
-            layer_remove_from_parent(inverter_layer_get_layer(data->inverter));
-#endif
         }
         
         data->is_active = is_active;

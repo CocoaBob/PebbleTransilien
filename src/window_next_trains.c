@@ -27,10 +27,6 @@ typedef struct {
     
     ClickConfigProvider last_ccp;
     
-#if IS_BW_AND_SDK_2
-    InverterLayer *inverter_layer;
-#endif
-    
 #if RELATIVE_TIME_IS_ENABLED
 #define UPDATE_TIME_FORMAT_INTERVAL 3000 // 3 seconds
     AppTimer *format_timer;
@@ -67,10 +63,8 @@ static void restart_timers(NextTrains *user_info);
 
 static void draw_menu_layer_cell(GContext *ctx,
                                  Layer *cell_layer,
-#ifdef PBL_COLOR
                                  GColor text_color,
-                                 bool is_highlighed,
-#endif
+                                 bool is_inverted,
                                  bool is_selected,
                                  char * str_code,
                                  char * str_time,
@@ -78,11 +72,7 @@ static void draw_menu_layer_cell(GContext *ctx,
                                  char * str_platform,
                                  char * str_mention,
                                  NextTrains *user_info) {
-#ifdef PBL_COLOR
-    graphics_context_set_text_color(ctx, text_color);
-#else
-    graphics_context_set_text_color(ctx, GColorBlack);
-#endif
+    graphics_context_set_text_color(ctx, text_color);;
     GRect bounds = layer_get_bounds(cell_layer);
     
     // Code
@@ -105,12 +95,7 @@ static void draw_menu_layer_cell(GContext *ctx,
                                  CELL_ICON_SIZE,
                                  CELL_ICON_SIZE);
     if (str_platform != NULL) {
-        
-#ifdef PBL_COLOR
-        graphics_context_set_stroke_color(ctx, is_highlighed?GColorWhite:GColorBlack);
-#else
-        graphics_context_set_stroke_color(ctx, GColorBlack);
-#endif
+        graphics_context_set_stroke_color(ctx, is_inverted?GColorWhite:GColorBlack);
         graphics_draw_round_rect(ctx, frame_platform, 2);
         graphics_draw_rect(ctx, grect_crop(frame_platform, 1));
         draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14_BOLD, frame_platform, GTextAlignmentCenter);
@@ -150,11 +135,7 @@ static void draw_menu_layer_cell(GContext *ctx,
                 frame_mention.size.w += 4;
                 frame_mention.origin.y = NEXT_TRAIN_CELL_SUB_ICON_Y - 1;
                 frame_mention.size.h += 1;
-#ifdef PBL_COLOR
                 graphics_context_set_stroke_color(ctx, text_color);
-#else
-                graphics_context_set_stroke_color(ctx, GColorBlack);
-#endif
                 graphics_draw_round_rect(ctx, frame_mention, 2);
             }
             
@@ -167,11 +148,7 @@ static void draw_menu_layer_cell(GContext *ctx,
                                         CELL_SUB_ICON_SIZE,
                                         CELL_SUB_ICON_SIZE);
             
-#ifdef PBL_COLOR
-            draw_image_in_rect(ctx, is_highlighed?RESOURCE_ID_IMG_MENTION_DARK:RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
-#else
-            draw_image_in_rect(ctx, false, RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
-#endif
+            draw_image_in_rect(ctx, is_inverted?RESOURCE_ID_IMG_MENTION_DARK:RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
         }
     }
     
@@ -398,11 +375,14 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, NextTrains *user_info) {
-    MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-    bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+    bool is_selected = menu_cell_layer_is_highlighted(cell_layer);
+    
 #ifdef PBL_COLOR
-    bool is_highlighed = settings_is_dark_theme() || is_selected;
+    bool is_inverted = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
+#else
+    bool is_inverted = settings_is_dark_theme()?!is_selected:is_selected;
+    GColor text_color = is_selected?curr_bg_color():curr_fg_color();
 #endif
     
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
@@ -410,12 +390,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #if TEXT_SCROLL_IS_ENABLED
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
-#ifdef PBL_COLOR
-                     is_highlighed,
+                     is_inverted,
                      text_color,
-#else
-                     false,
-#endif
                      user_info->from_to
 #if MINI_TIMETABLE_IS_ENABLED
                      ,
@@ -447,10 +423,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             stations_get_name(next_train.terminus, str_terminus, STATION_NAME_MAX_LENGTH);
             
             draw_menu_layer_cell(ctx, cell_layer,
-#ifdef PBL_COLOR
                                  text_color,
-                                 is_highlighed,
-#endif
+                                 is_inverted,
                                  is_selected,
                                  next_train.code,
                                  str_hour,
@@ -525,12 +499,10 @@ static void window_load(Window *window) {
         ,
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
 #endif
-#if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
-#endif
     });
     
     // Setup Click Config Providers
@@ -538,17 +510,8 @@ static void window_load(Window *window) {
     user_info->last_ccp = window_get_click_config_provider(window);
     window_set_click_config_provider_with_context(window, click_config_provider, user_info->menu_layer);
     
-    // Add inverter layer for Aplite
-#if IS_BW_AND_SDK_2
-    user_info->inverter_layer = inverter_layer_create(window_bounds);
-#endif
-    
     // Setup theme
-#ifdef PBL_COLOR
     ui_setup_theme(user_info->window, user_info->menu_layer);
-#elif IS_BW_AND_SDK_2
-    ui_setup_theme(user_info->window, user_info->inverter_layer);
-#endif
 }
 
 static void window_unload(Window *window) {
@@ -561,9 +524,6 @@ static void window_unload(Window *window) {
     
     // Window
     menu_layer_destroy(user_info->menu_layer);
-#if IS_BW_AND_SDK_2
-    inverter_layer_destroy(user_info->inverter_layer);
-#endif
     window_destroy(user_info->window);
     
     NULL_FREE(user_info);
@@ -629,11 +589,6 @@ Window* new_window_next_trains(DataModelFromTo from_to) {
         // Reset data
         set_from_to(from_to.from, from_to.to, user_info);
         user_info->is_updating = false;
-        
-#ifdef PBL_SDK_2
-        // Fullscreen
-        window_set_fullscreen(user_info->window, true);
-#endif
         
         //Return the window
         return user_info->window;

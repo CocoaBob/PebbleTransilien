@@ -111,7 +111,6 @@ function sendAppMessageForNextTrains(responseText) {
     var payloadKey = 1000;// 1000 = "MESSAGE_KEY_RESPONSE_PAYLOAD";
     for(var index in dataArray){
         if (index >= payloadLength) {
-            console.log(index + " " + payloadLength);
             break;
         }
         var nextTrainDict = dataArray[index];
@@ -125,11 +124,7 @@ function sendAppMessageForNextTrains(responseText) {
         var trainHour = nextTrainDict["trainHour"];
         trainHour = parseTrainHour(trainHour);
         if (trainHour != null) {
-            if (Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
-                trainHour = trainHour.getTime() / 1000;
-            } else {
-                trainHour = trainHour.getTime() / 1000 - trainHour.getTimezoneOffset() * 60;
-            }
+            trainHour = trainHour.getTime() / 1000;
             trainHour = int322bin(trainHour);
         } else {
             trainHour = [];

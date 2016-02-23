@@ -15,10 +15,6 @@ typedef struct {
     
     ClickConfigProvider last_ccp;
     
-#if IS_BW_AND_SDK_2
-    InverterLayer *inverter_layer;
-#endif
-    
 #if RELATIVE_TIME_IS_ENABLED
 #define UPDATE_TIME_FORMAT_INTERVAL 3000 // 3 seconds
     AppTimer *format_timer;
@@ -141,11 +137,14 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, TrainDetails *user_info) {
-    MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-    bool is_selected = selected_index.row == cell_index->row;
+    bool is_selected = menu_cell_layer_is_highlighted(cell_layer);
+    
 #ifdef PBL_COLOR
-    bool is_highlighed = settings_is_dark_theme() || is_selected;
+    bool is_inverted = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
+#else
+    bool is_inverted = settings_is_dark_theme()?!is_selected:is_selected;
+    GColor text_color = is_selected?curr_bg_color():curr_fg_color();
 #endif
     
     if (user_info->is_updating) {
@@ -175,12 +174,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #if TEXT_SCROLL_IS_ENABLED
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
-#ifdef PBL_COLOR
                      text_color,
-                     is_highlighed,
-#else
-                     false,
-#endif
+                     is_inverted,
                      str_time,
                      str_station);
         
@@ -231,9 +226,7 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer
-#if !defined(PBL_PLATFORM_APLITE)
     menu_layer_pad_bottom_enable(user_info->menu_layer, false);
-#endif
     menu_layer_set_callbacks(user_info->menu_layer, user_info, (MenuLayerCallbacks) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
@@ -243,12 +236,10 @@ static void window_load(Window *window) {
         ,
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
 #endif
-#if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
-#endif
     });
     
     // Setup Click Config Providers
@@ -256,17 +247,8 @@ static void window_load(Window *window) {
     user_info->last_ccp = window_get_click_config_provider(window);
     window_set_click_config_provider_with_context(window, click_config_provider, user_info->menu_layer);
     
-    // Add inverter layer for Aplite
-#if IS_BW_AND_SDK_2
-    user_info->inverter_layer = inverter_layer_create(window_bounds);
-#endif
-    
     // Setup theme
-#ifdef PBL_COLOR
     ui_setup_theme(user_info->window, user_info->menu_layer);
-#elif IS_BW_AND_SDK_2
-    ui_setup_theme(user_info->window, user_info->inverter_layer);
-#endif
 }
 
 static void window_unload(Window *window) {
@@ -279,10 +261,6 @@ static void window_unload(Window *window) {
     // Window
     menu_layer_destroy(user_info->menu_layer);
     window_destroy(user_info->window);
-    
-#if IS_BW_AND_SDK_2
-    inverter_layer_destroy(user_info->inverter_layer);
-#endif
     
     NULL_FREE(user_info);
 }
@@ -349,11 +327,6 @@ Window* new_window_train_details(char* train_number, StationIndex from_station) 
         strncpy(user_info->train_number, train_number, train_number_length);
         
         user_info->from_station = from_station;
-        
-#ifdef PBL_SDK_2
-        // Fullscreen
-        window_set_fullscreen(user_info->window, true);
-#endif
         
         // Return the window
         return user_info->window;

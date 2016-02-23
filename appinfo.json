@@ -18,57 +18,57 @@
     "media": [
       {
         "menuIcon": true,
-        "type": "png",
+        "type": "bitmap",
         "name": "IMAGE_MENU_ICON",
         "file": "images/menu_icon.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_FROM_TO_DARK",
         "file": "images/img_from_to_dark.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_FROM_TO_LIGHT",
         "file": "images/img_from_to_light.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_FROM_DARK",
         "file": "images/img_from_dark.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_FROM_LIGHT",
         "file": "images/img_from_light.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_MENTION_DARK",
         "file": "images/img_mention_dark.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_MENTION_LIGHT",
         "file": "images/img_mention_light.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_SIGNAL_NO_DARK",
         "file": "images/img_signal_no_dark.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_SIGNAL_NO_LIGHT",
         "file": "images/img_signal_no_light.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_SIGNAL_YES_DARK",
         "file": "images/img_signal_yes_dark.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMG_SIGNAL_YES_LIGHT",
         "file": "images/img_signal_yes_light.png"
       },
@@ -119,7 +119,7 @@
     "basalt"
   ],
   "uuid": "30663f9d-bae8-4557-b8b9-c890b1094f24",
-  "versionLabel": "1.5",
+  "versionLabel": "1.6",
   "watchapp": {
     "watchface": false
   }

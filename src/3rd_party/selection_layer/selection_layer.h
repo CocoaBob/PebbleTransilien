@@ -6,10 +6,6 @@
 
 #define ANIMATION_IS_ENABLED (!defined(PBL_PLATFORM_APLITE) || defined(ENABLE_ANIMATION_FOR_APLITE))
 
-#ifndef IS_BW_AND_SDK_2
-#define IS_BW_AND_SDK_2 (defined(PBL_BW) && defined(PBL_SDK_2))
-#endif
-
 #define MAX_SELECTION_LAYER_CELLS 10
 
 typedef char* (*SelectionLayerGetCellText)(int index, void *context);
@@ -31,9 +27,6 @@ typedef struct SelectionLayerCallbacks {
 } SelectionLayerCallbacks;
 
 typedef struct SelectionLayerData {
-#if IS_BW_AND_SDK_2
-  InverterLayer *inverter;
-#endif
   int num_cells;
   int cell_widths[MAX_SELECTION_LAYER_CELLS];
   int cell_padding;
@@ -43,8 +36,10 @@ typedef struct SelectionLayerData {
   bool is_active;
 
   GFont font;
-  GColor inactive_background_color;
+  GColor active_text_color;
   GColor active_background_color;
+  GColor inactive_text_color;
+  GColor inactive_background_color;
 
   SelectionLayerCallbacks callbacks;
   void *context;
@@ -75,9 +70,9 @@ void selection_layer_set_cell_width(Layer *layer, int cell_idx, int width);
 
 void selection_layer_set_font(Layer *layer, GFont font);
 
-void selection_layer_set_inactive_bg_color(Layer *layer, GColor color);
+void selection_layer_set_inactive_color(Layer *layer, GColor text_color, GColor bg_color);
 
-void selection_layer_set_active_bg_color(Layer *layer, GColor color);
+void selection_layer_set_active_color(Layer *layer, GColor text_color, GColor bg_color);
 
 void selection_layer_set_cell_padding(Layer *layer, int padding);
 

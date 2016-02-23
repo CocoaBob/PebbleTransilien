@@ -20,12 +20,7 @@ static Layer *s_status_bar_layer;
 // MARK: Draw status_bar
 
 static void status_bar_draw_background(GContext *ctx, GRect bounds, bool is_inverted, GColor bg_color, GColor fg_color) {
-#ifdef PBL_COLOR
     graphics_context_set_fill_color(ctx, is_inverted?fg_color:bg_color);
-#else
-    // In Aplite, the default status bar's background is black, so we have to invert the colors by default
-    graphics_context_set_fill_color(ctx, is_inverted?bg_color:fg_color);
-#endif
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
 }
 
@@ -41,22 +36,12 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
     if (user_info->alert_timer) {
         if (user_info->alert_count % 2 == 0) { // Invert color
             status_bar_draw_background(ctx, bounds, true, bg_color, fg_color);
-#ifdef PBL_COLOR
             graphics_context_set_stroke_color(ctx, bg_color);
             graphics_context_set_text_color(ctx, bg_color);
-#else
-            graphics_context_set_stroke_color(ctx, fg_color);
-            graphics_context_set_text_color(ctx, fg_color);
-#endif
         } else { // Normal color
             status_bar_draw_background(ctx, bounds, false, bg_color, fg_color);
-#ifdef PBL_COLOR
             graphics_context_set_stroke_color(ctx, fg_color);
             graphics_context_set_text_color(ctx, fg_color);
-#else
-            graphics_context_set_stroke_color(ctx, bg_color);
-            graphics_context_set_text_color(ctx, bg_color);
-#endif
         }
         
         // Draw frame
@@ -76,44 +61,24 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
         status_bar_draw_background(ctx, bounds, false, bg_color, fg_color);
         
         // Set components color
-#ifdef PBL_COLOR
         graphics_context_set_stroke_color(ctx, fg_color);
         graphics_context_set_fill_color(ctx, fg_color);
         graphics_context_set_text_color(ctx, fg_color);
-#else
-        // In Aplite, the default status bar's background is black, so we have to invert the colors by default
-        graphics_context_set_stroke_color(ctx, bg_color);
-        graphics_context_set_fill_color(ctx, bg_color);
-        graphics_context_set_text_color(ctx, bg_color);
-#endif
         
         // Draw signal indicators
         bool is_connected = connection_service_peek_pebble_app_connection();
         size_t y_signal = (STATUS_BAR_LAYER_HEIGHT - 10) / 2;
         GRect frame_signal = GRect(4, y_signal, 11, 10);
-#ifdef PBL_COLOR
         if (is_connected) {
             draw_image_in_rect(ctx, settings_is_dark_theme()?RESOURCE_ID_IMG_SIGNAL_YES_DARK:RESOURCE_ID_IMG_SIGNAL_YES_LIGHT, frame_signal);
         } else {
             draw_image_in_rect(ctx, settings_is_dark_theme()?RESOURCE_ID_IMG_SIGNAL_NO_DARK:RESOURCE_ID_IMG_SIGNAL_NO_LIGHT, frame_signal);
         }
-#else
-        // In Aplite, the default status bar's background is black, so we have to use dark theme by default (is_inverted = true)
-        if (is_connected) {
-            draw_image_in_rect(ctx, true, RESOURCE_ID_IMG_SIGNAL_YES_LIGHT, frame_signal);
-        } else {
-            draw_image_in_rect(ctx, true, RESOURCE_ID_IMG_SIGNAL_NO_LIGHT, frame_signal);
-        }
-#endif
         
         // Hour:Minute
         char time_buffer[16];
         clock_copy_time_string(time_buffer, sizeof(time_buffer));
-#ifdef PBL_COLOR
         size_t y_time = (STATUS_BAR_LAYER_HEIGHT - 20) / 2;
-#else
-        size_t y_time = (STATUS_BAR_LAYER_HEIGHT - 18) / 2;
-#endif
         graphics_draw_text(ctx,
                            time_buffer,
                            fonts_get_system_font(FONT_KEY_GOTHIC_14),
@@ -129,12 +94,7 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
         graphics_fill_rect(ctx, GRect(bounds.size.w - 16, y_battery + 2, battery_state_service_peek().charge_percent / 10, 4), 0, GCornerNone);
         
         // Separator
-#ifdef PBL_COLOR
         graphics_draw_line(ctx, GPoint(0, bounds.size.h - 1), GPoint(bounds.size.w, bounds.size.h - 1));
-#else
-        // In Aplite, the default status bar's background is black, so we have to invert the colors by default
-        // But the separator's color shouldn't
-#endif
     }
 }
 

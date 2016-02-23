@@ -193,7 +193,11 @@ void message_init() {
     app_message_register_outbox_failed((AppMessageOutboxFailed)out_failed_handler);
     
     // app_message_open should be called before registering handlers
+#ifdef PBL_PLATFORM_APLITE
+    app_message_open(1024, 128);
+#else
     app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+#endif
 }
 
 void message_deinit() {

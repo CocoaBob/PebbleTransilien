@@ -10,7 +10,7 @@
 #include "headers.h"
 
 // MARK: Constants
-
+#define SELECTION_LAYER_SEPARATOR_HEIGHT 1
 #define SELECTION_LAYER_HEIGHT 22
 #define SELECTION_LAYER_CELL_COUNT 8
 #define SELECTION_LAYER_VALUE_MIN 'A'
@@ -46,9 +46,6 @@ typedef struct {
     MenuLayer *menu_layer;
     Layer *panel_layer;
     ClickConfigProvider last_ccp;
-#if IS_BW_AND_SDK_2
-    InverterLayer *inverter_layer;
-#endif
     // Searching
     char search_string[SELECTION_LAYER_CELL_COUNT+1];
     SearchStationResult search_results[SELECTION_LAYER_CELL_COUNT];
@@ -123,38 +120,30 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     GRect bounds = layer_get_bounds(layer);
     PanelData *layer_data = layer_get_data(layer);
     
-#ifdef PBL_COLOR
     // Background or Highlight
     if (layer_data->is_active) {
+#ifdef PBL_COLOR
         graphics_context_set_fill_color(ctx, GColorCobaltBlue);
+#else
+        graphics_context_set_fill_color(ctx, curr_fg_color());
+#endif
         graphics_fill_rect(ctx, bounds, 0, GCornerNone);
         graphics_context_set_stroke_color(ctx, GColorWhite);
         graphics_draw_rect(ctx, GRect(bounds.origin.x, bounds.origin.y + 1, bounds.size.w, bounds.size.h - 1));
     } else {
+#ifdef PBL_COLOR
         graphics_context_set_fill_color(ctx, GColorDarkGray);
+#else
+        graphics_context_set_fill_color(ctx, curr_bg_color());
+#endif
         graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     }
     
     // Separator
     graphics_context_set_stroke_color(ctx, curr_fg_color());
     graphics_draw_line(ctx, GPoint(0, 0), GPoint(bounds.size.w, 0));
-#else
-    // Background or Highlight
-    graphics_context_set_fill_color(ctx, GColorBlack);
-    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-    if (layer_data->is_active) {
-        graphics_context_set_stroke_color(ctx, GColorWhite);
-        graphics_draw_rect(ctx, grect_crop(bounds, 1));
-    } else {
-        graphics_context_set_fill_color(ctx, GColorWhite);
-        graphics_fill_rect(ctx, grect_crop(bounds, 1), 0, GCornerNone);
-    }
-#endif
     
     // Draw stations
-#ifdef PBL_COLOR
-    GColor text_color = GColorWhite;
-#endif
     
     draw_from_to(ctx, layer,
 #if TEXT_SCROLL_IS_ENABLED
@@ -162,9 +151,10 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
 #endif
 #ifdef PBL_COLOR
                  true,
-                 text_color,
+                 GColorWhite,
 #else
-                 layer_data->is_active,
+                 settings_is_dark_theme()?!layer_data->is_active:layer_data->is_active,
+                 layer_data->is_active?curr_bg_color():curr_fg_color(),
 #endif
                  layer_data->from_to
 #if MINI_TIMETABLE_IS_ENABLED
@@ -191,14 +181,8 @@ static void panel_show(SearchStation *user_info) {
         panel_layer_frame.origin.y = menu_layer_frame.origin.y + menu_layer_frame.size.h;
         layer_set_frame(user_info->panel_layer, panel_layer_frame);
         
-#ifdef PBL_COLOR
         Layer *window_layer = window_get_root_layer(user_info->window);
         layer_add_child(window_layer, user_info->panel_layer);
-#elif IS_BW_AND_SDK_2
-        // To make sure the panel layer is under the inverter layer
-        // But we can't just insert it below the inverter layer which isn't always there
-        layer_insert_above_sibling(user_info->panel_layer, menu_layer_get_layer(user_info->menu_layer));
-#endif
     }
 }
 
@@ -366,22 +350,19 @@ static void search_selection_layer_set_active(bool is_active, SearchStation *use
 
 static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
     // Update menu layer
-#ifdef PBL_COLOR
     menu_layer_set_highlight_colors(user_info->menu_layer,
+#ifdef PBL_COLOR
                                     is_active ? GColorCobaltBlue : curr_bg_color(),
                                     is_active ? GColorWhite      : curr_fg_color());
+#else
+                                    is_active ? curr_fg_color()  : curr_bg_color(),
+                                    is_active ? curr_bg_color()  : curr_fg_color());
 #endif
     
     if (is_active) {
         // Display selected station if departure & destination are STATION_NON
         panel_update_with_menu_layer_selection(user_info);
     }
-#if IS_BW_AND_SDK_2
-    else {
-        // Select the first row to make it easier to set inverter layer's position
-        menu_layer_set_selected_index(user_info->menu_layer, MenuIndex(0, 0), MenuRowAlignTop, false);
-    }
-#endif
 }
 
 
@@ -532,13 +513,15 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, SearchStation *user_info) {
-    MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-#if TEXT_SCROLL_IS_ENABLED || PBL_COLOR
-    bool is_selected = (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER)?(selected_index.row == cell_index->row):false;
-#endif
+    bool is_highlighted = menu_cell_layer_is_highlighted(cell_layer);
+    bool is_selected = (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER)?is_highlighted:false;
+    
 #ifdef PBL_COLOR
-    bool is_highlighed = settings_is_dark_theme() || is_selected;
+    bool is_inverted = settings_is_dark_theme() || is_selected;
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
+#else
+    bool is_inverted = settings_is_dark_theme()?!is_selected:is_selected;
+    GColor text_color = is_selected?curr_bg_color():curr_fg_color();
 #endif
     
     if (current_search_results_count(user_info) > 0) {
@@ -552,12 +535,8 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #if TEXT_SCROLL_IS_ENABLED
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
-#ifdef PBL_COLOR
                      text_color,
-                     is_highlighed,
-#else               
-                     (user_info->active_layer_index == SEARCH_STATION_SELECTION_LAYER) && (selected_index.row == cell_index->row),
-#endif
+                     is_inverted,
                      NULL,
                      str_station);
         
@@ -565,7 +544,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         free(str_station);
     } else {
         draw_centered_title(ctx, cell_layer,
-                            (user_info->active_layer_index != SEARCH_STATION_MENU_LAYER) || (selected_index.row == cell_index->row),
+                            (user_info->active_layer_index != SEARCH_STATION_MENU_LAYER) || is_highlighted,
                             (user_info->search_results_index >= 0)?_("Not found."):_("Press UP/DOWN"),
                             NULL);
     }
@@ -605,20 +584,13 @@ static void window_load(Window *window) {
     
     // Add separator between selection layer and menu layer
     // To save memory, we just change the window background's color
-#if !defined(PBL_PLATFORM_APLITE)
     window_set_background_color(user_info->window, curr_fg_color());
-#endif
     
     // Add menu layer
-#if defined(PBL_PLATFORM_APLITE)
-    uint8_t separator_height = 0;
-#else
-    uint8_t separator_height = 1;
-#endif
     GRect menu_layer_frame = GRect(window_bounds.origin.x,
-                                   window_bounds.origin.y + STATUS_BAR_LAYER_HEIGHT + SELECTION_LAYER_HEIGHT + separator_height,
+                                   window_bounds.origin.y + STATUS_BAR_LAYER_HEIGHT + SELECTION_LAYER_HEIGHT + SELECTION_LAYER_SEPARATOR_HEIGHT,
                                    window_bounds.size.w,
-                                   window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT - SELECTION_LAYER_HEIGHT - separator_height);
+                                   window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT - SELECTION_LAYER_HEIGHT - SELECTION_LAYER_SEPARATOR_HEIGHT);
     
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
@@ -631,12 +603,10 @@ static void window_load(Window *window) {
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback,
         .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback
-#if !defined(PBL_PLATFORM_APLITE)
         ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
-#endif
     });
     
     // Add panel layer
@@ -656,9 +626,13 @@ static void window_load(Window *window) {
     selection_layer_set_cell_padding(user_info->selection_layer, 0);
     selection_layer_set_font(user_info->selection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
 #ifdef PBL_COLOR
-    selection_layer_set_active_bg_color(user_info->selection_layer, GColorCobaltBlue);
-    selection_layer_set_inactive_bg_color(user_info->selection_layer, GColorDarkGray);
+    selection_layer_set_inactive_color(user_info->selection_layer, GColorWhite, GColorDarkGray);
+    selection_layer_set_active_color(user_info->selection_layer, GColorWhite, GColorCobaltBlue);
+#else
+    selection_layer_set_inactive_color(user_info->selection_layer, curr_fg_color(), curr_bg_color());
+    selection_layer_set_active_color(user_info->selection_layer, curr_bg_color(), curr_fg_color());
 #endif
+    
     selection_layer_set_callbacks(user_info->selection_layer, user_info, (SelectionLayerCallbacks) {
         .get_cell_text = (SelectionLayerGetCellText)selection_handle_get_text,
         .will_change = (SelectionLayerWillChangeCallback)selection_handle_will_change,
@@ -668,17 +642,8 @@ static void window_load(Window *window) {
     });
     layer_add_child(window_layer, user_info->selection_layer);
     
-    // Prepare inverter layers for Aplite
-#if IS_BW_AND_SDK_2
-    user_info->inverter_layer = inverter_layer_create(window_bounds);
-#endif
-    
     // Setup theme
-#ifdef PBL_COLOR
     ui_setup_theme(user_info->window, user_info->menu_layer);
-#elif IS_BW_AND_SDK_2
-    ui_setup_theme(user_info->window, user_info->inverter_layer);
-#endif
 }
 
 static void window_unload(Window *window) {
@@ -689,10 +654,6 @@ static void window_unload(Window *window) {
     layer_destroy(user_info->panel_layer);
     menu_layer_destroy(user_info->menu_layer);
     window_destroy(user_info->window);
-    
-#if IS_BW_AND_SDK_2
-    inverter_layer_destroy(user_info->inverter_layer);
-#endif
     
     free(user_info);
 }
@@ -715,6 +676,7 @@ static void window_appear(Window *window) {
     ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
 #if !defined(PBL_PLATFORM_APLITE)
+    // High performance solution
     stations_search_name_begin();
 #endif
 }
@@ -725,8 +687,9 @@ static void window_disappear(Window *window) {
     text_scroll_end();
 #endif
     
-    // Release memory for searching
 #if !defined(PBL_PLATFORM_APLITE)
+    // High performance solution
+    // Release memory for searching
     stations_search_name_end();
 #endif
 }
@@ -747,11 +710,6 @@ Window* new_window_search_train(StationIndex from, StationIndex to) {
         
         user_info->from_to.from = from;
         user_info->from_to.to = to;
-        
-#ifdef PBL_SDK_2
-        // Fullscreen
-        window_set_fullscreen(user_info->window, true);
-#endif
         
         // Return the window
         return user_info->window;
