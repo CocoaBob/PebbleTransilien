@@ -262,6 +262,9 @@ static void window_load(Window *window) {
                                    window_bounds.size.w,
                                    window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT);
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
+#ifdef PBL_ROUND
+//    menu_layer_set_center_focused(user_info->menu_layer, false);
+#endif
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     menu_layer_set_callbacks(user_info->menu_layer, user_info, (MenuLayerCallbacks) {
         .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)menu_layer_get_num_sections_callback,

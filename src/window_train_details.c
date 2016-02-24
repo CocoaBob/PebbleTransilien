@@ -177,7 +177,11 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #endif
                      text_color,
                      is_inverted,
+#ifdef PBL_ROUND
+                     is_selected ? str_time : "",
+#else
                      str_time,
+#endif
                      str_station);
         
         // Clean
@@ -222,6 +226,9 @@ static void window_load(Window *window) {
                                    window_bounds.size.w,
                                    window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT);
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
+#ifdef PBL_ROUND
+//    menu_layer_set_center_focused(user_info->menu_layer, false);
+#endif
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer

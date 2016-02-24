@@ -10,6 +10,9 @@
 #include "headers.h"
 
 void handle_init(void) {
+#ifdef PBL_ROUND
+    ui_common_init();
+#endif
     status_bar_init();
     settings_init();
     locale_init();
@@ -21,6 +24,9 @@ void handle_init(void) {
 }
 
 void handle_deinit(void) {
+#ifdef PBL_ROUND
+    ui_common_deinit();
+#endif
     status_bar_deinit(); // Always have 40B memory leak due to tick_timer_service_subscribe()
     favorites_deinit();
     stations_deinit();

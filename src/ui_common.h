@@ -10,6 +10,11 @@
 
 // MARK: Routines
 
+#ifdef PBL_ROUND
+void ui_common_init();
+void ui_common_deinit();
+#endif
+
 GSize size_of_text(const char *text, const char *font_key, GRect frame);
 
 // MARK: Darwing

@@ -56,8 +56,7 @@ static void restart_timers(NextTrains *user_info);
 #define NEXT_TRAIN_CELL_MENTION_Y_OFFSET 4
 #define NEXT_TRAIN_CELL_MENTION_RIGHT_MARGIN 2
 #define NEXT_TRAIN_CELL_CODE_X 4                    // CELL_MARGIN = 4
-#define NEXT_TRAIN_CELL_CODE_W 56
-#define NEXT_TRAIN_CELL_TIME_X 64                   // CELL_MARGIN + NEXT_TRAIN_CELL_CODE_W + CELL_MARGIN = 4 + 56 + 4
+#define NEXT_TRAIN_CELL_TIME_W 53
 
 // MARK: Drawing
 
@@ -78,14 +77,14 @@ static void draw_menu_layer_cell(GContext *ctx,
     // Code
     GRect frame_code = GRect(NEXT_TRAIN_CELL_CODE_X,
                              TEXT_Y_OFFSET - 2,
-                             NEXT_TRAIN_CELL_CODE_W,
+                             bounds.size.w - NEXT_TRAIN_CELL_CODE_X - CELL_MARGIN - NEXT_TRAIN_CELL_TIME_W - CELL_MARGIN - CELL_ICON_SIZE - CELL_MARGIN,
                              CELL_HEIGHT_2);
     draw_text(ctx, str_code, FONT_KEY_GOTHIC_24_BOLD, frame_code, GTextAlignmentLeft);
     
     // Time
-    GRect frame_time = GRect(NEXT_TRAIN_CELL_TIME_X,
+    GRect frame_time = GRect(bounds.size.w - NEXT_TRAIN_CELL_TIME_W - CELL_MARGIN - CELL_ICON_SIZE - CELL_MARGIN,
                              TEXT_Y_OFFSET - 2,
-                             bounds.size.w - NEXT_TRAIN_CELL_TIME_X - CELL_MARGIN - CELL_ICON_SIZE - CELL_MARGIN,
+                             NEXT_TRAIN_CELL_TIME_W,
                              CELL_HEIGHT_2);
     draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentRight);
     
@@ -485,6 +484,9 @@ static void window_load(Window *window) {
                                    window_bounds.size.w,
                                    window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT);
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
+#ifdef PBL_ROUND
+//    menu_layer_set_center_focused(user_info->menu_layer, false);
+#endif
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer

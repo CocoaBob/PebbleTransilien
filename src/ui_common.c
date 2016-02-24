@@ -9,6 +9,19 @@
 #include <pebble.h>
 #include "headers.h"
 
+#ifdef PBL_ROUND
+static GTextAttributes *s_attributes;
+
+void ui_common_init() {
+    s_attributes = graphics_text_attributes_create();
+    graphics_text_attributes_enable_screen_text_flow(s_attributes, 4);
+}
+
+void ui_common_deinit() {
+    graphics_text_attributes_destroy(s_attributes);
+}
+#endif
+
 // MARK: Routines
 
 GSize size_of_text(const char *text, const char *font_key, GRect frame) {
@@ -18,7 +31,11 @@ GSize size_of_text(const char *text, const char *font_key, GRect frame) {
 // MARK: Darw Basics
 
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment) {
+#ifdef PBL_ROUND
+    graphics_draw_text(ctx, text, fonts_get_system_font(font_key), frame, GTextOverflowModeTrailingEllipsis, alignment, s_attributes);
+#else
     graphics_draw_text(ctx, text, fonts_get_system_font(font_key), frame, GTextOverflowModeTrailingEllipsis, alignment, NULL);
+#endif
 }
 
 // MARK: Draw header and separators
@@ -278,7 +295,12 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
     if (str_time && str_time[0] != '\0') {
         GSize time_size = size_of_text(str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time);
         frame_time.origin.x = bounds.size.w - CELL_MARGIN - time_size.w;
+#ifdef PBL_ROUND
+        frame_time.origin.x -= CELL_MARGIN;
+        frame_time.size.w = time_size.w + CELL_MARGIN;
+#else
         frame_time.size.w = time_size.w;
+#endif
         draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
     } else {
         frame_time.origin.x = bounds.size.w;

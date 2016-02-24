@@ -114,9 +114,12 @@ static void window_load(Window *window) {
     
     // Add menu layer
     user_info->menu_layer = menu_layer_create(GRect(bounds.origin.x  + ACTION_LIST_BAR_WIDTH,
-                                                      bounds.origin.y,
-                                                      bounds.size.w - ACTION_LIST_BAR_WIDTH,
-                                                      bounds.size.h));
+                                                    bounds.origin.y,
+                                                    bounds.size.w - ACTION_LIST_BAR_WIDTH,
+                                                    bounds.size.h));
+#ifdef PBL_ROUND
+//    menu_layer_set_center_focused(user_info->menu_layer, false);
+#endif
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer
