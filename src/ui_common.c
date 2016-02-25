@@ -328,6 +328,17 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
     uint16_t icon_radius = FROM_TO_ICON_SIZE / 2;
     GPoint icon_center = GPoint(CELL_MARGIN + icon_radius, CELL_HEIGHT_4);
     
+#ifdef PBL_ROUND
+    GRect window_bounds = layer_get_bounds(window_get_root_layer(layer_get_window(drawing_layer)));
+    
+    // Calculate icon's x positions for PBL_ROUND
+    GPoint icon_angle_point = GPoint(0, layer_convert_point_to_screen(drawing_layer, icon_center).y);
+    icon_angle_point.x = get_round_border_x_radius_82(icon_angle_point.y - CELL_MARGIN_2) + CELL_MARGIN_2;
+    icon_center.x = icon_angle_point.x;
+    
+    int16_t row_inset = icon_center.x - CELL_MARGIN_2;
+#endif
+    
     // Draw icons
     graphics_draw_circle(ctx, icon_center, icon_radius);
     
@@ -339,14 +350,16 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
     
     if (str_time && str_time[0] != '\0') {
         GSize time_size = size_of_text(str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time);
-        frame_time.origin.x = bounds.size.w - CELL_MARGIN - time_size.w;
-#ifdef PBL_ROUND
-        frame_time.origin.x -= CELL_MARGIN;
-        frame_time.size.w = time_size.w + CELL_MARGIN;
-#else
         frame_time.size.w = time_size.w;
-#endif
+#ifdef PBL_ROUND
+        frame_time.origin.x = bounds.size.w - row_inset - CELL_MARGIN - time_size.w;
+        if (frame_time.origin.x > icon_center.x + icon_radius + CELL_MARGIN_2) {
+            draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
+        }
+#else
+        frame_time.origin.x = bounds.size.w - CELL_MARGIN - time_size.w;
         draw_text(ctx, str_time, FONT_KEY_GOTHIC_18_BOLD, frame_time, GTextAlignmentRight);
+#endif
     } else {
         frame_time.origin.x = bounds.size.w;
     }
@@ -357,15 +370,27 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
                                 frame_time.origin.x - CELL_MARGIN_3 - FROM_TO_ICON_SIZE,
                                 CELL_HEIGHT_2);
     
-    draw_text(ctx,
-#if TEXT_SCROLL_IS_ENABLED
-              is_selected?text_scroll_text(str_station, 0,FONT_KEY_GOTHIC_18, frame_station, true):str_station,
-#else
-              str_station,
+#ifdef PBL_ROUND
+    // Adjust frames for PBL_ROUND
+    frame_station.origin.x += row_inset;
+    frame_station.size.w -= row_inset;
 #endif
-              FONT_KEY_GOTHIC_18,
-              frame_station,
-              GTextAlignmentLeft);
+    
+#ifdef PBL_ROUND
+    if (frame_station.size.w > 0) {
+#endif
+        draw_text(ctx,
+#if TEXT_SCROLL_IS_ENABLED
+                  is_selected?text_scroll_text(str_station, 0,FONT_KEY_GOTHIC_18, frame_station, true):str_station,
+#else
+                  str_station,
+#endif
+                  FONT_KEY_GOTHIC_18,
+                  frame_station,
+                  GTextAlignmentLeft);
+#ifdef PBL_ROUND
+    }
+#endif
     
 #if TEXT_SCROLL_IS_ENABLED
     // Scroll texts

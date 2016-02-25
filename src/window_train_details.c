@@ -176,11 +176,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 #endif
                      text_color,
                      is_inverted,
-#ifdef PBL_ROUND
-                     is_selected ? str_time : "",
-#else
                      str_time,
-#endif
                      str_station);
         
         // Clean
