@@ -196,7 +196,7 @@ void message_init() {
 #ifdef PBL_PLATFORM_APLITE
     app_message_open(1024, 128);
 #else
-    app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+    app_message_open(2048, 128);
 #endif
 }
 

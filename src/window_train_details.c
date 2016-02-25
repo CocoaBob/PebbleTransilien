@@ -137,8 +137,7 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, TrainDetails *user_info) {
-    MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-    bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+    bool is_selected = menu_layer_is_index_selected(user_info->menu_layer, cell_index);
     
 #ifdef PBL_COLOR
     bool is_inverted = settings_is_dark_theme() || is_selected;

@@ -120,14 +120,15 @@ static int16_t menu_layer_get_header_height_callback(struct MenuLayer *menu_laye
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, MainMenu *user_info) {
-    MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-    bool is_selected = (menu_index_compare(&selected_index, cell_index) == 0);
+    bool is_selected = menu_layer_is_index_selected(user_info->menu_layer, cell_index);
 
 #ifdef PBL_COLOR
     bool is_inverted = settings_is_dark_theme() || is_selected;
+    GColor bg_color = is_selected?HIGHLIGHT_COLOR:(settings_is_dark_theme()?curr_fg_color():curr_bg_color());
     GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
 #else
     bool is_inverted = settings_is_dark_theme()?!is_selected:is_selected;
+    GColor bg_color = is_selected?curr_fg_color():curr_bg_color();
     GColor text_color = is_selected?curr_bg_color():curr_fg_color();
 #endif
 
@@ -140,7 +141,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
                      is_inverted,
-                     text_color,
+                     bg_color, text_color,
                      favorite
 #if MINI_TIMETABLE_IS_ENABLED
                      ,
@@ -223,7 +224,7 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
             .default_selection = MAIN_MENU_ACTIONS_EDIT,
 #ifdef PBL_COLOR
             .colors = {
-                .background = GColorCobaltBlue,
+                .background = HIGHLIGHT_COLOR,
                 .foreground = GColorBlack,
                 .text = GColorLightGray,
                 .text_selected = GColorWhite,

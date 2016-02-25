@@ -121,14 +121,19 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     PanelData *layer_data = layer_get_data(layer);
     
     // Background or Highlight
+    GColor bg_color;
     if (layer_data->is_active) {
-        graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorCobaltBlue, curr_fg_color()));
-        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+        bg_color = PBL_IF_COLOR_ELSE(HIGHLIGHT_COLOR, curr_fg_color());
+    } else {
+        bg_color = PBL_IF_COLOR_ELSE(GColorDarkGray, curr_bg_color());
+    }
+    // Draw background
+    graphics_context_set_fill_color(ctx, bg_color);
+    graphics_fill_rect(ctx, bounds, 0, GCornerNone);
+    // Draw highlight border
+    if (layer_data->is_active) {
         graphics_context_set_stroke_color(ctx, GColorWhite);
         graphics_draw_rect(ctx, GRect(bounds.origin.x, bounds.origin.y + 1, bounds.size.w, bounds.size.h - 1));
-    } else {
-        graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorDarkGray, curr_bg_color()));
-        graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     }
     
     // Separator
@@ -136,17 +141,17 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     graphics_draw_line(ctx, GPoint(0, 0), GPoint(bounds.size.w, 0));
     
     // Draw stations
-    
+    GColor fg_color = layer_data->is_active?curr_bg_color():curr_fg_color();
     draw_from_to(ctx, layer,
 #if TEXT_SCROLL_IS_ENABLED
                  layer, layer_data->is_active,
 #endif
 #ifdef PBL_COLOR
                  true,
-                 GColorWhite,
+                 bg_color, GColorWhite,
 #else
                  settings_is_dark_theme()?!layer_data->is_active:layer_data->is_active,
-                 layer_data->is_active?curr_bg_color():curr_fg_color(),
+                 bg_color, fg_color,
 #endif
                  layer_data->from_to
 #if MINI_TIMETABLE_IS_ENABLED
@@ -268,7 +273,7 @@ static void show_action_list(SearchStation *user_info) {
         .default_selection = SEARCH_STATION_ACTIONS_TIMETABLE,
 #ifdef PBL_COLOR
         .colors = {
-            .background = GColorCobaltBlue,
+            .background = HIGHLIGHT_COLOR,
             .foreground = GColorBlack,
             .text = GColorLightGray,
             .text_selected = GColorWhite,
@@ -341,7 +346,7 @@ static void search_selection_layer_set_active(bool is_active, SearchStation *use
 static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
     // Update menu layer
     menu_layer_set_highlight_colors(user_info->menu_layer,
-                                    is_active ? PBL_IF_COLOR_ELSE(GColorCobaltBlue, curr_fg_color()) : curr_bg_color(),
+                                    is_active ? PBL_IF_COLOR_ELSE(HIGHLIGHT_COLOR, curr_fg_color()) : curr_bg_color(),
                                     is_active ? PBL_IF_COLOR_ELSE(GColorWhite,      curr_bg_color()) : curr_fg_color());
     
     if (is_active) {
@@ -498,8 +503,7 @@ static int16_t menu_layer_get_cell_height_callback(struct MenuLayer *menu_layer,
 }
 
 static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, SearchStation *user_info) {
-    MenuIndex selected_index = menu_layer_get_selected_index(user_info->menu_layer);
-    bool is_selected = (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER)?(selected_index.row == cell_index->row):false;
+    bool is_selected = (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER)?menu_layer_is_index_selected(user_info->menu_layer, cell_index):false;
     bool is_highlighted = settings_is_dark_theme() || is_selected;
     
 #ifdef PBL_COLOR
@@ -616,7 +620,7 @@ static void window_load(Window *window) {
     selection_layer_set_cell_padding(user_info->selection_layer, 0);
     selection_layer_set_font(user_info->selection_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
     selection_layer_set_inactive_color(user_info->selection_layer,  PBL_IF_COLOR_ELSE(GColorWhite, curr_fg_color()), PBL_IF_COLOR_ELSE(GColorDarkGray,   curr_bg_color()));
-    selection_layer_set_active_color(user_info->selection_layer,    PBL_IF_COLOR_ELSE(GColorWhite, curr_bg_color()), PBL_IF_COLOR_ELSE(GColorCobaltBlue, curr_fg_color()));
+    selection_layer_set_active_color(user_info->selection_layer,    PBL_IF_COLOR_ELSE(GColorWhite, curr_bg_color()), PBL_IF_COLOR_ELSE(HIGHLIGHT_COLOR, curr_fg_color()));
     
     selection_layer_set_callbacks(user_info->selection_layer, user_info, (SelectionLayerCallbacks) {
         .get_cell_text = (SelectionLayerGetCellText)selection_handle_get_text,

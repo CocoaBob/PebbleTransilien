@@ -24,26 +24,6 @@
       },
       {
         "type": "bitmap",
-        "name": "IMG_FROM_TO_DARK",
-        "file": "images/img_from_to_dark.png"
-      },
-      {
-        "type": "bitmap",
-        "name": "IMG_FROM_TO_LIGHT",
-        "file": "images/img_from_to_light.png"
-      },
-      {
-        "type": "bitmap",
-        "name": "IMG_FROM_DARK",
-        "file": "images/img_from_dark.png"
-      },
-      {
-        "type": "bitmap",
-        "name": "IMG_FROM_LIGHT",
-        "file": "images/img_from_light.png"
-      },
-      {
-        "type": "bitmap",
         "name": "IMG_MENTION_DARK",
         "file": "images/img_mention_dark.png"
       },

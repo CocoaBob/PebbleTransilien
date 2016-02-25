@@ -23,9 +23,8 @@
 #ifndef MAX
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
-
-#ifndef STATUS_BAR_LAYER_HEIGHT
-#define STATUS_BAR_LAYER_HEIGHT 16
+#ifndef ABS
+#define ABS(x) (((x) < 0) ? (-(x)) : (x))
 #endif
 
 #define STATION_DATA_VERSION 1
@@ -46,6 +45,7 @@
 #define CELL_MARGIN_4 16
 #define CELL_HEIGHT 44
 #define CELL_HEIGHT_2 22
+#define CELL_HEIGHT_4 11
 #define CELL_ICON_SIZE 19
 #define CELL_SUB_ICON_SIZE 13
 
@@ -53,7 +53,13 @@
 
 #define HEADER_HEIGHT 15
 
-#define FROM_TO_ICON_WIDTH 8
-#define FROM_TO_ICON_HEIGHT 26
+#define FROM_TO_ICON_SIZE 6
 
 #define TIME_STRING_LENGTH 8
+
+#define HIGHLIGHT_COLOR GColorCobaltBlue
+
+#ifdef PBL_ROUND
+#define ROUND_SCREEN_RADIUS 90
+#define ROUND_SCREEN_SIZE 180
+#endif

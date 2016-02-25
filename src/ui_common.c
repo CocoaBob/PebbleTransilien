@@ -9,19 +9,6 @@
 #include <pebble.h>
 #include "headers.h"
 
-#ifdef PBL_ROUND
-static GTextAttributes *s_attributes;
-
-void ui_common_init() {
-    s_attributes = graphics_text_attributes_create();
-    graphics_text_attributes_enable_screen_text_flow(s_attributes, 4);
-}
-
-void ui_common_deinit() {
-    graphics_text_attributes_destroy(s_attributes);
-}
-#endif
-
 // MARK: Routines
 
 GSize size_of_text(const char *text, const char *font_key, GRect frame) {
@@ -31,11 +18,7 @@ GSize size_of_text(const char *text, const char *font_key, GRect frame) {
 // MARK: Darw Basics
 
 void draw_text(GContext *ctx, const char * text, const char * font_key, GRect frame, GTextAlignment alignment) {
-#ifdef PBL_ROUND
-    graphics_draw_text(ctx, text, fonts_get_system_font(font_key), frame, GTextOverflowModeTrailingEllipsis, alignment, s_attributes);
-#else
     graphics_draw_text(ctx, text, fonts_get_system_font(font_key), frame, GTextOverflowModeTrailingEllipsis, alignment, NULL);
-#endif
 }
 
 // MARK: Draw header and separators
@@ -105,6 +88,7 @@ void draw_centered_title(GContext* ctx,
 #define NEXT_TRAINS_PLATFORM_WIDTH 15
 
 static void draw_from_to_next_train(GContext* ctx,
+                                    GColor text_color,
                                     bool is_inverted,
                                     GRect station_frame,
                                     DataModelMiniTimetable *next_trains,
@@ -126,7 +110,8 @@ static void draw_from_to_next_train(GContext* ctx,
                                  station_frame.origin.y + 6,
                                  NEXT_TRAINS_PLATFORM_WIDTH,
                                  NEXT_TRAINS_PLATFORM_WIDTH);
-    graphics_context_set_stroke_color(ctx, is_inverted?GColorWhite:GColorBlack);
+    graphics_context_set_stroke_color(ctx, text_color);
+    graphics_context_set_stroke_width(ctx, 1);
     graphics_draw_round_rect(ctx, frame_platform, 2);
     
     // Draw platform text
@@ -143,28 +128,71 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
                   Layer *redraw_layer, bool is_selected,
 #endif
                   bool is_inverted,
-                  GColor text_color,
+                  GColor bg_color, GColor fg_color,
                   DataModelFromTo from_to
 #if MINI_TIMETABLE_IS_ENABLED
                   ,
                   bool draw_mini_timetable
 #endif
-                  ) {
-    graphics_context_set_text_color(ctx, text_color);
+                  )
+{
+    graphics_context_set_stroke_width(ctx, 3);
+    graphics_context_set_stroke_color(ctx, fg_color);
+    graphics_context_set_text_color(ctx, fg_color);
     GRect bounds = layer_get_bounds(display_layer);
     bool is_from_to = (from_to.to != STATION_NON);
     
     ////////////////////////////
     // Draw left icon
     ////////////////////////////
-    GRect frame_icon = GRect(CELL_MARGIN,
-                             (CELL_HEIGHT - FROM_TO_ICON_HEIGHT) / 2,
-                             FROM_TO_ICON_WIDTH,
-                             is_from_to?FROM_TO_ICON_HEIGHT:FROM_TO_ICON_WIDTH);
+    uint16_t icon_radius = FROM_TO_ICON_SIZE / 2;
+    GPoint icon_center_from = GPoint(CELL_MARGIN + icon_radius, 0               + CELL_HEIGHT_4 + 2); // +2 to let the two station names be closer
+    GPoint icon_center_to   = GPoint(CELL_MARGIN + icon_radius, CELL_HEIGHT_2   + CELL_HEIGHT_4 - 2); // -2 to let the two station names be closer
+    
+#ifdef PBL_ROUND
+    GRect window_bounds = layer_get_bounds(window_get_root_layer(layer_get_window(display_layer)));
+    
+    // Calculate icon's x positions for PBL_ROUND
+    GPoint icon_angle_point_from = GPoint(0, layer_convert_point_to_screen(display_layer, icon_center_from).y);
+    icon_angle_point_from.x = get_round_border_x_radius_82(icon_angle_point_from.y - CELL_MARGIN_2) + CELL_MARGIN_2;
+    icon_center_from.x = icon_angle_point_from.x;
+    
+    GPoint icon_angle_point_to = GPoint(0, layer_convert_point_to_screen(display_layer, icon_center_to).y);
+    icon_angle_point_to.x = get_round_border_x_radius_82(icon_angle_point_to.y - CELL_MARGIN_2) + CELL_MARGIN_2;
+    icon_center_to.x = icon_angle_point_to.x;
+#endif
+    
+    // Draw icons
     if (is_from_to) {
-        draw_image_in_rect(ctx, is_inverted?RESOURCE_ID_IMG_FROM_TO_DARK:RESOURCE_ID_IMG_FROM_TO_LIGHT, frame_icon);
-    } else {
-        draw_image_in_rect(ctx, is_inverted?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+#ifdef PBL_ROUND
+        if (icon_angle_point_from.y >= 0 && icon_angle_point_from.y <= ROUND_SCREEN_SIZE &&
+            icon_angle_point_to.y >= 0 && icon_angle_point_to.y <= ROUND_SCREEN_SIZE) {
+            int32_t quad_circle = TRIG_MAX_ANGLE / 4;
+            
+            int32_t angle_from = atan2_lookup(ABS(ROUND_SCREEN_RADIUS - icon_angle_point_from.y), ABS(ROUND_SCREEN_RADIUS - icon_angle_point_from.x));
+            angle_from = (icon_angle_point_from.y > ROUND_SCREEN_RADIUS) ? (-quad_circle-angle_from) : (angle_from-quad_circle);
+            
+            int32_t angle_to = atan2_lookup(ABS(ROUND_SCREEN_RADIUS - icon_angle_point_to.y), ABS(ROUND_SCREEN_RADIUS - icon_angle_point_to.x));
+            angle_to = (icon_angle_point_to.y > ROUND_SCREEN_RADIUS) ? (-quad_circle-angle_to) : (angle_to-quad_circle);
+            GRect draw_rect = window_bounds;
+            GPoint layer_origin_screen = layer_convert_point_to_screen(display_layer, GPointZero);
+            draw_rect.origin.x -= layer_origin_screen.x;
+            draw_rect.origin.y -= layer_origin_screen.y;
+            draw_rect = grect_inset(draw_rect, GEdgeInsets1(CELL_MARGIN_2));
+            graphics_draw_arc(ctx, draw_rect, GOvalScaleModeFillCircle, angle_to, angle_from);
+        }
+#else
+        graphics_draw_line(ctx, icon_center_from, icon_center_to);
+#endif
+    }
+    
+    graphics_fill_circle(ctx, icon_center_from, icon_radius);
+    if (is_from_to) {
+        graphics_fill_circle(ctx, icon_center_to, icon_radius);
+    }
+    graphics_draw_circle(ctx, icon_center_from, icon_radius);
+    if (is_from_to) {
+        graphics_draw_circle(ctx, icon_center_to, icon_radius);
     }
     
     ////////////////////////////
@@ -175,16 +203,29 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     char *str_to = calloc(1, sizeof(char) * STATION_NAME_MAX_LENGTH);
     
     stations_get_name(from_to.from, str_from, STATION_NAME_MAX_LENGTH);
-    GRect frame_from = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
+    GRect frame_from = GRect(CELL_MARGIN + FROM_TO_ICON_SIZE + CELL_MARGIN,
                              TEXT_Y_OFFSET + 2, // +2 to let the two station names be closer
 #if MINI_TIMETABLE_IS_ENABLED
-                             bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3 - (draw_mini_timetable?NEXT_TRAINS_TIME_WIDTH+2+NEXT_TRAINS_PLATFORM_WIDTH:0),// Next train intenal margin = 2
+                             bounds.size.w - FROM_TO_ICON_SIZE - CELL_MARGIN_3 - (draw_mini_timetable?NEXT_TRAINS_TIME_WIDTH+2+NEXT_TRAINS_PLATFORM_WIDTH:0),// Next train intenal margin = 2
 #else
-                             bounds.size.w - FROM_TO_ICON_WIDTH - CELL_MARGIN_3,
+                             bounds.size.w - FROM_TO_ICON_SIZE - CELL_MARGIN_3,
 #endif
                              CELL_HEIGHT_2);
     GRect frame_to = frame_from;
     frame_to.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to let the two station names be closer
+    
+#ifdef PBL_ROUND
+    // Adjust frames for PBL_ROUND
+    int16_t line_1_inset = icon_center_from.x - CELL_MARGIN_2;
+    int16_t line_2_inset = icon_center_to.x - CELL_MARGIN_2;
+    
+    frame_from.origin.x += line_1_inset;
+    frame_from.size.w -= line_1_inset + line_1_inset;
+    
+    frame_to.origin.x += line_2_inset;
+    frame_to.size.w -= line_2_inset + line_2_inset;
+#endif
+    
     if (is_from_to) {
         stations_get_name(from_to.to, str_to, STATION_NAME_MAX_LENGTH);
     } else {
@@ -252,11 +293,13 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     if (draw_mini_timetable) {
         DataModelMiniTimetable *next_trains = fav_get_mini_timetables((Favorite)from_to);
         draw_from_to_next_train(ctx,
+                                fg_color,
                                 is_inverted,
                                 frame_from,
                                 next_trains,
                                 true);
         draw_from_to_next_train(ctx,
+                                fg_color,
                                 is_inverted,
                                 frame_to,
                                 next_trains,
@@ -278,13 +321,15 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
     GRect bounds = layer_get_bounds(drawing_layer);
 
     graphics_context_set_text_color(ctx, text_color);
+    graphics_context_set_stroke_color(ctx, text_color);
+    graphics_context_set_stroke_width(ctx, 2);
     
     // Icon
-    GRect frame_icon = GRect(CELL_MARGIN,
-                             (CELL_HEIGHT_2 - FROM_TO_ICON_WIDTH) / 2,
-                             FROM_TO_ICON_WIDTH,
-                             FROM_TO_ICON_WIDTH);
-    draw_image_in_rect(ctx, is_inverted?RESOURCE_ID_IMG_FROM_DARK:RESOURCE_ID_IMG_FROM_LIGHT, frame_icon);
+    uint16_t icon_radius = FROM_TO_ICON_SIZE / 2;
+    GPoint icon_center = GPoint(CELL_MARGIN + icon_radius, CELL_HEIGHT_4);
+    
+    // Draw icons
+    graphics_draw_circle(ctx, icon_center, icon_radius);
     
     // Time
     GRect frame_time = GRect(0,
@@ -307,9 +352,9 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
     }
     
     //  Draw station text, considering the scrolling index
-    GRect frame_station = GRect(CELL_MARGIN + FROM_TO_ICON_WIDTH + CELL_MARGIN,
+    GRect frame_station = GRect(CELL_MARGIN + FROM_TO_ICON_SIZE + CELL_MARGIN,
                                 TEXT_Y_OFFSET,
-                                frame_time.origin.x - CELL_MARGIN_3 - FROM_TO_ICON_WIDTH,
+                                frame_time.origin.x - CELL_MARGIN_3 - FROM_TO_ICON_SIZE,
                                 CELL_HEIGHT_2);
     
     draw_text(ctx,

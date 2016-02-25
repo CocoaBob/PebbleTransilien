@@ -73,3 +73,21 @@ bool string_contains_sub_string(char *string_a, size_t size_a, char *string_b, s
     
     return false;
 }
+
+#if PBL_ROUND
+// Pythagorean theorem, r^2=x^2+y^2
+static int16_t s_round_squares_radius_90[91] = {0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,2,2,2,2,2,3,3,3,4,4,4,4,5,5,6,6,6,7,7,8,8,8,9,9,10,10,11,11,12,13,13,14,15,15,16,17,17,18,19,20,20,21,22,23,24,25,26,27,28,29,30,31,32,33,35,36,37,39,40,42,43,45,47,49,51,53,55,58,60,63,67,71,77,90};
+int16_t get_round_border_x_radius_90(int16_t y) {
+    if (y > 180 || y < 0) {
+        return 0;
+    }
+    return s_round_squares_radius_90[ABS(y - 90)];
+}
+static int16_t s_round_squares_radius_82[83] = {0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,3,3,3,4,4,4,5,5,5,6,6,7,7,7,8,8,9,9,10,10,11,12,12,13,13,14,15,16,16,17,18,19,19,20,21,22,23,24,25,26,27,28,30,31,32,33,35,36,38,39,41,43,45,47,49,51,54,57,60,64,69,82};
+int16_t get_round_border_x_radius_82(int16_t y) {
+    if (y > 164 || y < 0) {
+        return 0;
+    }
+    return s_round_squares_radius_82[ABS(y - 82)];
+}
+#endif

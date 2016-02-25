@@ -38,7 +38,7 @@ void draw_from_to(GContext* ctx, Layer *drawing_layer,
                   Layer *redraw_layer, bool is_selected,
 #endif
                   bool is_inverted,
-                  GColor text_color,
+                  GColor bg_color, GColor fg_color,
                   DataModelFromTo from_to
 #if MINI_TIMETABLE_IS_ENABLED
                   ,

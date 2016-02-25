@@ -54,7 +54,7 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
 }
 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, ActionList *user_info) {
-    bool is_selected = menu_cell_layer_is_highlighted(cell_layer);
+    bool is_selected = menu_layer_is_index_selected(user_info->menu_layer, cell_index);
     bool is_enabled = true;
     if (user_info->config->callbacks.is_enabled && !user_info->config->callbacks.is_enabled(cell_index->row, user_info->config->context)) {
         is_enabled = false;

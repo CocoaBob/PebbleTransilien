@@ -25,3 +25,9 @@ void time_2_str(time_t timestamp,
 //! @param string Null-terminated string
 //! @param sub_string Null-terminated string
 bool string_contains_sub_string(char *string_a, size_t size_a, char *string_b, size_t size_b);
+
+#if PBL_ROUND
+//! Calculate menu layer row x inset for Pebble Time Round
+int16_t get_round_border_x_radius_90(int16_t y);
+int16_t get_round_border_x_radius_82(int16_t y);
+#endif
