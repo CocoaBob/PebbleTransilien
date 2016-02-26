@@ -612,8 +612,17 @@ static void window_load(Window *window) {
     layer_set_update_proc(user_info->panel_layer, panel_layer_proc);
     
     // Add selection layer
-    user_info->selection_layer = selection_layer_create(GRect(0, STATUS_BAR_LAYER_HEIGHT, window_bounds.size.w, SELECTION_LAYER_HEIGHT), SELECTION_LAYER_CELL_COUNT);
-    int selection_layer_cell_width = window_bounds.size.w / SELECTION_LAYER_CELL_COUNT;
+    GRect selection_layer_frame = GRect(0, STATUS_BAR_LAYER_HEIGHT, window_bounds.size.w, SELECTION_LAYER_HEIGHT);
+#ifdef PBL_ROUND
+    GPoint selection_layer_offset = GPoint(0, selection_layer_frame.origin.y + selection_layer_frame.size.h / 2);
+    selection_layer_offset.x = get_round_border_x_radius_82(selection_layer_offset.y - CELL_MARGIN_2);
+    selection_layer_frame.origin.x += selection_layer_offset.x + CELL_MARGIN_2;
+    selection_layer_frame.size.w -= selection_layer_offset.x + selection_layer_offset.x + CELL_MARGIN_4;
+#endif
+    user_info->selection_layer = selection_layer_create(selection_layer_frame, SELECTION_LAYER_CELL_COUNT);
+    
+    
+    int selection_layer_cell_width = selection_layer_frame.size.w / SELECTION_LAYER_CELL_COUNT;
     for (int i = 0; i < SELECTION_LAYER_CELL_COUNT; ++i) {
         selection_layer_set_cell_width(user_info->selection_layer, i, selection_layer_cell_width);
     }

@@ -333,8 +333,6 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
     GPoint icon_center = GPoint(CELL_MARGIN + icon_radius, CELL_HEIGHT_4);
     
 #ifdef PBL_ROUND
-    GRect window_bounds = layer_get_bounds(window_get_root_layer(layer_get_window(drawing_layer)));
-    
     // Calculate icon's x positions for PBL_ROUND
     GPoint icon_angle_point = GPoint(0, layer_convert_point_to_screen(drawing_layer, icon_center).y);
     icon_angle_point.x = get_round_border_x_radius_82(icon_angle_point.y - CELL_MARGIN_2) + CELL_MARGIN_2;

@@ -99,8 +99,6 @@ static void draw_menu_layer_cell(GContext *ctx,
                                  CELL_HEIGHT_2);
     
 #ifdef PBL_ROUND
-    GRect window_bounds = layer_get_bounds(window_get_root_layer(layer_get_window(cell_layer)));
-    
     GPoint line_1_offset = GPoint(0, layer_convert_point_to_screen(cell_layer, GPoint(0, frame_code.origin.y + CELL_HEIGHT_4)).y);
     line_1_offset.x = get_round_border_x_radius_82(line_1_offset.y - CELL_MARGIN_2);
     
@@ -114,7 +112,7 @@ static void draw_menu_layer_cell(GContext *ctx,
     frame_platform.origin.x -= line_1_offset.x + CELL_MARGIN;
     
     frame_terminus.origin.x = line_2_offset.x + CELL_MARGIN_2;
-    frame_terminus.size.w -= line_2_offset.x + line_2_offset.x + CELL_MARGIN;
+    frame_terminus.size.w -= line_2_offset.x + line_2_offset.x + CELL_MARGIN_4;
 #endif
     
     // Draw Time/Platform/Terminus
