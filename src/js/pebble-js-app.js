@@ -208,11 +208,7 @@ function sendAppMessageForTrainDetails(responseText) {
         var time = nextTrainDict["time"];
         time = parseTrainHour(time);
         if (time != null) {
-            if(Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'basalt') {
-                time = time.getTime() / 1000;
-            } else {
-                time = time.getTime() / 1000 - time.getTimezoneOffset() * 60;
-            }
+            time = time.getTime() / 1000;
             time = int322bin(time);
         } else {
             time = [];
