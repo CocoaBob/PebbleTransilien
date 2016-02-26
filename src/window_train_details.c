@@ -224,9 +224,6 @@ static void window_load(Window *window) {
     menu_layer_frame.size.h -= STATUS_BAR_LAYER_HEIGHT;
 #endif
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
-#ifdef PBL_ROUND
-//    menu_layer_set_center_focused(user_info->menu_layer, false);
-#endif
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer

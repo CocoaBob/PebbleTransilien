@@ -10,7 +10,11 @@
 
 #include "window_action_list.h"
 
+#ifdef PBL_ROUND
+#define ACTION_LIST_BAR_WIDTH 12
+#else
 #define ACTION_LIST_BAR_WIDTH 14
+#endif
 #define ACTION_LIST_BAR_POINT_X 7
 #define ACTION_LIST_BAR_POINT_Y 10
 #define ACTION_LIST_ROW_HEIGHT_MIN 22
@@ -36,11 +40,17 @@ static void action_list_bar_layer_proc(Layer *layer, GContext *ctx) {
 #ifdef PBL_COLOR
     ActionList *user_info = *((ActionList**)layer_get_data(layer));
 #endif
+    
     graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(user_info->config->colors.background, GColorWhite));
+    
+#ifdef PBL_ROUND
+    graphics_fill_radial(ctx, bounds, GOvalScaleModeFillCircle, ACTION_LIST_BAR_WIDTH, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+#else
     graphics_fill_rect(ctx, bounds, 0, GCornerNone);
     
     graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(user_info->config->colors.foreground, GColorBlack));
     graphics_fill_circle(ctx, GPoint(ACTION_LIST_BAR_POINT_X, ACTION_LIST_BAR_POINT_Y), 2);
+#endif
 }
 
 // MARK: Menu layer callbacks
@@ -50,7 +60,11 @@ static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_in
 }
 
 static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, ActionList *user_info) {
+#ifdef PBL_ROUND
+    return menu_layer_is_index_selected(menu_layer, cell_index) ? MENU_CELL_ROUND_FOCUSED_SHORT_CELL_HEIGHT : MENU_CELL_ROUND_UNFOCUSED_SHORT_CELL_HEIGHT;
+#else
     return user_info->row_height;
+#endif
 }
 
 static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, ActionList *user_info) {
@@ -75,7 +89,17 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     graphics_context_set_text_color(ctx, is_selected?GColorBlack:GColorWhite);
 #endif
     
+#ifdef PBL_ROUND
+    GFont font;
+    if (is_selected) {
+        font = fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_24_BOLD:FONT_KEY_GOTHIC_24);
+    } else {
+        font = fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
+    }
+#else
     GFont font = fonts_get_system_font(is_enabled?FONT_KEY_GOTHIC_18_BOLD:FONT_KEY_GOTHIC_18);
+#endif
+    
     char *text = user_info->config->callbacks.get_title(cell_index->row, user_info->config->context);
     GRect text_frame = grect_crop(bounds,
 #ifdef PBL_BW
@@ -88,7 +112,11 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
     
     text_frame.origin.y += ACTION_LIST_TEXT_Y_OFFSET;
     
+#ifdef PBL_ROUND
+    graphics_draw_text(ctx, text, font, text_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
+#else
     graphics_draw_text(ctx, text, font, text_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+#endif
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, ActionList *user_info) {
@@ -115,11 +143,8 @@ static void window_load(Window *window) {
     // Add menu layer
     user_info->menu_layer = menu_layer_create(GRect(bounds.origin.x  + ACTION_LIST_BAR_WIDTH,
                                                     bounds.origin.y,
-                                                    bounds.size.w - ACTION_LIST_BAR_WIDTH,
+                                                    bounds.size.w - PBL_IF_ROUND_ELSE(ACTION_LIST_BAR_WIDTH+ACTION_LIST_BAR_WIDTH, ACTION_LIST_BAR_WIDTH),
                                                     bounds.size.h));
-#ifdef PBL_ROUND
-//    menu_layer_set_center_focused(user_info->menu_layer, false);
-#endif
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer
@@ -142,7 +167,11 @@ static void window_load(Window *window) {
     // Add bar layer
     GRect bar_layer_frame = GRect(bounds.origin.x,
                                   bounds.origin.y,
+#ifdef PBL_ROUND
+                                  bounds.size.w,
+#else
                                   ACTION_LIST_BAR_WIDTH,
+#endif
                                   bounds.size.h);
     user_info->bar_layer = layer_create_with_data(bar_layer_frame, sizeof(ActionList **));
     *((ActionList **)layer_get_data(user_info->bar_layer)) = user_info;

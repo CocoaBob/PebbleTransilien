@@ -585,9 +585,6 @@ static void window_load(Window *window) {
     menu_layer_frame.size.h -= STATUS_BAR_LAYER_HEIGHT;
 #endif
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
-#ifdef PBL_ROUND
-//    menu_layer_set_center_focused(user_info->menu_layer, false);
-#endif
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     
     // Setup menu layer
@@ -645,6 +642,9 @@ static void window_load(Window *window) {
     
     // Setup theme
     ui_setup_theme(user_info->window, user_info->menu_layer);
+#ifdef PBL_ROUND
+    window_set_background_color(window, PBL_IF_COLOR_ELSE(GColorDarkGray, 	curr_bg_color()));
+#endif
 }
 
 static void window_unload(Window *window) {
