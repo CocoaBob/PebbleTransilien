@@ -11,6 +11,9 @@
 
 void handle_init(void) {
     status_bar_init();
+#ifdef PBL_ROUND
+    round_bottom_bar_init();
+#endif
     settings_init();
     locale_init();
     stations_init();
@@ -22,6 +25,9 @@ void handle_init(void) {
 
 void handle_deinit(void) {
     status_bar_deinit(); // Always have 40B memory leak due to tick_timer_service_subscribe()
+#ifdef PBL_ROUND
+    round_bottom_bar_deinit();
+#endif
     favorites_deinit();
     stations_deinit();
     locale_deinit();

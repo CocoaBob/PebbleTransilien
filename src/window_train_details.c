@@ -220,6 +220,9 @@ static void window_load(Window *window) {
                                    window_bounds.origin.y + STATUS_BAR_LAYER_HEIGHT,
                                    window_bounds.size.w,
                                    window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT);
+#ifdef PBL_ROUND
+    menu_layer_frame.size.h -= STATUS_BAR_LAYER_HEIGHT;
+#endif
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
 #ifdef PBL_ROUND
 //    menu_layer_set_center_focused(user_info->menu_layer, false);
@@ -273,7 +276,7 @@ static void window_appear(Window *window) {
     TrainDetails *user_info = window_get_user_data(window);
     
     // Add status bar
-    ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
+    ui_setup_status_bars(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
     // Subscribe services
     accel_tap_service_init(accel_tap_service_handler, user_info);

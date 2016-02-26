@@ -223,11 +223,11 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     int16_t line_1_inset = icon_center_from.x - CELL_MARGIN_2;
     int16_t line_2_inset = icon_center_to.x - CELL_MARGIN_2;
     
-    frame_from.origin.x += line_1_inset;
-    frame_from.size.w -= line_1_inset + line_1_inset;
+    frame_from.origin.x += line_1_inset + CELL_MARGIN;
+    frame_from.size.w -= line_1_inset + line_1_inset + CELL_MARGIN_2;
     
-    frame_to.origin.x += line_2_inset;
-    frame_to.size.w -= line_2_inset + line_2_inset;
+    frame_to.origin.x += line_2_inset + CELL_MARGIN;
+    frame_to.size.w -= line_2_inset + line_2_inset + CELL_MARGIN_2;
 #endif
     
     if (is_from_to) {
@@ -326,7 +326,7 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
 
     graphics_context_set_text_color(ctx, text_color);
     graphics_context_set_stroke_color(ctx, text_color);
-    graphics_context_set_stroke_width(ctx, 2);
+    graphics_context_set_stroke_width(ctx, 1);
     
     // Icon
     uint16_t icon_radius = FROM_TO_ICON_SIZE / 2;
@@ -374,8 +374,8 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
     
 #ifdef PBL_ROUND
     // Adjust frames for PBL_ROUND
-    frame_station.origin.x += row_inset;
-    frame_station.size.w -= row_inset;
+    frame_station.origin.x += row_inset + CELL_MARGIN;
+    frame_station.size.w -= row_inset + CELL_MARGIN;
 #endif
     
 #ifdef PBL_ROUND
@@ -408,32 +408,27 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
 // MARK: Menu Layer Callbacks
 
 void common_menu_layer_button_up_handler(ClickRecognizerRef recognizer, void *context) {
+#ifdef PBL_ROUND
+    menu_layer_set_selected_next(context, true, MenuRowAlignCenter, true);
+#else
     MenuIndex old_index = menu_layer_get_selected_index(context);
     if (old_index.section == 0 && old_index.row == 0) {
         menu_layer_set_selected_index(context, MenuIndex(UINT16_MAX, UINT16_MAX), MenuRowAlignBottom, true);
     } else {
         menu_layer_set_selected_next(context, true, MenuRowAlignCenter, true);
     }
+#endif
 }
 
 void common_menu_layer_button_down_handler(ClickRecognizerRef recognizer, void *context) {
-    MenuIndex old_index = menu_layer_get_selected_index(context);
-    
-#ifdef PBL_ROUND // Workaround for Round, if the selection is animated, the new_index won't be changed until the animation is finished
-    menu_layer_set_selected_next(context, false, MenuRowAlignCenter, false);
-    MenuIndex new_index = menu_layer_get_selected_index(context);
-    menu_layer_set_selected_index(context, old_index, MenuRowAlignBottom, false);
+#ifdef PBL_ROUND
+    menu_layer_set_selected_next(context, false, MenuRowAlignCenter, true);
 #else
+    MenuIndex old_index = menu_layer_get_selected_index(context);
     menu_layer_set_selected_next(context, false, MenuRowAlignCenter, true);
     MenuIndex new_index = menu_layer_get_selected_index(context);
-#endif
-    
     if (menu_index_compare(&old_index, &new_index) == 0) {
         menu_layer_set_selected_index(context, MenuIndex(0, 0), MenuRowAlignTop, true);
-    }
-#ifdef PBL_ROUND
-    else {
-        menu_layer_set_selected_next(context, false, MenuRowAlignCenter, true);
     }
 #endif
 }
@@ -560,8 +555,10 @@ bool ui_can_push_window() {
 #endif
         
     if (heap_bytes_free() < critical_memory) {
-            // Show warning
+        // Show warning
+#ifndef PBL_ROUND // Space not enough for warning messages
         status_bar_low_memory_alert();
+#endif
         
         // Vibrate
         vibes_enqueue_custom_pattern((VibePattern){

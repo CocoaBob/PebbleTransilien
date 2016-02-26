@@ -396,12 +396,12 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     
 #ifdef PBL_COLOR
     bool is_inverted = settings_is_dark_theme() || is_selected;
-    GColor bg_color = is_selected?HIGHLIGHT_COLOR:(settings_is_dark_theme()?curr_fg_color():curr_bg_color());
-    GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
+    GColor bg_color = is_selected?HIGHLIGHT_COLOR:curr_bg_color();
+    GColor fg_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
 #else
     bool is_inverted = settings_is_dark_theme()?!is_selected:is_selected;
     GColor bg_color = is_selected?curr_fg_color():curr_bg_color();
-    GColor text_color = is_selected?curr_bg_color():curr_fg_color();
+    GColor fg_color = is_selected?curr_bg_color():curr_fg_color();
 #endif
     
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
@@ -410,7 +410,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
                      is_inverted,
-                     bg_color, text_color,
+                     bg_color, fg_color,
                      user_info->from_to
 #if MINI_TIMETABLE_IS_ENABLED
                      ,
@@ -442,7 +442,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
             stations_get_name(next_train.terminus, str_terminus, STATION_NAME_MAX_LENGTH);
             
             draw_menu_layer_cell(ctx, cell_layer,
-                                 text_color,
+                                 fg_color,
                                  is_inverted,
                                  is_selected,
                                  next_train.code,
@@ -502,6 +502,9 @@ static void window_load(Window *window) {
                                    window_bounds.origin.y + STATUS_BAR_LAYER_HEIGHT,
                                    window_bounds.size.w,
                                    window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT);
+#ifdef PBL_ROUND
+    menu_layer_frame.size.h -= STATUS_BAR_LAYER_HEIGHT;
+#endif
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
 #ifdef PBL_ROUND
 //    menu_layer_set_center_focused(user_info->menu_layer, false);
@@ -557,7 +560,7 @@ static void window_appear(Window *window) {
     NextTrains *user_info = window_get_user_data(window);
     
     // Add status bar
-    ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
+    ui_setup_status_bars(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
     // Subscribe services
     accel_tap_service_init(accel_tap_service_handler, user_info);

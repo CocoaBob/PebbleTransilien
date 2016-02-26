@@ -581,7 +581,9 @@ static void window_load(Window *window) {
                                    window_bounds.origin.y + STATUS_BAR_LAYER_HEIGHT + SELECTION_LAYER_HEIGHT + SELECTION_LAYER_SEPARATOR_HEIGHT,
                                    window_bounds.size.w,
                                    window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT - SELECTION_LAYER_HEIGHT - SELECTION_LAYER_SEPARATOR_HEIGHT);
-    
+#ifdef PBL_ROUND
+    menu_layer_frame.size.h -= STATUS_BAR_LAYER_HEIGHT;
+#endif
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
 #ifdef PBL_ROUND
 //    menu_layer_set_center_focused(user_info->menu_layer, false);
@@ -604,11 +606,12 @@ static void window_load(Window *window) {
     });
     
     // Add panel layer
-    user_info->panel_layer = layer_create_with_data(GRect(window_bounds.origin.x,
-                                                 window_bounds.origin.y + window_bounds.size.h - CELL_HEIGHT,
-                                                 window_bounds.size.w,
-                                                 CELL_HEIGHT),
-                                           sizeof(PanelData));
+    GRect panel_layer_frame = GRect(window_bounds.origin.x,
+                                    menu_layer_frame.origin.y + menu_layer_frame.size.h,
+                                    window_bounds.size.w,
+                                    CELL_HEIGHT);
+    user_info->panel_layer = layer_create_with_data(panel_layer_frame,
+                                                    sizeof(PanelData));
     layer_set_update_proc(user_info->panel_layer, panel_layer_proc);
     
     // Add selection layer
@@ -671,7 +674,7 @@ static void window_appear(Window *window) {
     }
     
     // Add status bar
-    ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
+    ui_setup_status_bars(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
 #if !defined(PBL_PLATFORM_APLITE)
     // High performance solution

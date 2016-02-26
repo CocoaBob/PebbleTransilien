@@ -10,8 +10,20 @@
 
 // MARK: Status bar layer
 
-void ui_setup_status_bar(Layer *window_layer, Layer *sibling_layer);
+void ui_setup_status_bars(Layer *window_layer, Layer *sibling_layer);
 
 // MARK: Theme
 
 void ui_setup_theme(Window *window_layer, MenuLayer *menu_layer);
+
+// MARK: Round bottom
+#ifdef PBL_ROUND
+// Get round bottom bar layer
+Layer *round_bottom_bar(GRect frame);
+// Update status bar drawing
+void round_bottom_bar_update();
+// Setup the shared bottom bar
+void round_bottom_bar_init();
+// Free the memory of the shared bottom bar
+void round_bottom_bar_deinit();
+#endif

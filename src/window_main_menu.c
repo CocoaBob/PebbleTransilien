@@ -124,12 +124,12 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 
 #ifdef PBL_COLOR
     bool is_inverted = settings_is_dark_theme() || is_selected;
-    GColor bg_color = is_selected?HIGHLIGHT_COLOR:(settings_is_dark_theme()?curr_fg_color():curr_bg_color());
-    GColor text_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
+    GColor bg_color = is_selected?HIGHLIGHT_COLOR:curr_bg_color();
+    GColor fg_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
 #else
     bool is_inverted = settings_is_dark_theme()?!is_selected:is_selected;
     GColor bg_color = is_selected?curr_fg_color():curr_bg_color();
-    GColor text_color = is_selected?curr_bg_color():curr_fg_color();
+    GColor fg_color = is_selected?curr_bg_color():curr_fg_color();
 #endif
 
     uint16_t section = cell_index->section;
@@ -141,7 +141,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                      menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
                      is_inverted,
-                     bg_color, text_color,
+                     bg_color, fg_color,
                      favorite
 #if MINI_TIMETABLE_IS_ENABLED
                      ,
@@ -199,6 +199,9 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
             settings_set_theme(!settings_is_dark_theme());
             ui_setup_theme(user_info->window, user_info->menu_layer);
             status_bar_update();
+#ifdef PBL_ROUND
+            round_bottom_bar_update();
+#endif
         } else if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_LANGUAGE) {
             settings_toggle_locale();
         }
@@ -262,6 +265,9 @@ static void window_load(Window *window) {
                                    window_bounds.origin.y + STATUS_BAR_LAYER_HEIGHT,
                                    window_bounds.size.w,
                                    window_bounds.size.h - STATUS_BAR_LAYER_HEIGHT);
+#ifdef PBL_ROUND
+    menu_layer_frame.size.h -= STATUS_BAR_LAYER_HEIGHT;
+#endif
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
 #ifdef PBL_ROUND
 //    menu_layer_set_center_focused(user_info->menu_layer, false);
@@ -297,7 +303,7 @@ static void window_appear(Window *window) {
     MainMenu *user_info = window_get_user_data(window);
     
     // Add status bar
-    ui_setup_status_bar(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
+    ui_setup_status_bars(window_get_root_layer(user_info->window), menu_layer_get_layer(user_info->menu_layer));
     
     // BUG FIX:
     // Fixed the wrong menu layer origin when returning to main menu window after adding a favorite
