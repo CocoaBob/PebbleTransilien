@@ -167,7 +167,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
             menu_cell_basic_draw(ctx, cell_layer, _("Developer"), "@CocoaBob", NULL);
         } else if (row == MAIN_MENU_SECTION_ABOUT_ROW_VERSION) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.6", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.7", NULL);
         }
     }
 }
@@ -269,6 +269,9 @@ static void window_load(Window *window) {
     menu_layer_frame.size.h -= STATUS_BAR_LAYER_HEIGHT;
 #endif
     user_info->menu_layer = menu_layer_create(menu_layer_frame);
+#ifdef PBL_ROUND
+    menu_layer_set_center_focused(user_info->menu_layer, false);
+#endif
     layer_add_child(window_layer, menu_layer_get_layer(user_info->menu_layer));
     menu_layer_set_callbacks(user_info->menu_layer, user_info, (MenuLayerCallbacks) {
         .get_num_sections = (MenuLayerGetNumberOfSectionsCallback)menu_layer_get_num_sections_callback,
