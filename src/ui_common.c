@@ -136,7 +136,7 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
 #endif
                   )
 {
-    graphics_context_set_stroke_width(ctx, 3);
+    graphics_context_set_stroke_width(ctx, 2);
     graphics_context_set_stroke_color(ctx, fg_color);
     graphics_context_set_text_color(ctx, fg_color);
     GRect bounds = layer_get_bounds(display_layer);
@@ -178,14 +178,18 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
             GPoint layer_origin_screen = layer_convert_point_to_screen(display_layer, GPointZero);
             draw_rect.origin.x -= layer_origin_screen.x;
             draw_rect.origin.y -= layer_origin_screen.y;
-            draw_rect = grect_inset(draw_rect, GEdgeInsets1(CELL_MARGIN_2));
-            graphics_draw_arc(ctx, draw_rect, GOvalScaleModeFillCircle, angle_to, angle_from);
+            draw_rect = grect_inset(draw_rect, GEdgeInsets1(CELL_MARGIN_2-1));
+            
+//            graphics_draw_arc(ctx, draw_rect, GOvalScaleModeFillCircle, angle_to, angle_from);
+            graphics_context_set_fill_color(ctx, fg_color);
+            graphics_fill_radial(ctx, draw_rect, GOvalScaleModeFillCircle, 3, angle_to, angle_from);
         }
 #else
         graphics_draw_line(ctx, icon_center_from, icon_center_to);
 #endif
     }
     
+    graphics_context_set_fill_color(ctx, bg_color);
     graphics_fill_circle(ctx, icon_center_from, icon_radius);
     if (is_from_to) {
         graphics_fill_circle(ctx, icon_center_to, icon_radius);

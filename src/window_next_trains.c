@@ -79,37 +79,56 @@ static void draw_menu_layer_cell(GContext *ctx,
                              TEXT_Y_OFFSET - 2,
                              bounds.size.w - NEXT_TRAIN_CELL_CODE_X - CELL_MARGIN - NEXT_TRAIN_CELL_TIME_W - CELL_MARGIN - CELL_ICON_SIZE - CELL_MARGIN,
                              CELL_HEIGHT_2);
-    draw_text(ctx, str_code, FONT_KEY_GOTHIC_24_BOLD, frame_code, GTextAlignmentLeft);
     
     // Time
     GRect frame_time = GRect(bounds.size.w - NEXT_TRAIN_CELL_TIME_W - CELL_MARGIN - CELL_ICON_SIZE - CELL_MARGIN,
                              TEXT_Y_OFFSET - 2,
                              NEXT_TRAIN_CELL_TIME_W,
                              CELL_HEIGHT_2);
-    draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentRight);
     
     // Platform
     GRect frame_platform = GRect(bounds.size.w - CELL_ICON_SIZE - CELL_MARGIN,
                                  NEXT_TRAIN_CELL_ICON_Y,
                                  CELL_ICON_SIZE,
                                  CELL_ICON_SIZE);
-    if (str_platform != NULL) {
-        graphics_context_set_stroke_color(ctx, is_inverted?GColorWhite:GColorBlack);
-        graphics_draw_round_rect(ctx, frame_platform, 2);
-        graphics_draw_rect(ctx, grect_crop(frame_platform, 1));
-        draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14_BOLD, frame_platform, GTextAlignmentCenter);
-    } else {
-        // TODO: No platform string
-    }
-    
-    // Mention
-    bool has_mention = (str_mention != NULL && strlen(str_mention) > 0);
     
     // Terminus
     GRect frame_terminus = GRect(CELL_MARGIN,
                                  CELL_HEIGHT_2 + TEXT_Y_OFFSET + 1,
                                  bounds.size.w - CELL_MARGIN_2,
                                  CELL_HEIGHT_2);
+    
+#ifdef PBL_ROUND
+    GRect window_bounds = layer_get_bounds(window_get_root_layer(layer_get_window(cell_layer)));
+    
+    GPoint line_1_offset = GPoint(0, layer_convert_point_to_screen(cell_layer, GPoint(0, frame_code.origin.y + CELL_HEIGHT_4)).y);
+    line_1_offset.x = get_round_border_x_radius_82(line_1_offset.y - CELL_MARGIN_2);
+    
+    GPoint line_2_offset = GPoint(0, layer_convert_point_to_screen(cell_layer, GPoint(0, frame_terminus.origin.y + CELL_HEIGHT_4)).y);
+    line_2_offset.x = get_round_border_x_radius_82(line_2_offset.y - CELL_MARGIN_2);
+    
+    frame_code.origin.x = line_1_offset.x + CELL_MARGIN_2;
+    frame_code.size.w -= line_1_offset.x;
+    
+    frame_time.origin.x -= line_1_offset.x + CELL_MARGIN;
+    frame_platform.origin.x -= line_1_offset.x + CELL_MARGIN;
+    
+    frame_terminus.origin.x = line_2_offset.x + CELL_MARGIN_2;
+    frame_terminus.size.w -= line_2_offset.x + line_2_offset.x + CELL_MARGIN;
+#endif
+    
+    // Draw Time/Platform/Terminus
+    draw_text(ctx, str_code, FONT_KEY_GOTHIC_24_BOLD, frame_code, GTextAlignmentLeft);
+    draw_text(ctx, str_time, FONT_KEY_GOTHIC_24_BOLD, frame_time, GTextAlignmentRight);
+    if (str_platform != NULL) {
+        graphics_context_set_stroke_color(ctx, is_inverted?GColorWhite:GColorBlack);
+        graphics_draw_round_rect(ctx, frame_platform, 2);
+        graphics_draw_rect(ctx, grect_crop(frame_platform, 1));
+        draw_text(ctx, str_platform, FONT_KEY_GOTHIC_14_BOLD, frame_platform, GTextAlignmentCenter);
+    }
+    
+    // Mention
+    bool has_mention = (str_mention != NULL && strlen(str_mention) > 0);
     if (has_mention) {
         if (is_selected) {
             // Draw mention text
@@ -137,12 +156,11 @@ static void draw_menu_layer_cell(GContext *ctx,
                 graphics_context_set_stroke_color(ctx, text_color);
                 graphics_draw_round_rect(ctx, frame_mention, 2);
             }
-            
         } else {
             frame_terminus.size.w -= CELL_MARGIN + CELL_SUB_ICON_SIZE + NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN;
             
             // Draw warning icon
-            GRect frame_mention = GRect(bounds.size.w - CELL_SUB_ICON_SIZE - NEXT_TRAIN_CELL_SUB_ICON_RIGHT_MARGIN,
+            GRect frame_mention = GRect(frame_terminus.origin.x + frame_terminus.size.w + CELL_MARGIN,
                                         NEXT_TRAIN_CELL_SUB_ICON_Y,
                                         CELL_SUB_ICON_SIZE,
                                         CELL_SUB_ICON_SIZE);
@@ -152,15 +170,17 @@ static void draw_menu_layer_cell(GContext *ctx,
     }
     
     // Draw text, considering the scrolling index
-    draw_text(ctx,
+    if (frame_terminus.size.w > 0) {
+        draw_text(ctx,
 #if TEXT_SCROLL_IS_ENABLED
-              is_selected?text_scroll_text(str_terminus, 0,FONT_KEY_GOTHIC_18, frame_terminus, true):str_terminus,
+                  is_selected?text_scroll_text(str_terminus, 0,FONT_KEY_GOTHIC_18, frame_terminus, true):str_terminus,
 #else
-              str_terminus,
+                  str_terminus,
 #endif
-              FONT_KEY_GOTHIC_18,
-              frame_terminus,
-              GTextAlignmentLeft);
+                  FONT_KEY_GOTHIC_18,
+                  frame_terminus,
+                  GTextAlignmentLeft);
+    }
     
 #if TEXT_SCROLL_IS_ENABLED
     // Scroll texts
