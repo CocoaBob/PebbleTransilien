@@ -39,6 +39,11 @@ typedef struct {
     
     int next_trains_list_count;
     DataModelNextTrain *next_trains_list;
+    
+#if EXTRA_INFO_IS_ENABLED
+    char *next_trains_extra_info;
+#endif
+    
     bool is_updating;
 } NextTrains;
 
@@ -202,6 +207,9 @@ static void release_next_trains_list(NextTrains *user_info) {
     }
     NULL_FREE(user_info->next_trains_list);
     user_info->next_trains_list_count = 0;
+#if EXTRA_INFO_IS_ENABLED
+    NULL_FREE(user_info->next_trains_extra_info);
+#endif
 }
 
 static void set_from_to(StationIndex from, StationIndex to, NextTrains *user_info) {
@@ -307,6 +315,10 @@ static void message_callback(bool succeeded, NextTrains *user_info, MESSAGE_TYPE
         
         user_info->next_trains_list = va_arg(ap, void *);
         user_info->next_trains_list_count = va_arg(ap, size_t);
+#if EXTRA_INFO_IS_ENABLED
+        user_info->next_trains_extra_info = va_arg(ap, char *);
+        printf("%s",user_info->next_trains_extra_info);
+#endif
         
         va_end(ap);
         

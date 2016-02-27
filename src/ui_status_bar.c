@@ -70,7 +70,7 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
         int16_t offset_x = 50;
         int16_t offset_y = 4;
 #else
-        int16_t offset_x = 0;
+        int16_t offset_x = 4;
         int16_t offset_y = 0;
 #endif
         

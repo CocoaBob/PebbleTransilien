@@ -77,6 +77,29 @@ function parseTrainHour(str) {
     return null;
 }
 
+function parseTrainInfo(info) {
+    var returnString = info["titre"];
+    returnString += "\n";
+    
+    var content = info["contenu"];
+    // Delete the contents like
+    // <a href=\"url\">Pour les horaires du dimanche dans le sens Paris - Gisors, cliquer ici pour télécharger l'affiche pdf</a>
+    var patternToDelete = /<[^>]+>[^<]*télécharger[^<]*<\/[^>]+>\.?/ig;
+    content = content.replace(patternToDelete, "");
+    // Keep the contents like
+    // Pendant les travaux, covoiturez avec <a href=\"url\">iDVROOM</a>
+    var patternToRemoveTags = /<[^>]+>([^<]*)<\/[^>]+>/ig;
+    content = content.replace(patternToRemoveTags,
+                    function(match,$1){ return $1; }
+                    );
+    var patterToReduce = /(\n)+(\s)*(\n)+/ig;
+    content = content.replace(patterToReduce, "\n");
+    
+    returnString += content;
+    
+    return returnString;
+}
+
 function abortLastRequest() {
     if (_request != null) {
         _request.abort();
@@ -93,7 +116,8 @@ function sendAppMessageForError(errorCode) {
 }
 
 function sendAppMessageForNextTrains(responseText) {
-    var dataArray = JSON.parse(responseText)[0]["data"];
+    response = JSON.parse(responseText)[0];
+    var dataArray = response["data"];
     if (dataArray == null) {
         sendAppMessageForError(2);
         return;
@@ -104,12 +128,14 @@ function sendAppMessageForNextTrains(responseText) {
     if (Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform === 'aplite' && payloadLength > 6) {
         payloadLength = 6;
     }
+    // Prepare message
     var message = {
         "MESSAGE_KEY_RESPONSE_TYPE": _request_type,
         "MESSAGE_KEY_RESPONSE_PAYLOAD_COUNT":payloadLength
     };
+    // Add next trains
     var payloadKey = 1000;// 1000 = "MESSAGE_KEY_RESPONSE_PAYLOAD";
-    for(var index in dataArray){
+    for(var index in dataArray) {
         if (index >= payloadLength) {
             break;
         }
@@ -159,7 +185,20 @@ function sendAppMessageForNextTrains(responseText) {
         
         message[+payloadKey + +index] = itemData;
     }
-    
+    // Extra info
+    if (Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform !== 'aplite') {
+        var infos = response["listOfMap"];
+        var trainInfo = "";
+        for(var index in infos) {
+            var info = infos[index];
+            if (index != 0) {
+                trainInfo += "\n";
+            }
+            trainInfo += parseTrainInfo(info);
+        }
+        message["MESSAGE_KEY_RESPONSE_EXTRA"] = trainInfo;
+    }
+    // Send message
     try {
         Pebble.sendAppMessage(message);
     } catch (e) {

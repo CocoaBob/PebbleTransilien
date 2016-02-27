@@ -90,7 +90,7 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
             if (tuple_payload && tuple_payload->type == TUPLE_BYTE_ARRAY) {
                 uint8_t *data = tuple_payload->value->data;
                 uint16_t size_left = tuple_payload->length;
-                size_t str_length = 0,offset = 0;
+                size_t str_length = 0, offset = 0;
                 for (size_t data_index = 0; data_index < NEXT_TRAIN_RESPONSE_KEY_COUNT && size_left > 0; ++data_index) {
                     data += offset;
                     str_length = (data_index == NEXT_TRAIN_RESPONSE_KEY_HOUR)?4:strlen((char *)data);
@@ -163,8 +163,21 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
         results = train_details_list;
     }
     
+#if EXTRA_INFO_IS_ENABLED
+    // Extra info
+    Tuple *tuple_extra_info = dict_find(received, MESSAGE_KEY_RESPONSE_EXTRA);
+    char *extra_info = NULL;
+    if (tuple_extra_info) {
+        extra_info = calloc(tuple_extra_info->length, sizeof(char));
+        strncpy(extra_info, tuple_extra_info->value->cstring, tuple_extra_info->length);
+    }
+    
+    // Call callback
+    user_info->callback(true, user_info->context, user_info->type, results, count, extra_info);
+#else
     // Call callback
     user_info->callback(true, user_info->context, user_info->type, results, count);
+#endif
 }
 
 // Called when an incoming message from PebbleKitJS is dropped
@@ -196,7 +209,7 @@ void message_init() {
 #ifdef PBL_PLATFORM_APLITE
     app_message_open(1024, 128);
 #else
-    app_message_open(2048, 128);
+    app_message_open(app_message_inbox_size_maximum(), 128);
 #endif
 }
 
