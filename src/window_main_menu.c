@@ -147,6 +147,10 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                      ,
                      settings_mini_timetable_is_enabled()
 #endif
+#if EXTRA_INFO_IS_ENABLED
+                     ,
+                     false
+#endif
                      );
     } else if (section == MAIN_MENU_SECTION_SEARCH) {
         if (row == MAIN_MENU_SECTION_SEARCH_ROW_NAME) {

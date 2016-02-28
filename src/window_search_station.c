@@ -158,6 +158,10 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
                  ,
                  false
 #endif
+#if EXTRA_INFO_IS_ENABLED
+                 ,
+                 false
+#endif
                  );
 }
 

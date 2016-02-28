@@ -446,6 +446,10 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                      ,
                      false
 #endif
+#if EXTRA_INFO_IS_ENABLED
+                     ,
+                     (user_info->extra_info != NULL && strlen(user_info->extra_info) > 0)
+#endif
                      );
     } else if (cell_index->section == NEXT_TRAINS_SECTION_TRAINS) {
         if (user_info->is_updating) {

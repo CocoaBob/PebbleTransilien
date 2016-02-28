@@ -148,6 +148,10 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
                   ,
                   bool draw_mini_timetable
 #endif
+#if EXTRA_INFO_IS_ENABLED
+                  ,
+                  bool draw_extra_info_indicator
+#endif
                   )
 {
     graphics_context_set_stroke_color(ctx, fg_color);
@@ -224,12 +228,17 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     stations_get_name(from_to.from, str_from, STATION_NAME_MAX_LENGTH);
     GRect frame_from = GRect(CELL_MARGIN + FROM_TO_ICON_SIZE + CELL_MARGIN,
                              TEXT_Y_OFFSET + 2, // +2 to let the two station names be closer
-#if MINI_TIMETABLE_IS_ENABLED
-                             bounds.size.w - FROM_TO_ICON_SIZE - CELL_MARGIN_3 - (draw_mini_timetable?NEXT_TRAINS_TIME_WIDTH+2+NEXT_TRAINS_PLATFORM_WIDTH:0),// Next train intenal margin = 2
-#else
                              bounds.size.w - FROM_TO_ICON_SIZE - CELL_MARGIN_3,
-#endif
                              CELL_HEIGHT_2);
+    
+    // Inset for mini time table or extra info indicator
+#if MINI_TIMETABLE_IS_ENABLED
+    frame_from.size.w -= (draw_mini_timetable?NEXT_TRAINS_TIME_WIDTH+2+NEXT_TRAINS_PLATFORM_WIDTH:0); // Next train intenal margin = 2
+#endif
+#if EXTRA_INFO_IS_ENABLED
+    frame_from.size.w -= (draw_extra_info_indicator?CELL_SUB_ICON_SIZE:0);
+#endif
+    
     GRect frame_to = frame_from;
     frame_to.origin.y = CELL_HEIGHT_2 + TEXT_Y_OFFSET - 2; // -2 to let the two station names be closer
     
@@ -242,7 +251,11 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     frame_from.size.w -= line_1_inset + line_1_inset + CELL_MARGIN_2;
     
     frame_to.origin.x += line_2_inset + CELL_MARGIN;
+#if EXTRA_INFO_IS_ENABLED
+    frame_to.size.w -= line_2_inset + (draw_extra_info_indicator?line_1_inset:line_2_inset) + CELL_MARGIN_2;
+#else
     frame_to.size.w -= line_2_inset + line_2_inset + CELL_MARGIN_2;
+#endif
 #endif
     
     if (is_from_to) {
@@ -323,6 +336,17 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
                                 frame_to,
                                 next_trains,
                                 false);
+    }
+#endif
+    
+#if EXTRA_INFO_IS_ENABLED
+    // Draw warning icon
+    if (draw_extra_info_indicator) {
+        GRect frame_mention = GRect(frame_from.origin.x + frame_from.size.w + CELL_MARGIN,
+                                    CELL_HEIGHT_2 - CELL_SUB_ICON_SIZE / 2,
+                                    CELL_SUB_ICON_SIZE,
+                                    CELL_SUB_ICON_SIZE);
+        draw_image_in_rect(ctx, is_inverted?RESOURCE_ID_IMG_MENTION_DARK:RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
     }
 #endif
 }

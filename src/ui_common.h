@@ -44,6 +44,10 @@ void draw_from_to(GContext* ctx, Layer *drawing_layer,
                   ,
                   bool draw_mini_timetable
 #endif
+#if EXTRA_INFO_IS_ENABLED
+                  ,
+                  bool draw_extra_info_indicator
+#endif
                   );
 
 void draw_station(GContext *ctx, Layer *drawing_layer,
