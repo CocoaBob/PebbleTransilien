@@ -342,10 +342,13 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
 #if EXTRA_INFO_IS_ENABLED
     // Draw warning icon
     if (draw_extra_info_indicator) {
-        GRect frame_mention = GRect(frame_from.origin.x + frame_from.size.w + CELL_MARGIN,
+        GRect frame_mention = GRect(frame_from.origin.x + frame_from.size.w,
                                     CELL_HEIGHT_2 - CELL_SUB_ICON_SIZE / 2,
                                     CELL_SUB_ICON_SIZE,
                                     CELL_SUB_ICON_SIZE);
+#ifdef PBL_ROUND
+        frame_mention.origin.x += CELL_MARGIN;
+#endif
         draw_image_in_rect(ctx, is_inverted?RESOURCE_ID_IMG_MENTION_DARK:RESOURCE_ID_IMG_MENTION_LIGHT, frame_mention);
     }
 #endif
