@@ -93,19 +93,26 @@ static void draw_from_to_next_train(GContext* ctx,
                                     GRect station_frame,
                                     DataModelMiniTimetable *next_trains,
                                     bool is_first) {
+    // Draw text
     GRect frame_next_train = GRect(station_frame.origin.x + station_frame.size.w,
                                    station_frame.origin.y + 4,
                                    NEXT_TRAINS_TIME_WIDTH,
                                    station_frame.size.h);
     char *str_next_train = calloc(NEXT_TRAINS_TIME_STR_LENGTH, sizeof(char));
     if (next_trains && next_trains[is_first?0:1].hour) {
-        snprintf(str_next_train, NEXT_TRAINS_TIME_STR_LENGTH, "%ld'", relative_time((long)next_trains[is_first?0:1].hour));
+        long time = relative_time((long)next_trains[is_first?0:1].hour);
+        if (time > 99 || time < -99) {
+            strncpy(str_next_train, (time > 99) ? "FF'" : "-FF'", 4);
+        } else {
+            snprintf(str_next_train, NEXT_TRAINS_TIME_STR_LENGTH, "%ld'", time);
+        }
     } else {
-        snprintf(str_next_train, NEXT_TRAINS_TIME_STR_LENGTH, "--'");
+        strncpy(str_next_train, "--'", 3);
     }
     draw_text(ctx, str_next_train, FONT_KEY_GOTHIC_14, frame_next_train, GTextAlignmentRight);
     free(str_next_train);
     
+    // Draw platform frame
     GRect frame_platform = GRect(frame_next_train.origin.x + frame_next_train.size.w + 2, // Intenal margin = 2
                                  station_frame.origin.y + 6,
                                  NEXT_TRAINS_PLATFORM_WIDTH,
@@ -115,9 +122,16 @@ static void draw_from_to_next_train(GContext* ctx,
     graphics_draw_round_rect(ctx, frame_platform, 2);
     
     // Draw platform text
-    if (next_trains) {
-        frame_platform.origin.y -= 2;
-        draw_text(ctx, next_trains[is_first?0:1].platform, FONT_KEY_GOTHIC_14, frame_platform, GTextAlignmentCenter);
+    frame_platform.origin.y -= 2; // Adjust text baseline
+    draw_text(ctx, next_trains ? next_trains[is_first?0:1].platform : "?", FONT_KEY_GOTHIC_14, frame_platform, GTextAlignmentCenter);
+    
+    // Draw an indicator for "mentioned" status
+    if (next_trains && next_trains[is_first?0:1].mentioned) {
+        GRect frame_mentioned = GRect(frame_platform.origin.x + frame_platform.size.w,
+                                      frame_platform.origin.y,
+                                      CELL_MARGIN,
+                                      NEXT_TRAINS_PLATFORM_WIDTH);
+        draw_text(ctx, "!", FONT_KEY_GOTHIC_14_BOLD, frame_mentioned, GTextAlignmentLeft);
     }
 }
 
@@ -136,7 +150,6 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
 #endif
                   )
 {
-    graphics_context_set_stroke_width(ctx, 2);
     graphics_context_set_stroke_color(ctx, fg_color);
     graphics_context_set_text_color(ctx, fg_color);
     GRect bounds = layer_get_bounds(display_layer);
@@ -185,6 +198,7 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
             graphics_fill_radial(ctx, draw_rect, GOvalScaleModeFillCircle, 3, angle_to, angle_from);
         }
 #else
+        graphics_context_set_stroke_width(ctx, 2);
         graphics_draw_line(ctx, icon_center_from, icon_center_to);
 #endif
     }
@@ -194,6 +208,7 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     if (is_from_to) {
         graphics_fill_circle(ctx, icon_center_to, icon_radius);
     }
+    graphics_context_set_stroke_width(ctx, 1);
     graphics_draw_circle(ctx, icon_center_from, icon_radius);
     if (is_from_to) {
         graphics_draw_circle(ctx, icon_center_to, icon_radius);

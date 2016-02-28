@@ -52,7 +52,7 @@ static void add_indicators(GRect window_bounds, Message *user_info) {
     user_info->indicator_up = content_indicator_create();
     const ContentIndicatorConfig up_config = (ContentIndicatorConfig) {
         .layer = user_info->indicator_up_layer,
-        .times_out = true,
+        .times_out = false,
         .alignment = GAlignCenter,
         .colors = {
             .foreground = GColorBlack,
@@ -66,7 +66,7 @@ static void add_indicators(GRect window_bounds, Message *user_info) {
     user_info->indicator_down = content_indicator_create();
     const ContentIndicatorConfig down_config = (ContentIndicatorConfig) {
         .layer = user_info->indicator_down_layer,
-        .times_out = true,
+        .times_out = false,
         .alignment = GAlignCenter,
         .colors = {
             .foreground = GColorBlack,
