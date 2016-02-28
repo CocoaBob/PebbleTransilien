@@ -14,7 +14,10 @@ function bin2Str(array) {
 function str2bin(str) {
     var bytes = [];
     for (var i = 0; i < str.length; ++i) {
-        bytes.push(str.charCodeAt(i));
+        var char = str.charCodeAt(i);
+        if (char >= 0 && char <= 255) {
+            bytes.push(char);
+        }
     }
     return makeCString(bytes);
 }
@@ -82,18 +85,20 @@ function parseTrainInfo(info) {
     returnString += "\n";
     
     var content = info["contenu"];
+    
     // Delete the contents like
     // <a href=\"url\">Pour les horaires du dimanche dans le sens Paris - Gisors, cliquer ici pour télécharger l'affiche pdf</a>
-    var patternToDelete = /<[^>]+>[^<]*télécharger[^<]*<\/[^>]+>\.?/ig;
+    var patternToDelete = /<[^>]+>[^<]*pdf[^<]*<\/[^>]+>\.?/ig;
     content = content.replace(patternToDelete, "");
+    
     // Keep the contents like
     // Pendant les travaux, covoiturez avec <a href=\"url\">iDVROOM</a>
     var patternToRemoveTags = /<[^>]+>([^<]*)<\/[^>]+>/ig;
-    content = content.replace(patternToRemoveTags,
-                    function(match,$1){ return $1; }
-                    );
-    var patterToReduce = /(\n)+(\s)*(\n)*/ig;
-    content = content.replace(patterToReduce, "\n");
+    content = content.replace(patternToRemoveTags, function(match,$1) { return $1; } );
+    
+    // Remove empty rows
+    var patterToReduce = /\n+[\s*\n]*/ig;
+    content = content.replace(patterToReduce, "\n\n");
     
     returnString += content;
     
@@ -188,14 +193,15 @@ function sendAppMessageForNextTrains(responseText) {
     // Extra info
     if (Pebble.getActiveWatchInfo && Pebble.getActiveWatchInfo().platform !== 'aplite') {
         var infos = response["listOfMap"];
-        var trainInfo = "";
+        var trainInfo = [];
         for(var index in infos) {
             var info = infos[index];
             if (index != 0) {
-                trainInfo += "\n";
+                trainInfo = trainInfo.concat(str2bin("\n"));
             }
-            trainInfo += parseTrainInfo(info);
-        }        
+            var parsedTrainInfo = parseTrainInfo(info);
+            trainInfo = trainInfo.concat(str2bin(parsedTrainInfo));
+        }
         message["MESSAGE_KEY_RESPONSE_EXTRA"] = trainInfo;
     }
     // Send message

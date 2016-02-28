@@ -82,7 +82,7 @@ static void add_indicators(GRect window_bounds, Message *user_info) {
 }
 
 static void add_text_layer(GRect window_bounds, Message *user_info) {
-    GRect text_layer_bounds = GRect(0, 0, window_bounds.size.w - STATUS_BAR_LAYER_HEIGHT - STATUS_BAR_LAYER_HEIGHT, 9999);
+    GRect text_layer_bounds = GRect(0, 0, window_bounds.size.w - STATUS_BAR_LAYER_HEIGHT - STATUS_BAR_LAYER_HEIGHT, INT16_MAX);
     user_info->text_layer = text_layer_create(text_layer_bounds);
     text_layer_set_font(user_info->text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
     text_layer_set_text_alignment(user_info->text_layer, GTextAlignmentCenter);
