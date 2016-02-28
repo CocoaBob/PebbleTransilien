@@ -252,7 +252,7 @@ static void window_load(Window *window) {
     window_set_click_config_provider_with_context(window, click_config_provider, user_info->menu_layer);
     
     // Setup theme
-    ui_setup_theme(user_info->window, user_info->menu_layer);
+    ui_setup_theme(user_info->menu_layer);
 }
 
 static void window_unload(Window *window) {

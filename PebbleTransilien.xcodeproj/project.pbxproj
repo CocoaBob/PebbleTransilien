@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		453FB2071BD3030E005E86A5 /* window_action_list.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E41BCE469F0057BC11 /* window_action_list.c */; };
+		4574D1401C83088D00B670CB /* window_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 4574D13E1C83088D00B670CB /* window_message.c */; };
 		457D34EE1BCE469F0057BC11 /* localize.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34C81BCE469F0057BC11 /* localize.c */; };
 		457D34EF1BCE469F0057BC11 /* selection_layer.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CB1BCE469F0057BC11 /* selection_layer.c */; };
 		457D34F01BCE469F0057BC11 /* app_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34CD1BCE469F0057BC11 /* app_message.c */; };
@@ -43,6 +44,8 @@
 		450852001B4FCF61008098D5 /* resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = resources; sourceTree = "<group>"; };
 		454FA5B71B4EFC6C00473A4B /* locale_english.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_english.json; sourceTree = "<group>"; };
 		454FA5B81B4EFC6C00473A4B /* locale_french.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_french.json; sourceTree = "<group>"; };
+		4574D13E1C83088D00B670CB /* window_message.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = window_message.c; sourceTree = "<group>"; };
+		4574D13F1C83088D00B670CB /* window_message.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = window_message.h; sourceTree = "<group>"; };
 		457D34C71BCE469F0057BC11 /* hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash.h; sourceTree = "<group>"; };
 		457D34C81BCE469F0057BC11 /* localize.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = localize.c; sourceTree = "<group>"; };
 		457D34C91BCE469F0057BC11 /* localize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = localize.h; sourceTree = "<group>"; };
@@ -157,6 +160,8 @@
 				457D34E51BCE469F0057BC11 /* window_action_list.h */,
 				457D34E61BCE469F0057BC11 /* window_main_menu.c */,
 				457D34E71BCE469F0057BC11 /* window_main_menu.h */,
+				4574D13E1C83088D00B670CB /* window_message.c */,
+				4574D13F1C83088D00B670CB /* window_message.h */,
 				457D34E81BCE469F0057BC11 /* window_next_trains.c */,
 				457D34E91BCE469F0057BC11 /* window_next_trains.h */,
 				457D34EA1BCE469F0057BC11 /* window_search_station.c */,
@@ -456,6 +461,7 @@
 				457D34FC1BCE469F0057BC11 /* window_next_trains.c in Sources */,
 				457D34EF1BCE469F0057BC11 /* selection_layer.c in Sources */,
 				457D34F21BCE469F0057BC11 /* data_favorites.c in Sources */,
+				4574D1401C83088D00B670CB /* window_message.c in Sources */,
 				453FB2071BD3030E005E86A5 /* window_action_list.c in Sources */,
 				45EAAF321BD64FB600445244 /* app_services.c in Sources */,
 				457D34FD1BCE469F0057BC11 /* window_search_station.c in Sources */,

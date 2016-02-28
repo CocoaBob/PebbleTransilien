@@ -24,7 +24,7 @@ void ui_setup_status_bars(Layer *window_layer, Layer *sibling_layer) {
 
 // MARK: Theme
 
-void ui_setup_theme(Window *window_layer, MenuLayer *menu_layer) {
+void ui_setup_theme(MenuLayer *menu_layer) {
     menu_layer_set_normal_colors(menu_layer, curr_bg_color(), curr_fg_color());
     menu_layer_set_highlight_colors(menu_layer, PBL_IF_COLOR_ELSE(HIGHLIGHT_COLOR, curr_fg_color()), PBL_IF_COLOR_ELSE(GColorWhite, curr_bg_color()));
 }

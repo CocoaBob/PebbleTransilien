@@ -17,6 +17,9 @@ enum {
 
 enum {
     NEXT_TRAINS_ACTIONS_EDIT,
+#if EXTRA_INFO_IS_ENABLED
+    NEXT_TRAINS_ACTIONS_EXTRA_INFO,
+#endif
     NEXT_TRAINS_ACTIONS_FAV,
     NEXT_TRAINS_ACTIONS_COUNT
 };
@@ -41,7 +44,7 @@ typedef struct {
     DataModelNextTrain *next_trains_list;
     
 #if EXTRA_INFO_IS_ENABLED
-    char *next_trains_extra_info;
+    char *extra_info;
 #endif
     
     bool is_updating;
@@ -208,7 +211,7 @@ static void release_next_trains_list(NextTrains *user_info) {
     NULL_FREE(user_info->next_trains_list);
     user_info->next_trains_list_count = 0;
 #if EXTRA_INFO_IS_ENABLED
-    NULL_FREE(user_info->next_trains_extra_info);
+    NULL_FREE(user_info->extra_info);
 #endif
 }
 
@@ -243,6 +246,10 @@ static bool reverse_from_to(NextTrains *user_info) {
 static char* action_list_get_title_callback(size_t index, NextTrains *user_info) {
     if (index == NEXT_TRAINS_ACTIONS_EDIT) {
         return _("Edit");
+#if EXTRA_INFO_IS_ENABLED
+    } else if (index == NEXT_TRAINS_ACTIONS_EXTRA_INFO) {
+        return _("Info");
+#endif
     } else {
         return _("Add Favorite");
     }
@@ -251,6 +258,10 @@ static char* action_list_get_title_callback(size_t index, NextTrains *user_info)
 static bool action_list_is_enabled_callback(size_t index, NextTrains *user_info) {
     if (index == NEXT_TRAINS_ACTIONS_FAV) {
         return !fav_exists(user_info->from_to);
+#if EXTRA_INFO_IS_ENABLED
+    } else if (index == NEXT_TRAINS_ACTIONS_EXTRA_INFO) {
+        return user_info->extra_info != NULL;
+#endif
     }
     return true;
 }
@@ -258,6 +269,10 @@ static bool action_list_is_enabled_callback(size_t index, NextTrains *user_info)
 static void action_list_select_callback(Window *action_list_window, size_t index, NextTrains *user_info) {
     if (index == NEXT_TRAINS_ACTIONS_EDIT) {
         ui_push_window(new_window_search_train(user_info->from_to.from, user_info->from_to.to));
+#if EXTRA_INFO_IS_ENABLED
+    } else if (index == NEXT_TRAINS_ACTIONS_EXTRA_INFO) {
+        ui_push_window(new_window_message(user_info->extra_info));
+#endif
     } else {
         fav_add(user_info->from_to.from, user_info->from_to.to);
     }
@@ -273,7 +288,11 @@ static void window_long_click_handler(ClickRecognizerRef recognizer, void *conte
         ActionListConfig config = (ActionListConfig){
             .context = user_info,
             .num_rows = NEXT_TRAINS_ACTIONS_COUNT,
+#if EXTRA_INFO_IS_ENABLED
+            .default_selection = NEXT_TRAINS_ACTIONS_EXTRA_INFO,
+#else
             .default_selection = NEXT_TRAINS_ACTIONS_EDIT,
+#endif
 #ifdef PBL_COLOR
             .colors = {
                 .background = HIGHLIGHT_COLOR,
@@ -316,8 +335,8 @@ static void message_callback(bool succeeded, NextTrains *user_info, MESSAGE_TYPE
         user_info->next_trains_list = va_arg(ap, void *);
         user_info->next_trains_list_count = va_arg(ap, size_t);
 #if EXTRA_INFO_IS_ENABLED
-        user_info->next_trains_extra_info = va_arg(ap, char *);
-        printf("%s",user_info->next_trains_extra_info);
+        user_info->extra_info = va_arg(ap, char *);
+        printf("%s",user_info->extra_info);
 #endif
         
         va_end(ap);
@@ -547,7 +566,7 @@ static void window_load(Window *window) {
     window_set_click_config_provider_with_context(window, click_config_provider, user_info->menu_layer);
     
     // Setup theme
-    ui_setup_theme(user_info->window, user_info->menu_layer);
+    ui_setup_theme(user_info->menu_layer);
 }
 
 static void window_unload(Window *window) {

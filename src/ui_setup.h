@@ -14,7 +14,7 @@ void ui_setup_status_bars(Layer *window_layer, Layer *sibling_layer);
 
 // MARK: Theme
 
-void ui_setup_theme(Window *window_layer, MenuLayer *menu_layer);
+void ui_setup_theme(MenuLayer *menu_layer);
 
 // MARK: Round bottom
 #ifdef PBL_ROUND

@@ -197,7 +197,7 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
     } else if (cell_index->section == MAIN_MENU_SECTION_SETTING) {
         if (cell_index->row == MAIN_MENU_SECTION_SETTING_ROW_THEME) {
             settings_set_theme(!settings_is_dark_theme());
-            ui_setup_theme(user_info->window, user_info->menu_layer);
+            ui_setup_theme(user_info->menu_layer);
             status_bar_update();
 #ifdef PBL_ROUND
             round_bottom_bar_update();
@@ -296,7 +296,7 @@ static void window_load(Window *window) {
     menu_layer_set_click_config_onto_window(user_info->menu_layer, user_info->window);
     
     // Setup theme
-    ui_setup_theme(user_info->window, user_info->menu_layer);
+    ui_setup_theme(user_info->menu_layer);
 }
 
 static void window_appear(Window *window) {

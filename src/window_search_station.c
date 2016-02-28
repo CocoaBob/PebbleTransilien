@@ -644,7 +644,7 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, user_info->selection_layer);
     
     // Setup theme
-    ui_setup_theme(user_info->window, user_info->menu_layer);
+    ui_setup_theme(user_info->menu_layer);
 #ifdef PBL_ROUND
     window_set_background_color(window, PBL_IF_COLOR_ELSE(GColorDarkGray, 	curr_bg_color()));
 #endif

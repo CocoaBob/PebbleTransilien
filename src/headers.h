@@ -34,3 +34,4 @@
 #include "window_next_trains.h"
 #include "window_search_station.h"
 #include "window_train_details.h"
+#include "window_message.h"

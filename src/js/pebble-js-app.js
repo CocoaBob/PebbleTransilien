@@ -92,7 +92,7 @@ function parseTrainInfo(info) {
     content = content.replace(patternToRemoveTags,
                     function(match,$1){ return $1; }
                     );
-    var patterToReduce = /(\n)+(\s)*(\n)+/ig;
+    var patterToReduce = /(\n)+(\s)*(\n)*/ig;
     content = content.replace(patterToReduce, "\n");
     
     returnString += content;
@@ -195,7 +195,7 @@ function sendAppMessageForNextTrains(responseText) {
                 trainInfo += "\n";
             }
             trainInfo += parseTrainInfo(info);
-        }
+        }        
         message["MESSAGE_KEY_RESPONSE_EXTRA"] = trainInfo;
     }
     // Send message
