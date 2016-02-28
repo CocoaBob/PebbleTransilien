@@ -164,14 +164,16 @@ static void in_received_handler(DictionaryIterator *received, AppMessage *user_i
     }
     
 #if EXTRA_INFO_IS_ENABLED
-    // Extra info
-    Tuple *tuple_extra_info = dict_find(received, MESSAGE_KEY_RESPONSE_EXTRA);
     char *extra_info = NULL;
-    if (tuple_extra_info) {
-        extra_info = calloc(tuple_extra_info->length, sizeof(char));
-        strncpy(extra_info, tuple_extra_info->value->cstring, tuple_extra_info->length);
+    if (user_info->type == MESSAGE_TYPE_NEXT_TRAINS) {
+        // Extra info
+        Tuple *tuple_extra_info = dict_find(received, MESSAGE_KEY_RESPONSE_EXTRA);
+        if (tuple_extra_info) {
+            extra_info = calloc(tuple_extra_info->length, sizeof(char));
+            strncpy(extra_info, tuple_extra_info->value->cstring, tuple_extra_info->length);
+        }
+        
     }
-    
     // Call callback
     user_info->callback(true, user_info->context, user_info->type, results, count, extra_info);
 #else

@@ -260,7 +260,7 @@ static bool action_list_is_enabled_callback(size_t index, NextTrains *user_info)
         return !fav_exists(user_info->from_to);
 #if EXTRA_INFO_IS_ENABLED
     } else if (index == NEXT_TRAINS_ACTIONS_EXTRA_INFO) {
-        return user_info->extra_info != NULL;
+        return user_info->extra_info != NULL && strlen(user_info->extra_info) > 0;
 #endif
     }
     return true;
@@ -336,7 +336,6 @@ static void message_callback(bool succeeded, NextTrains *user_info, MESSAGE_TYPE
         user_info->next_trains_list_count = va_arg(ap, size_t);
 #if EXTRA_INFO_IS_ENABLED
         user_info->extra_info = va_arg(ap, char *);
-        printf("%s",user_info->extra_info);
 #endif
         
         va_end(ap);

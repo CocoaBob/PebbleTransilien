@@ -32,15 +32,16 @@ static FavoriteData *s_favorite_data;
 
 static void fav_request_mini_timetable(void *context);
 
+// Get the DataModelMiniTimetable address pointer
 DataModelMiniTimetable *fav_get_mini_timetable_from_tuple(Tuple *tuple) {
     if (tuple) {
-        DataModelMiniTimetable *data;
-        memcpy(&data, tuple->value->data, sizeof(DataModelMiniTimetable *));
-        return data;
+        DataModelMiniTimetable **data = (DataModelMiniTimetable **)tuple->value->data;
+        return *data;
     }
     return NULL;
 }
 
+// Find the DataModelMiniTimetable address pointer for a specific favorite
 DataModelMiniTimetable *fav_get_mini_timetables(Favorite favorite) {
     Tuple *tuple = dict_find(&s_favorite_data->mini_timetable_dict, KEY_OF_FAV(favorite));
     return fav_get_mini_timetable_from_tuple(tuple);
@@ -70,14 +71,14 @@ static void message_callback(bool succeeded, void *context, MESSAGE_TYPE type, .
 static void fav_request_mini_timetable(void *context) {
     s_favorite_data->mini_timetable_request_timer = NULL;
     
-    // On launch, or no network
+    // On launch, or no network, wait for AppMessage is ready
     if (!message_is_ready()) {
         s_favorite_data->mini_timetable_request_index = 0;
         s_favorite_data->mini_timetable_request_timer = app_timer_register(1000, fav_request_mini_timetable, context);
         return;
     }
     
-    // Request next favorite immediately
+    // Request next favorite
     if (s_favorite_data->mini_timetable_request_index < fav_get_count()) {
         Favorite favorite = fav_at_index(s_favorite_data->mini_timetable_request_index);
         ++s_favorite_data->mini_timetable_request_index;
@@ -97,7 +98,7 @@ static void fav_request_mini_timetable(void *context) {
         }
         
         s_favorite_data->mini_timetable_request_index = 0;
-        s_favorite_data->mini_timetable_request_timer = app_timer_register(15000, fav_request_mini_timetable, context);
+        s_favorite_data->mini_timetable_request_timer = app_timer_register(30000, fav_request_mini_timetable, context);
     }
 }
 
