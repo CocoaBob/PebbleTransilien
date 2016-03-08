@@ -450,29 +450,21 @@ void draw_station(GContext *ctx, Layer *drawing_layer,
 // MARK: Menu Layer Callbacks
 
 void common_menu_layer_button_up_handler(ClickRecognizerRef recognizer, void *context) {
-#ifdef PBL_ROUND
-    menu_layer_set_selected_next(context, true, MenuRowAlignCenter, true);
-#else
     MenuIndex old_index = menu_layer_get_selected_index(context);
     if (old_index.section == 0 && old_index.row == 0) {
         menu_layer_set_selected_index(context, MenuIndex(UINT16_MAX, UINT16_MAX), MenuRowAlignBottom, true);
     } else {
         menu_layer_set_selected_next(context, true, MenuRowAlignCenter, true);
     }
-#endif
 }
 
 void common_menu_layer_button_down_handler(ClickRecognizerRef recognizer, void *context) {
-#ifdef PBL_ROUND
-    menu_layer_set_selected_next(context, false, MenuRowAlignCenter, true);
-#else
     MenuIndex old_index = menu_layer_get_selected_index(context);
     menu_layer_set_selected_next(context, false, MenuRowAlignCenter, true);
     MenuIndex new_index = menu_layer_get_selected_index(context);
     if (menu_index_compare(&old_index, &new_index) == 0) {
         menu_layer_set_selected_index(context, MenuIndex(0, 0), MenuRowAlignTop, true);
     }
-#endif
 }
 
 int16_t common_menu_layer_get_separator_height_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
