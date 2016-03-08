@@ -84,23 +84,28 @@ static void status_bar_background_layer_proc(Layer *layer, GContext *ctx) {
             draw_image_in_rect(ctx, settings_is_dark_theme()?RESOURCE_ID_IMG_SIGNAL_NO_DARK:RESOURCE_ID_IMG_SIGNAL_NO_LIGHT, frame_signal);
         }
         
+        // Battery meter
+        size_t y_battery = (STATUS_BAR_LAYER_HEIGHT - 8) / 2 + offset_y;
+        GRect frame_battery_body = GRect(bounds.size.w - 18 - offset_x, y_battery, 14, 8);
+        graphics_draw_rect(ctx, frame_battery_body);
+        graphics_draw_line(ctx, GPoint(bounds.size.w - 4 - offset_x, y_battery + 2), GPoint(bounds.size.w - 4 - offset_x, y_battery + 5));
+        graphics_fill_rect(ctx, GRect(bounds.size.w - 16 - offset_x, y_battery + 2, battery_state_service_peek().charge_percent / 10, 4), 0, GCornerNone);
+        
         // Hour:Minute
         char time_buffer[16];
         clock_copy_time_string(time_buffer, sizeof(time_buffer));
         size_t y_time = (STATUS_BAR_LAYER_HEIGHT - 20) / 2 + offset_y;
+        GRect frame_time = GRect(frame_signal.origin.x + frame_signal.size.w,
+                                 y_time,
+                                 frame_battery_body.origin.x - frame_signal.origin.x - frame_signal.size.w,
+                                 20);
         graphics_draw_text(ctx,
                            time_buffer,
                            fonts_get_system_font(FONT_KEY_GOTHIC_14),
-                           GRect(bounds.size.w / 2 - 30, y_time, 60, 20),
+                           frame_time,
                            GTextOverflowModeTrailingEllipsis,
                            GTextAlignmentCenter,
                            NULL);
-        
-        // Battery meter
-        size_t y_battery = (STATUS_BAR_LAYER_HEIGHT - 8) / 2 + offset_y;
-        graphics_draw_rect(ctx, GRect(bounds.size.w - 18 - offset_x, y_battery, 14, 8));
-        graphics_draw_line(ctx, GPoint(bounds.size.w - 4 - offset_x, y_battery + 2), GPoint(bounds.size.w - 4 - offset_x, y_battery + 5));
-        graphics_fill_rect(ctx, GRect(bounds.size.w - 16 - offset_x, y_battery + 2, battery_state_service_peek().charge_percent / 10, 4), 0, GCornerNone);
         
         // Separator
         graphics_draw_line(ctx, GPoint(0, bounds.size.h - 1), GPoint(bounds.size.w, bounds.size.h - 1));
