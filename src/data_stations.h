@@ -16,7 +16,11 @@
 
 #define STATION_INDEX_MAX 474
 
+#ifdef PBL_PLATFORM_APLITE
 #define STATION_SEARH_RESULT_MAX_COUNT 6
+#else
+#define STATION_SEARH_RESULT_MAX_COUNT 16
+#endif
 
 void stations_init();
 void stations_deinit();

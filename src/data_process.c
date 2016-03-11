@@ -60,13 +60,38 @@ void time_2_str(time_t timestamp,
     strftime(o_str, o_str_size, "%H:%M", localtime(&timestamp)); // Show local time
 }
 
-bool string_contains_sub_string(char *string_a, size_t size_a, char *string_b, size_t size_b) {
-    if (size_a < size_b) {
+bool string_contains_sub_string(char *T, size_t n, char *P, size_t m) {
+    if (n < m) {
         return false;
     }
     
-    for (size_t offset = 0; offset <= size_a - size_b; ++offset) {
-        if (strncmp(string_a + offset, string_b, size_b) == 0) {
+    // Bad algorithm
+//    for (size_t offset = 0; offset <= n - m; ++offset) {
+//        if (strncmp(T + offset, P, m) == 0) {
+//            return true;
+//        }
+//    }
+    
+    // KMP algorithm
+    size_t pi[m];
+    pi[0] = 0;
+    size_t k = 0;
+    size_t q,i;
+    /* Compute prefix array pi[] */
+    for(q = 2; q <= m; q++) {
+        while(k > 0 && P[k] != P[q-1])
+            k = pi[k-1];
+        if(P[k] == P[q-1])
+            k++;
+        pi[q-1] = k;
+    }
+    q = 0;
+    for(i = 0; i < n; i++) {
+        while(q > 0 && P[q] != T[i])
+            q = pi[q-1];
+        if(P[q] == T[i])
+            q++;
+        if(q == m) { // Match!
             return true;
         }
     }

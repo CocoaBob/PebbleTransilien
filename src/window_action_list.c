@@ -106,7 +106,10 @@ static void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_
                                   ACTION_LIST_SELECTION_MARGIN +
 #endif
                                   ACTION_LIST_TEXT_MARGIN);
-    GSize text_size = graphics_text_layout_get_content_size(text, font, text_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+    GSize text_size = GSizeZero;
+    if (text_frame.size.w > 0 && text_frame.size.h > 0) {
+        text_size = graphics_text_layout_get_content_size(text, font, text_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+    }
     text_frame.origin.y += (text_frame.size.h - text_size.h) / 2;
     text_frame.size.h = text_size.h;
     

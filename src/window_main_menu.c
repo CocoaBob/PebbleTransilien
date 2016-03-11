@@ -47,6 +47,9 @@ enum {
 typedef struct {
     Window *window;
     MenuLayer *menu_layer;
+#if TEXT_SCROLL_IS_ENABLED
+    TextScrollData *text_scroll_data;
+#endif
 } MainMenu;
 
 // MARK: Action list callbacks
@@ -134,11 +137,11 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
 
     uint16_t section = cell_index->section;
     uint16_t row = cell_index->row;
-    if (section == MAIN_MENU_SECTION_FAV ) {
+    if (section == MAIN_MENU_SECTION_FAV) {
         Favorite favorite = fav_at_index(row);
         draw_from_to(ctx, cell_layer,
 #if TEXT_SCROLL_IS_ENABLED
-                     menu_layer_get_layer(user_info->menu_layer), is_selected,
+                     &user_info->text_scroll_data, menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
                      is_inverted,
                      bg_color, fg_color,
@@ -171,7 +174,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         if (row == MAIN_MENU_SECTION_ABOUT_ROW_AUTHOR) {
             menu_cell_basic_draw(ctx, cell_layer, _("Developer"), "@CocoaBob", NULL);
         } else if (row == MAIN_MENU_SECTION_ABOUT_ROW_VERSION) {
-            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.9", NULL);
+            menu_cell_basic_draw(ctx, cell_layer, _("Version"), "1.10", NULL);
         }
     }
 }
@@ -251,8 +254,9 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
 }
 
 #if TEXT_SCROLL_IS_ENABLED
-static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
-    text_scroll_end();
+static void menu_layer_selection_will_change(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, MainMenu *user_info) {
+    text_scroll_destory(user_info->text_scroll_data);
+    user_info->text_scroll_data = NULL;
 }
 #endif
 
@@ -285,12 +289,10 @@ static void window_load(Window *window) {
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
         .draw_header = (MenuLayerDrawHeaderCallback)menu_layer_draw_header_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
-        .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback
+        .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback,
 #if TEXT_SCROLL_IS_ENABLED
-        ,
-        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
+        .selection_will_change = (MenuLayerSelectionWillChangeCallback)menu_layer_selection_will_change,
 #endif
-        ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
@@ -325,17 +327,19 @@ static void window_appear(Window *window) {
 #endif
 }
 
-#if TEXT_SCROLL_IS_ENABLED
 static void window_disappear(Window *window) {
+#if TEXT_SCROLL_IS_ENABLED
+    MainMenu *user_info = window_get_user_data(window);
     // Stop scrolling text
-    text_scroll_end();
+    text_scroll_destory(user_info->text_scroll_data);
+    user_info->text_scroll_data = NULL;
+#endif
     
 #if MINI_TIMETABLE_IS_ENABLED
     // Stop next trains requests
     fav_stop_requests();
 #endif
 }
-#endif
 
 static void window_unload(Window *window) {
     MainMenu *user_info = window_get_user_data(window);

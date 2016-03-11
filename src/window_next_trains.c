@@ -48,6 +48,10 @@ typedef struct {
 #endif
     
     bool is_updating;
+    
+#if TEXT_SCROLL_IS_ENABLED
+    TextScrollData *text_scroll_data;
+#endif
 } NextTrains;
 
 // Forward declaration
@@ -65,6 +69,15 @@ static void restart_timers(NextTrains *user_info);
 #define NEXT_TRAIN_CELL_MENTION_RIGHT_MARGIN 2
 #define NEXT_TRAIN_CELL_CODE_X 4                    // CELL_MARGIN = 4
 #define NEXT_TRAIN_CELL_TIME_W 53
+
+// MARK: Text Scroll callback
+#if TEXT_SCROLL_IS_ENABLED
+static void text_scroll_update(TextScrollConfig *config) {
+    if (config->user_context != NULL) {
+        layer_mark_dirty(config->user_context);
+    }
+}
+#endif
 
 // MARK: Drawing
 
@@ -179,7 +192,7 @@ static void draw_menu_layer_cell(GContext *ctx,
     if (frame_terminus.size.w > 0) {
         draw_text(ctx,
 #if TEXT_SCROLL_IS_ENABLED
-                  is_selected?text_scroll_text(str_terminus, 0,FONT_KEY_GOTHIC_18, frame_terminus, true):str_terminus,
+                  is_selected?text_scroll_text(str_terminus, 0, true, user_info->text_scroll_data):str_terminus,
 #else
                   str_terminus,
 #endif
@@ -191,10 +204,29 @@ static void draw_menu_layer_cell(GContext *ctx,
 #if TEXT_SCROLL_IS_ENABLED
     // Scroll texts
     if (is_selected) {
-        char **string_pointers = calloc(1, sizeof(char *));
-        string_pointers[0] = str_terminus;
-        text_scroll_begin(menu_layer_get_layer(user_info->menu_layer), string_pointers, 1, FONT_KEY_GOTHIC_18, frame_terminus);
-        free(string_pointers);
+        const char **texts = calloc(1, sizeof(char *));
+        texts[0] = str_terminus;
+        const GSize **sizes = calloc(1, sizeof(GSize *));
+        sizes[0] = &(frame_terminus.size);
+        const char **font_keys = calloc(1, sizeof(char *));
+        font_keys[0] = FONT_KEY_GOTHIC_18;
+        if (!text_scroll_is_unchanged(texts, sizes, font_keys, 1, user_info->text_scroll_data)) {
+            Layer *menu_layer = menu_layer_get_layer(user_info->menu_layer);
+            text_scroll_create((TextScrollConfig) {
+                .frame_interval = TEXT_FRAME_INTERVAL,
+                .pause_interval = TEXT_PAUSE_INTERVAL,
+                .update_callback = (TextScrollUpdateCb)text_scroll_update,
+                .user_context = menu_layer
+            },
+                               texts,
+                               sizes,
+                               font_keys,
+                               1,
+                               &user_info->text_scroll_data);
+        }
+        free(texts);
+        free(sizes);
+        free(font_keys);
     }
 #endif
 }
@@ -437,7 +469,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     if (cell_index->section == NEXT_TRAINS_SECTION_INFO) {
         draw_from_to(ctx, cell_layer,
 #if TEXT_SCROLL_IS_ENABLED
-                     menu_layer_get_layer(user_info->menu_layer), is_selected,
+                     &user_info->text_scroll_data, menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
                      is_inverted,
                      bg_color, fg_color,
@@ -517,8 +549,9 @@ static void menu_layer_select_callback(struct MenuLayer *menu_layer, MenuIndex *
 }
 
 #if TEXT_SCROLL_IS_ENABLED
-static void menu_layer_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
-    text_scroll_end();
+static void menu_layer_selection_will_change(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, NextTrains *user_info) {
+    text_scroll_destory(user_info->text_scroll_data);
+    user_info->text_scroll_data = NULL;
 }
 #endif
 
@@ -552,12 +585,10 @@ static void window_load(Window *window) {
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback)menu_layer_get_num_rows_callback,
         .get_cell_height = (MenuLayerGetCellHeightCallback)menu_layer_get_cell_height_callback,
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
-        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback
+        .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
 #if TEXT_SCROLL_IS_ENABLED
-        ,
-        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed
+        .selection_will_change = (MenuLayerSelectionWillChangeCallback)menu_layer_selection_will_change,
 #endif
-        ,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
@@ -612,12 +643,17 @@ static void window_appear(Window *window) {
 }
 
 static void window_disappear(Window *window) {
+#if TEXT_SCROLL_IS_ENABLED || RELATIVE_TIME_IS_ENABLED
+    NextTrains *user_info = window_get_user_data(window);
+#endif
+    
     // Set callbacks to NULL
     message_clear_callbacks();
     
 #if TEXT_SCROLL_IS_ENABLED
     // Stop scrolling text
-    text_scroll_end();
+    text_scroll_destory(user_info->text_scroll_data);
+    user_info->text_scroll_data = NULL;
 #endif
     
     // Unsubscribe services
@@ -625,7 +661,6 @@ static void window_disappear(Window *window) {
     
     // Stop timers
 #if RELATIVE_TIME_IS_ENABLED
-    NextTrains *user_info = window_get_user_data(window);
     format_timer_stop(user_info);
 #endif
 }

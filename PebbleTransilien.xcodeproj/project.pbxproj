@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		450924621C907F5C00EE91DC /* text_scroll.c in Sources */ = {isa = PBXBuildFile; fileRef = 450924601C907F5C00EE91DC /* text_scroll.c */; };
 		453FB2071BD3030E005E86A5 /* window_action_list.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34E41BCE469F0057BC11 /* window_action_list.c */; };
 		4574D1401C83088D00B670CB /* window_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 4574D13E1C83088D00B670CB /* window_message.c */; };
 		457D34EE1BCE469F0057BC11 /* localize.c in Sources */ = {isa = PBXBuildFile; fileRef = 457D34C81BCE469F0057BC11 /* localize.c */; };
@@ -42,6 +43,8 @@
 
 /* Begin PBXFileReference section */
 		450852001B4FCF61008098D5 /* resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = resources; sourceTree = "<group>"; };
+		450924601C907F5C00EE91DC /* text_scroll.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = text_scroll.c; sourceTree = "<group>"; };
+		450924611C907F5C00EE91DC /* text_scroll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text_scroll.h; sourceTree = "<group>"; };
 		454FA5B71B4EFC6C00473A4B /* locale_english.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_english.json; sourceTree = "<group>"; };
 		454FA5B81B4EFC6C00473A4B /* locale_french.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = locale_french.json; sourceTree = "<group>"; };
 		4574D13E1C83088D00B670CB /* window_message.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = window_message.c; sourceTree = "<group>"; };
@@ -150,6 +153,8 @@
 				457D34D71BCE469F0057BC11 /* data_process.h */,
 				457D34D81BCE469F0057BC11 /* data_stations.c */,
 				457D34D91BCE469F0057BC11 /* data_stations.h */,
+				450924601C907F5C00EE91DC /* text_scroll.c */,
+				450924611C907F5C00EE91DC /* text_scroll.h */,
 				457D34DE1BCE469F0057BC11 /* ui_common.c */,
 				457D34DF1BCE469F0057BC11 /* ui_common.h */,
 				457D34E21BCE469F0057BC11 /* ui_setup.c */,
@@ -473,6 +478,7 @@
 				457D34FB1BCE469F0057BC11 /* window_main_menu.c in Sources */,
 				457D34F41BCE469F0057BC11 /* data_process.c in Sources */,
 				457D34F51BCE469F0057BC11 /* data_stations.c in Sources */,
+				450924621C907F5C00EE91DC /* text_scroll.c in Sources */,
 				457D34F31BCE469F0057BC11 /* data_model.c in Sources */,
 				457D34F71BCE469F0057BC11 /* ui_common.c in Sources */,
 			);

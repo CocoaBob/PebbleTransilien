@@ -22,9 +22,9 @@ void time_2_str(time_t timestamp,
 );
 
 //! Check if string_a contains string_b, case-sensitive.
-//! @param string Null-terminated string
-//! @param sub_string Null-terminated string
-bool string_contains_sub_string(char *string_a, size_t size_a, char *string_b, size_t size_b);
+//! @param T Target string
+//! @param P String to pair
+bool string_contains_sub_string(char *T, size_t n, char *P, size_t m);
 
 #if PBL_ROUND
 //! Calculate menu layer row x inset for Pebble Time Round

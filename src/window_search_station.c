@@ -57,6 +57,10 @@ typedef struct {
     uint8_t active_layer_index;
     
     bool is_initialised;
+    
+#if TEXT_SCROLL_IS_ENABLED
+    TextScrollData *text_scroll_data;
+#endif
 } SearchStation;
 
 // MARK: Forward declaration
@@ -141,10 +145,15 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
     graphics_draw_line(ctx, GPoint(0, 0), GPoint(bounds.size.w, 0));
     
     // Draw stations
+#ifdef PBL_BW
     GColor fg_color = layer_data->is_active?curr_bg_color():curr_fg_color();
+#endif
+#if TEXT_SCROLL_IS_ENABLED
+    SearchStation *user_info = window_get_user_data(layer_get_window(layer));
+#endif
     draw_from_to(ctx, layer,
 #if TEXT_SCROLL_IS_ENABLED
-                 layer, layer_data->is_active,
+                 &user_info->text_scroll_data, layer, layer_data->is_active,
 #endif
 #ifdef PBL_COLOR
                  true,
@@ -363,7 +372,8 @@ static void menu_layer_set_active(bool is_active, SearchStation *user_info) {
 static void panel_layer_set_active(bool is_active, SearchStation *user_info) {
 #if TEXT_SCROLL_IS_ENABLED
     // Stop scrolling text
-    text_scroll_end();
+    text_scroll_destory(user_info->text_scroll_data);
+    user_info->text_scroll_data = NULL;
 #endif
     
     // Update panel
@@ -527,7 +537,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
         
         draw_station(ctx, cell_layer,
 #if TEXT_SCROLL_IS_ENABLED
-                     menu_layer_get_layer(user_info->menu_layer), is_selected,
+                     &user_info->text_scroll_data, menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
                      text_color,
                      is_inverted,
@@ -558,10 +568,14 @@ static void menu_layer_select_long_callback(struct MenuLayer *menu_layer, MenuIn
     }
 }
 
-static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, SearchStation *user_info) {
 #if TEXT_SCROLL_IS_ENABLED
-    text_scroll_end();
+static void menu_layer_selection_will_change(struct MenuLayer *menu_layer, MenuIndex *new_index, MenuIndex old_index, SearchStation *user_info) {
+    text_scroll_destory(user_info->text_scroll_data);
+    user_info->text_scroll_data = NULL;
+}
 #endif
+
+static void menu_layer_selection_changed_callback(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, SearchStation *user_info) {
     if (user_info->active_layer_index == SEARCH_STATION_MENU_LAYER) {
         panel_update_with_menu_layer_selection(user_info);
     }
@@ -602,8 +616,10 @@ static void window_load(Window *window) {
         .draw_row = (MenuLayerDrawRowCallback)menu_layer_draw_row_callback,
         .select_click = (MenuLayerSelectCallback)menu_layer_select_callback,
         .select_long_click = (MenuLayerSelectCallback)menu_layer_select_long_callback,
-        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback
-        ,
+#if TEXT_SCROLL_IS_ENABLED
+        .selection_will_change = (MenuLayerSelectionWillChangeCallback)menu_layer_selection_will_change,
+#endif
+        .selection_changed = (MenuLayerSelectionChangedCallback)menu_layer_selection_changed_callback,
         .get_separator_height = (MenuLayerGetSeparatorHeightCallback)common_menu_layer_get_separator_height_callback,
         .draw_separator = (MenuLayerDrawSeparatorCallback)common_menu_layer_draw_separator_callback,
         .draw_background = (MenuLayerDrawBackgroundCallback)common_menu_layer_draw_background_callback
@@ -691,8 +707,10 @@ static void window_appear(Window *window) {
 
 static void window_disappear(Window *window) {
 #if TEXT_SCROLL_IS_ENABLED
+    SearchStation *user_info = window_get_user_data(window);
     // Stop scrolling text
-    text_scroll_end();
+    text_scroll_destory(user_info->text_scroll_data);
+    user_info->text_scroll_data = NULL;
 #endif
     
 #if !defined(PBL_PLATFORM_APLITE)
