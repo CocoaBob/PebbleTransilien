@@ -157,10 +157,10 @@ static void panel_layer_proc(Layer *layer, GContext *ctx) {
 #endif
 #ifdef PBL_COLOR
                  true,
-                 bg_color, GColorWhite,
+                 GColorWhite,
 #else
                  settings_is_dark_theme()?!layer_data->is_active:layer_data->is_active,
-                 bg_color, fg_color,
+                 fg_color,
 #endif
                  layer_data->from_to
 #if MINI_TIMETABLE_IS_ENABLED

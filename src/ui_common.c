@@ -154,7 +154,7 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
                   TextScrollData **ptr_text_scroll_data, Layer *redraw_layer, bool is_selected,
 #endif
                   bool is_inverted,
-                  GColor bg_color, GColor fg_color,
+                  GColor fg_color,
                   DataModelFromTo from_to
 #if MINI_TIMETABLE_IS_ENABLED
                   ,
@@ -191,43 +191,43 @@ void draw_from_to(GContext* ctx, Layer *display_layer,
     icon_center_to.x = icon_angle_point_to.x;
 #endif
     
-    // Draw icons
+    // Draw circle 1
+    graphics_context_set_stroke_width(ctx, 1);
+    graphics_draw_circle(ctx, icon_center_from, icon_radius);
     if (is_from_to) {
+        // Draw circle 2
+        graphics_draw_circle(ctx, icon_center_to, icon_radius);
+        
+        // Draw line
+        graphics_context_set_stroke_width(ctx, 2);
 #ifdef PBL_ROUND
         if (icon_angle_point_from.y >= 0 && icon_angle_point_from.y <= ROUND_SCREEN_SIZE &&
             icon_angle_point_to.y >= 0 && icon_angle_point_to.y <= ROUND_SCREEN_SIZE) {
             int32_t quad_circle = TRIG_MAX_ANGLE / 4;
+            int32_t radius_trigangle = DEG_TO_TRIGANGLE(2);
             
             int32_t angle_from = atan2_lookup(ABS(ROUND_SCREEN_RADIUS - icon_angle_point_from.y), ABS(ROUND_SCREEN_RADIUS - icon_angle_point_from.x));
             angle_from = (icon_angle_point_from.y > ROUND_SCREEN_RADIUS) ? (-quad_circle-angle_from) : (angle_from-quad_circle);
+            angle_from -= radius_trigangle;
             
             int32_t angle_to = atan2_lookup(ABS(ROUND_SCREEN_RADIUS - icon_angle_point_to.y), ABS(ROUND_SCREEN_RADIUS - icon_angle_point_to.x));
             angle_to = (icon_angle_point_to.y > ROUND_SCREEN_RADIUS) ? (-quad_circle-angle_to) : (angle_to-quad_circle);
+            angle_to += radius_trigangle;
+            
             GRect draw_rect = window_bounds;
             GPoint layer_origin_screen = layer_convert_point_to_screen(display_layer, GPointZero);
             draw_rect.origin.x -= layer_origin_screen.x;
             draw_rect.origin.y -= layer_origin_screen.y;
             draw_rect = grect_inset(draw_rect, GEdgeInsets1(CELL_MARGIN_2-1));
             
-//            graphics_draw_arc(ctx, draw_rect, GOvalScaleModeFillCircle, angle_to, angle_from);
             graphics_context_set_fill_color(ctx, fg_color);
             graphics_fill_radial(ctx, draw_rect, GOvalScaleModeFillCircle, 3, angle_to, angle_from);
         }
 #else
-        graphics_context_set_stroke_width(ctx, 2);
+        icon_center_from.y += icon_radius + 1;
+        icon_center_to.y -= icon_radius + 1;
         graphics_draw_line(ctx, icon_center_from, icon_center_to);
 #endif
-    }
-    
-    graphics_context_set_fill_color(ctx, bg_color);
-    graphics_fill_circle(ctx, icon_center_from, icon_radius);
-    if (is_from_to) {
-        graphics_fill_circle(ctx, icon_center_to, icon_radius);
-    }
-    graphics_context_set_stroke_width(ctx, 1);
-    graphics_draw_circle(ctx, icon_center_from, icon_radius);
-    if (is_from_to) {
-        graphics_draw_circle(ctx, icon_center_to, icon_radius);
     }
     
     ////////////////////////////
@@ -521,7 +521,7 @@ void common_menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_l
 // MARK: Push windows
 
 bool ui_can_push_window() {
-    printf("1 Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+//    printf("1 Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
     
 #if !defined(PBL_PLATFORM_APLITE)
     size_t critical_memory = 4800;

@@ -458,11 +458,9 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
     
 #ifdef PBL_COLOR
     bool is_inverted = settings_is_dark_theme() || is_selected;
-    GColor bg_color = is_selected?HIGHLIGHT_COLOR:curr_bg_color();
     GColor fg_color = (is_selected && !settings_is_dark_theme())?curr_bg_color():curr_fg_color();
 #else
     bool is_inverted = settings_is_dark_theme()?!is_selected:is_selected;
-    GColor bg_color = is_selected?curr_fg_color():curr_bg_color();
     GColor fg_color = is_selected?curr_bg_color():curr_fg_color();
 #endif
     
@@ -472,7 +470,7 @@ static void menu_layer_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuI
                      &user_info->text_scroll_data, menu_layer_get_layer(user_info->menu_layer), is_selected,
 #endif
                      is_inverted,
-                     bg_color, fg_color,
+                     fg_color,
                      user_info->from_to
 #if MINI_TIMETABLE_IS_ENABLED
                      ,
