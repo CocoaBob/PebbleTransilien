@@ -521,10 +521,10 @@ void common_menu_layer_draw_background_callback(GContext* ctx, const Layer *bg_l
 // MARK: Push windows
 
 bool ui_can_push_window() {
-//    printf("1 Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
+    printf("1 Heap Total <%4dB> Used <%4dB> Free <%4dB>",heap_bytes_used()+heap_bytes_free(),heap_bytes_used(),heap_bytes_free());
     
 #if !defined(PBL_PLATFORM_APLITE)
-    size_t critical_memory = 3200;
+    size_t critical_memory = 4800;
 #else
     size_t critical_memory = 2000;
 #endif
